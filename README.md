@@ -1,0 +1,44 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# premp
+
+<!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/premp)](https://CRAN.R-project.org/package=premp)
+<!-- badges: end -->
+
+**Pre**dictive **M**astery **P**rofiles (PreMP) is a method for setting
+achievement standards designed to be compatible with assessments scored
+using diagnostic classification models. The goal of premp is to provide
+functionality to implement this method in practice.
+
+## Installation
+
+You can install the development version of premp like so:
+
+``` r
+pak::pak("r-dcm/premp")
+```
+
+## Usage
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+#library(premp)
+## basic example code
+```
+
+------------------------------------------------------------------------
+
+## Contributions and Code of Conduct
+
+Contributions are welcome. To ensure a smooth process, please review the
+[Contributing Guide](https://premp.r-dcm.org/CONTRIBUTING.html). Please
+note that the dcmstan project is released with a [Contributor Code of
+Conduct](https://premp.r-dcm.org/CODE_OF_CONDUCT.html). By contributing
+to this project, you agree to abide by its terms.
