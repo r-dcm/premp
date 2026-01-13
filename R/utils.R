@@ -1,3 +1,22 @@
+#' Stratified Sampling
+#'
+#' Define a function for stratified sampling that allows for specifying the
+#' number of samples to take within each stratification while weighting the
+#' probability of sampling each case.
+#'
+#' @param x A tibble with one row for each rater's rating of an assigned
+#' profile.
+#' @param by A character field that defines the stratifications.
+#' @param size A character field that defines the sampling sizes within each
+#' stratification.
+#' @param weight_by A character field that defines the sampling weights within
+#' each stratification.
+#'
+#' @return [tibble][tibble::tibble-package] A tibble containing the pinpoint
+#' ranges to assign profiles during the second round of standard setting.
+#'
+#' @export
+#' @examples
 slice_stratified <- function(x, by, size, weight_by = NULL) {
   profiles_to_assign <- tibble::tibble()
   total_levels <- x %>%
