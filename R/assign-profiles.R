@@ -16,6 +16,11 @@
 #' @param round The round number of the standard setting event.
 #' @param num_pls The number of performance levels that can be assigned to any
 #' profile.
+#' @param range_of_profiles The increment of the total skills mastered, based on
+#' the attribute mastery profiles, that should be retained for profile
+#' assignment (default is 5). This should only be provided for Round 1.
+#' @param pinpoint_possible_profiles The csv of possible profiles to retain for
+#' profile assignment in Round 2. This should only be provided for Round 2.
 #' @param output_dir The output directory for the profile assignments.
 #'
 #' @returns A [tibble][tibble::tibble-package].
@@ -32,7 +37,8 @@ assign_profiles <- function(
   profiles_seen_by_all = 1L,
   round,
   num_pls,
-  range_of_profiles,
+  range_of_profiles = 5L,
+  pinpoint_possible_profiles,
   output_dir
 ) {
   profiles_per_rater <- profiles_per_rater - profiles_seen_by_all
@@ -56,7 +62,7 @@ assign_profiles <- function(
     dplyr::arrange(.data$total, dplyr::across(dplyr::everything(),
                                               dplyr::desc)) |>
     # filter down to the total number in increments of the range of profiles
-    dplyr::mutate(keep = total %% range_of_profiles == 0) |>
+    dplyr::mutate(keep = .data$total %% range_of_profiles == 0) |>
     dplyr::filter(.data$keep) |>
     dplyr::select(-"keep")
 
@@ -144,29 +150,29 @@ assign_profiles <- function(
         dplyr::anti_join(seen_by_all_remove, by = "profile")
 
       # output template
-      final_assignments = tibble(rater = NA,
-                                 profile = NA)
+      final_assignments = tibble::tibble(rater = NA,
+                                         profile = NA)
 
       # for each profile to be assigned...
       for (ii in seq_len(sum(rater_assignments$num_profiles))) {
         # pull vector of least assigned raters so far
         poss_raters <- rater_assignments |>
-          filter(num_profiles == max(num_profiles)) |>
-          pull(rater)
+          dplyr::filter(.data$num_profiles == max(.data$num_profiles)) |>
+          dplyr::pull(.data$rater)
         # calculate even probability for each of the least assigned raters
         rater_probs <- rater_assignments |>
-          filter(num_profiles == max(num_profiles)) |>
-          mutate(prob = num_profiles / sum(num_profiles)) |>
-          pull(prob)
+          dplyr::filter(.data$num_profiles == max(.data$num_profiles)) |>
+          dplyr::mutate(prob = .data$num_profiles / sum(.data$num_profiles)) |>
+          dplyr::pull(.data$prob)
         # pull vector of the least assigned profiles so far
         poss_profiles <- profile_assignments |>
-          filter(assignments == max(assignments)) |>
-          pull(profile)
+          dplyr::filter(.data$assignments == max(.data$assignments)) |>
+          dplyr::pull(.data$profile)
         # calculate even probability for each of the least assigned profiles
         profile_probs <- profile_assignments |>
-          filter(assignments == max(assignments)) |>
-          mutate(prob = assignments / sum(assignments)) |>
-          pull(prob)
+          dplyr::filter(.data$assignments == max(.data$assignments)) |>
+          dplyr::mutate(prob = .data$assignments / sum(.data$assignments)) |>
+          dplyr::pull(.data$prob)
 
         # if more than one possible rater, randomly sample
         if (length(poss_raters) != 1) {
@@ -181,10 +187,10 @@ assign_profiles <- function(
           rand_profile = poss_profiles
         }
         # save random samples as temporary assignment
-        tmp_assign = tibble(rater = rand_rater, profile = rand_profile)
+        tmp_assign = tibble::tibble(rater = rand_rater, profile = rand_profile)
         # check to make sure this assignment hasn't already been made
-        test_assignment <- semi_join(final_assignments, tmp_assign,
-                                     by = c("rater", "profile"))
+        test_assignment <- dplyr::semi_join(final_assignments, tmp_assign,
+                                            by = c("rater", "profile"))
 
         # iterate try count (prevents infinite loop)
         try_count <- 1
@@ -205,10 +211,11 @@ assign_profiles <- function(
             rand_profile = poss_profiles
           }
           # repeat temporary assignment
-          tmp_assign = tibble(rater = rand_rater, profile = rand_profile)
+          tmp_assign = tibble::tibble(rater = rand_rater,
+                                      profile = rand_profile)
           # check to make sure this assignment hasn't already been made
-          test_assignment <- semi_join(final_assignments, tmp_assign,
-                                       by = c("rater", "profile"))
+          test_assignment <- dplyr::semi_join(final_assignments, tmp_assign,
+                                              by = c("rater", "profile"))
 
           # iterate try count
           try_count <- try_count + 1
@@ -224,32 +231,34 @@ assign_profiles <- function(
         }
 
         # add temporary assignment to final assignment tibble
-        final_assignments <- bind_rows(final_assignments, tmp_assign)
+        final_assignments <- dplyr::bind_rows(final_assignments, tmp_assign)
 
         # decrement rater assignment counts with successful assignment
         rater_assignments <- rater_assignments |>
-          mutate(num_profiles = case_when(rater == rand_rater ~
-                                            num_profiles - 1,
-                                          TRUE ~ num_profiles)) |>
-          filter(num_profiles != 0)
+          dplyr::mutate(num_profiles = dplyr::case_when(.data$rater ==
+                                                          rand_rater ~
+                                                          num_profiles - 1,
+                                                        TRUE ~ num_profiles)) |>
+          dplyr::filter(num_profiles != 0)
 
         # decrement profile assignment counts with successful assignment
         profile_assignments <- profile_assignments |>
-          mutate(assignments = case_when(profile == rand_profile ~
-                                           assignments - 1,
-                                         TRUE ~ assignments)) |>
-          filter(assignments != 0)
+          dplyr::mutate(assignments = dplyr::case_when(.data$profile ==
+                                                         rand_profile ~
+                                                         assignments - 1,
+                                                       TRUE ~ assignments)) |>
+          dplyr::filter(assignments != 0)
       }
     }
 
     # remove blank row (stemming from defining original tibble)
     final_assignments <- final_assignments |>
-      filter(!is.na(rater))
+      dplyr::filter(!is.na(.data$rater))
 
     # if still failing after 7 tries, remove duplicate assignments
     if (num_tries == 7) {
       final_assignments <- final_assignments |>
-        distinct()
+        dplyr::distinct()
     }
 
     # format final assignments in wide-format
@@ -262,7 +271,9 @@ assign_profiles <- function(
 
     # add attribute mastery profiles and totals to final assignments tibble
     final_assignments <- dplyr::bind_rows(seen_by_all |>
-                                            dplyr::select(all_of(raters)),
+                                            dplyr::select(
+                                              dplyr::all_of(raters)
+                                            ),
                                           final_assignments) |>
       dplyr::bind_cols(assignments |>
                          dplyr::select(-dplyr::all_of(raters))) |>
