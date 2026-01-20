@@ -38,12 +38,12 @@ condensed_mastery <- function(ratings, profiles) {
                         names_to = "rater_id",
                         values_to = "rating") |>
     dplyr::select(-"rater_id") |>
-    dplyr::count(profile_num, !!!rlang::syms(ee_vec), rating) |>
+    dplyr::count(.data$profile_num, !!!rlang::syms(ee_vec), .data$rating) |>
     dplyr::mutate(rating = dplyr::case_when(rating == 1 ~ "emerging",
                                             rating == 2 ~ "approaching",
                                             rating == 3 ~ "target",
                                             rating == 4 ~ "advanced"),
-                  rating = factor(rating,
+                  rating = factor(.data$rating,
                                   levels = c("emerging", "approaching",
                                              "target", "advanced"))) |>
     tidyr::pivot_wider(names_from = "rating", values_from = "n",
@@ -61,68 +61,75 @@ condensed_mastery <- function(ratings, profiles) {
   rf_dat <- rf_dat |>
     dplyr::rowwise() |>
     dplyr::mutate(total_ratings =
-                    sum(dplyr::c_across(emerging:advanced), na.rm = TRUE),
+                    sum(dplyr::c_across(.data$emerging:.data$advanced),
+                        na.rm = TRUE),
                   app =
-                    sum(dplyr::c_across(approaching:advanced), na.rm = TRUE),
+                    sum(dplyr::c_across(.data$approaching:.data$advanced),
+                        na.rm = TRUE),
                   tar =
-                    sum(dplyr::c_across(target:advanced), na.rm = TRUE),
+                    sum(dplyr::c_across(.data$target:.data$advanced),
+                        na.rm = TRUE),
                   adv =
-                    sum(dplyr::c_across(advanced), na.rm = TRUE)) |>
+                    sum(dplyr::c_across(.data$advanced), na.rm = TRUE)) |>
     dplyr::ungroup() |>
     dplyr::select(-c("emerging", "approaching", "target", "advanced"))
 
   ## Step 2: Convert counts to long-format (i.e., 0s and 1s)
   long_rf <- rf_dat |>
-    dplyr::group_by(profile_id, lls_mastered) |>
-    dplyr::reframe(app = c(rep(0L, total_ratings - max(app)),
-                           rep(1L, max(app))),
-                   tar = c(rep(0L, total_ratings - max(tar)),
-                           rep(1L, max(tar))),
-                   adv = c(rep(0L, total_ratings - max(adv)),
-                           rep(1L, max(adv)))) |>
+    dplyr::group_by(.data$profile_id, .data$lls_mastered) |>
+    dplyr::reframe(app = c(rep(0L, .data$total_ratings - max(.data$app)),
+                           rep(1L, max(.data$app))),
+                   tar = c(rep(0L, .data$total_ratings - max(.data$tar)),
+                           rep(1L, max(.data$tar))),
+                   adv = c(rep(0L, .data$total_ratings - max(.data$adv)),
+                           rep(1L, max(.data$adv)))) |>
     dplyr::ungroup()
 
   ## Step 3: Fit a model for each cut point
   source(here::here("sim-study-4/R/functions.R"))
 
   model_results <- long_rf |>
-    tidyr::pivot_longer(cols = c(app, tar, adv), names_to = "model",
+    tidyr::pivot_longer(cols = c("app", "tar", "adv"), names_to = "model",
                         values_to = "y") |>
-    tidyr::nest(model_dat = c(profile_id, lls_mastered, y)) |>
+    tidyr::nest(model_dat = c(.data$profile_id, .data$lls_mastered, .data$y)) |>
     dplyr::mutate(params = purrr::map(model_dat, fit_model)) |>
-    tidyr::unnest(params)
+    tidyr::unnest(.data$params)
 
   # Calculate pinpointing ranges -------------------------------------------------
   ## Predicted cut points are defined as the value of LLs mastered at the
   ## inflection point of the logistic curve. The x value of the inflection point
   ## is given by -B_0 / B_1.
   pinpoint_ranges <- model_results |>
-    dplyr::mutate(predicted = -intercept / slope,
-                  range = tidybayes::mean_hdci(predicted,
+    dplyr::mutate(predicted = -.data$intercept / .data$slope,
+                  range = tidybayes::mean_hdci(.data$predicted,
                                                .width =
-                                                 pinpoint_interval)) |>
-    tidyr::unnest(range) |>
-    dplyr::mutate(.value = round(.value, digits = 0),
-                  .lower = floor(.lower), .upper = ceiling(.upper)) |>
+                                                 .data$pinpoint_interval)) |>
+    tidyr::unnest(.data$range) |>
+    dplyr::mutate(.value = round(.data$.value, digits = 0),
+                  .lower = floor(.data$.lower),
+                  .upper = ceiling(.data$.upper)) |>
     dplyr::rowwise() |>
-    dplyr::mutate(.lower = min(.value - min_pinpoint_range, .lower),
-                  .lower = max(.lower, 0),
-                  .upper = max(.value + min_pinpoint_range, .upper),
-                  .upper = min(.upper, num_ees * 4)) |>
+    dplyr::mutate(.lower = min(.data$.value - .data$min_pinpoint_range,
+                               .data$.lower),
+                  .lower = max(.data$.lower, 0),
+                  .upper = max(.data$.value + .data$min_pinpoint_range,
+                               .data$.upper),
+                  .upper = min(.data$.upper, num_ees * 4)) |>
     dplyr::ungroup() |>
     dplyr::select(cut_point = "model", predicted = ".value",
                   pinpoint_min = ".lower", pinpoint_max = ".upper")
 
   pinpoint_ranges |>
-    readr::write_csv(glue("{output_dir}/pp-range.csv"))
+    readr::write_csv(glue::glue("{output_dir}/pp-range.csv"))
 
   pinpoint_possible_profiles <- pinpoint_ranges |>
-    dplyr::mutate(cut_point = factor(cut_point,
+    dplyr::mutate(cut_point = factor(.data$cut_point,
                                      levels = c("app", "tar", "adv"))) |>
-    dplyr::group_by(cut_point) |>
-    tidyr::complete(predicted = min(pinpoint_min):max(pinpoint_max)) |>
+    dplyr::group_by(.data$cut_point) |>
+    tidyr::complete(predicted =
+                      min(.data$pinpoint_min):max(.data$pinpoint_max)) |>
     dplyr::ungroup() |>
-    dplyr::filter(predicted >= 0 & predicted <= num_ees * 4) |>
+    dplyr::filter(.data$predicted >= 0 & .data$predicted <= num_ees * 4) |>
     dplyr::select(lls_mastered = "predicted") |>
     dplyr::distinct() |>
     dplyr::left_join(profiles |>
@@ -130,7 +137,7 @@ condensed_mastery <- function(ratings, profiles) {
                        dplyr::anti_join(assigned_profiles,
                                         by = c(ee_vec, "total")),
                      by = c("lls_mastered" = "total")) |>
-    dplyr::filter(!is.na(EE_1)) |>
+    dplyr::filter(!is.na(.data$EE_1)) |>
     dplyr::mutate(emerging = NA_real_, approaching = NA_real_,
                   target = NA_real_, advanced = NA_real_)
 

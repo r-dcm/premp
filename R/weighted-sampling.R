@@ -27,25 +27,27 @@ weighted_sampling <- function(
 ) {
   # calculate profile weights based on number of mastered attributes
   prof_weights <- eligible_profiles |>
-    dplyr::count(total) |>
-    dplyr::mutate(prob = n / sum(n),
+    dplyr::count(.data$total) |>
+    dplyr::mutate(prob = .data$n / sum(.data$n),
                   min_count = 1,
-                  count_prob = prob * num_profiles,
-                  count = round(prob * num_profiles, 0),
-                  count = dplyr::case_when(count < min_count ~ min_count,
-                                    TRUE ~ count)) |>
+                  count_prob = .data$prob * num_profiles,
+                  count = round(.data$prob * num_profiles, 0),
+                  count = dplyr::case_when(.data$count < .data$min_count ~
+                                             .data$min_count,
+                                    TRUE ~ .data$count)) |>
     dplyr::select(-"n", -"prob", -"count_prob", -"min_count")
 
   # remove sampled counts from highest frequency totals if necessary
   while (sum(prof_weights$count) > num_profiles) {
     tmp <- prof_weights |>
-      dplyr::filter(count == max(count)) |>
+      dplyr::filter(.data$count == max(.data$count)) |>
       dplyr::slice_sample(n = 1) |>
-      dplyr::pull(total)
+      dplyr::pull(.data$total)
 
     prof_weights <- prof_weights |>
-      dplyr::mutate(count = dplyr::case_when(total == tmp ~ count - 1,
-                                             TRUE ~ count))
+      dplyr::mutate(count = dplyr::case_when(.data$total == tmp ~
+                                               .data$count - 1,
+                                             TRUE ~ .data$count))
   }
 
   prof_weights <- prof_weights |>
@@ -57,26 +59,27 @@ weighted_sampling <- function(
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("EE")))) |>
     dplyr::ungroup() |>
     dplyr::left_join(prof_weights, by = "total") |>
-    dplyr::filter(!is.na(samples))
+    dplyr::filter(!is.na(.data$samples))
 
   # oversample to alleviate deficits
   deficits <- profile_sampling |>
     dplyr::group_by(total) |>
-    dplyr::mutate(available = n()) |>
+    dplyr::mutate(available = dplyr::n()) |>
     dplyr::ungroup() |>
-    dplyr::mutate(deficit = available - samples) |>
-    dplyr::distinct(total, samples, available, deficit) |>
-    dplyr::filter(deficit != 0)
+    dplyr::mutate(deficit = .data$available - .data$samples) |>
+    dplyr::distinct(.data$total, .data$samples, .data$available,
+                    .data$deficit) |>
+    dplyr::filter(.data$deficit != 0)
 
   surplus <- deficits |>
-    dplyr::filter(deficit > 0)
+    dplyr::filter(.data$deficit > 0)
 
   short <- deficits |>
-    dplyr::filter(deficit < 0)
+    dplyr::filter(.data$deficit < 0)
 
   num_short <- deficits |>
-    dplyr::filter(deficit < 0) |>
-    dplyr::summarize(deficit = abs(sum(deficit))) |>
+    dplyr::filter(.data$deficit < 0) |>
+    dplyr::summarize(deficit = abs(sum(.data$deficit))) |>
     dplyr::pull()
 
   for (mm in seq_len(num_short)) {
@@ -87,17 +90,19 @@ weighted_sampling <- function(
 
     surplus <- surplus |>
       dplyr::left_join(total_add, by = "total") |>
-      dplyr::mutate(samples = dplyr::case_when(!is.na(add) ~ samples + 1,
-                                               TRUE ~ samples),
-                    deficit = available - samples) |>
+      dplyr::mutate(samples = dplyr::case_when(!is.na(.data$add) ~
+                                                 .data$samples + 1,
+                                               TRUE ~ .data$samples),
+                    deficit = .data$available - .data$samples) |>
       dplyr::select(-"add") |>
-      dplyr::filter(deficit != 0)
+      dplyr::filter(.data$deficit != 0)
 
     deficits <- deficits |>
       dplyr::left_join(total_add, by = "total") |>
-      dplyr::mutate(samples = dplyr::case_when(!is.na(add) ~ samples + 1,
-                                               TRUE ~ samples),
-                    deficit = available - samples) |>
+      dplyr::mutate(samples = dplyr::case_when(!is.na(.data$add) ~
+                                                 .data$samples + 1,
+                                               TRUE ~ .data$samples),
+                    deficit = .data$available - .data$samples) |>
       dplyr::select(-"add")
 
     total_short <- short |>
@@ -107,17 +112,19 @@ weighted_sampling <- function(
 
     short <- short |>
       dplyr::left_join(total_short, by = "total") |>
-      dplyr::mutate(samples = dplyr::case_when(!is.na(sub) ~ samples - 1,
-                                               TRUE ~ samples),
-                    deficit = available - samples) |>
+      dplyr::mutate(samples = dplyr::case_when(!is.na(.data$sub) ~
+                                                 .data$samples - 1,
+                                               TRUE ~ .data$samples),
+                    deficit = .data$available - .data$samples) |>
       dplyr::select(-"sub") |>
-      dplyr::filter(deficit != 0)
+      dplyr::filter(.data$deficit != 0)
 
     deficits <- deficits |>
       dplyr::left_join(total_short, by = "total") |>
-      dplyr::mutate(samples = dplyr::case_when(!is.na(sub) ~ samples - 1,
-                                               TRUE ~ samples),
-                    deficit = available - samples) |>
+      dplyr::mutate(samples = dplyr::case_when(!is.na(.data$sub) ~
+                                                 .data$samples - 1,
+                                               TRUE ~ .data$samples),
+                    deficit = .data$available - .data$samples) |>
       dplyr::select(-"sub")
   }
 
@@ -131,13 +138,14 @@ weighted_sampling <- function(
     dplyr::left_join(deficits |>
                        dplyr::select("total", "samples"),
                      by = "total") |>
-    dplyr::mutate(samples = dplyr::case_when(is.na(samples.y) ~ samples.x,
-                                             TRUE ~ samples.y)) |>
+    dplyr::mutate(samples = dplyr::case_when(is.na(.data$samples.y) ~
+                                               .data$samples.x,
+                                             TRUE ~ .data$samples.y)) |>
     dplyr::select(-"samples.x", -"samples.y") |>
-    dplyr::filter(total != 0) |>
-    dplyr::filter(total != num_attributes * num_pls) |>
-    ratlas::only_if(round == 1)(dplyr::mutate)(samples = 2) |>
-    ratlas::only_if(round == 2)(dplyr::mutate)(samples = 3)
+    dplyr::filter(.data$total != 0) |>
+    dplyr::filter(.data$total != num_attributes * num_pls) |>
+    ratlas::only_if(round == 1)(dplyr::mutate)(.data$samples = 2) |>
+    ratlas::only_if(round == 2)(dplyr::mutate)(.data$samples = 3)
 
   return(profile_sampling)
 }

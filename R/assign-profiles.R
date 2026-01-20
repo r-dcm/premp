@@ -18,7 +18,7 @@
 #' profile.
 #' @param range_of_profiles The increment of the total skills mastered, based on
 #' the attribute mastery profiles, that should be retained for profile
-#' assignment (default is 5). This should only be provided for Round 1.
+#' assignment. This should only be provided for Round 1.
 #' @param pinpoint_possible_profiles The csv of possible profiles to retain for
 #' profile assignment in Round 2. This should only be provided for Round 2.
 #' @param output_dir The output directory for the profile assignments.
@@ -37,10 +37,42 @@ assign_profiles <- function(
   profiles_seen_by_all = 1L,
   round,
   num_pls,
-  range_of_profiles = 5L,
+  range_of_profiles,
   pinpoint_possible_profiles,
   output_dir
 ) {
+  # error checks
+  ## range of profiles when round == 1
+  ### no pinpoint_possible_profiles
+  ## pinpoint_possible_profiles when round == 2
+  ### add warning message when user supplies range_of_profiles in round 2
+
+  if (round == 1 && is.null(range_of_profiles)) {
+    rdcmchecks::abort_bad_argument(
+      arg = rlang::caller_arg(range_of_profiles),
+      must = cli::format_message(paste(
+        "must be provided for Round 1."
+      ))
+    )
+  }
+
+  if (round == 1 && !is.null(pinpoint_possible_profiles)) {
+
+  }
+
+  if (round == 2 && is.null(pinpoint_possible_profiles)) {
+    rdcmchecks::abort_bad_argument(
+      arg = rlang::caller_arg(pinpoint_possible_profiles),
+      must = cli::format_message(paste(
+        "must be provided for Round 2."
+      ))
+    )
+  }
+
+  if (round == 2 && !is.null(range_of_profiles)) {
+
+  }
+
   profiles_per_rater <- profiles_per_rater - profiles_seen_by_all
   total_ratings <- length(raters) * profiles_per_rater
   num_profiles <- floor(total_ratings / raters_per_profile)

@@ -20,6 +20,7 @@ Imports:
     glue,
     purrr,
     ratlas,
+    rdcmchecks,
     readr,
     rlang,
     tibble,
