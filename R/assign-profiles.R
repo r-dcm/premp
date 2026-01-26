@@ -19,8 +19,8 @@
 #' @param range_of_profiles The increment of the total skills mastered, based on
 #' the attribute mastery profiles, that should be retained for profile
 #' assignment. This should only be provided for Round 1.
-#' @param pinpoint_possible_profiles The csv of possible profiles to retain for
-#' profile assignment in Round 2. This should only be provided for Round 2.
+#' @param pinpoint_possible_profiles The tibble of possible profiles to retain
+#' for profile assignment in Round 2. This should only be provided for Round 2.
 #' @param output_dir The output directory for the profile assignments.
 #'
 #' @returns A [tibble][tibble::tibble-package].
@@ -37,8 +37,8 @@ assign_profiles <- function(
   profiles_seen_by_all = 1L,
   round,
   num_pls,
-  range_of_profiles,
-  pinpoint_possible_profiles,
+  range_of_profiles = NULL,
+  pinpoint_possible_profiles = NULL,
   output_dir
 ) {
   # error checks
@@ -56,8 +56,22 @@ assign_profiles <- function(
     )
   }
 
-  if (round == 1 && !is.null(pinpoint_possible_profiles)) {
+  if (round == 2 && !is.null(range_of_profiles)) {
+    rdcmchecks::abort_bad_argument(
+      arg = rlang::caller_arg(range_of_profiles),
+      must = cli::format_message(paste(
+        "is not needed for Round 2."
+      ))
+    )
+  }
 
+  if (round == 1 && !is.null(pinpoint_possible_profiles)) {
+    rdcmchecks::abort_bad_argument(
+      arg = rlang::caller_arg(pinpoint_possible_profiles),
+      must = cli::format_message(paste(
+        "is not needed for Round 1."
+      ))
+    )
   }
 
   if (round == 2 && is.null(pinpoint_possible_profiles)) {
@@ -67,10 +81,6 @@ assign_profiles <- function(
         "must be provided for Round 2."
       ))
     )
-  }
-
-  if (round == 2 && !is.null(range_of_profiles)) {
-
   }
 
   profiles_per_rater <- profiles_per_rater - profiles_seen_by_all
@@ -160,8 +170,8 @@ assign_profiles <- function(
       num_tries <- num_tries + 1
 
       # number of profiles to assign to each rater
-      rater_assignments <- tibble(rater = raters,
-                                  num_profiles = profiles_per_rater)
+      rater_assignments <- tibble::tibble(rater = raters,
+                                          num_profiles = profiles_per_rater)
 
       # flag the profiles that are already being assigned to all raters and
       # remove so that this profile is not re-assigned
@@ -174,10 +184,12 @@ assign_profiles <- function(
         dplyr::distinct(.data$profile)
 
       # calculate number of times to assign each remaining profile
-      profile_assignments <- tibble(
+      profile_assignments <- tibble::tibble(
         profile = 1:nrow(profiles_to_assign),
         assignments = ceiling(length(raters) * profiles_per_rater /
-                                nrow(profiles_to_assign))
+                                nrow(profiles_to_assign |>
+                                       dplyr::anti_join(seen_by_all,
+                                                        by = att_vec)))
       ) |>
         dplyr::anti_join(seen_by_all_remove, by = "profile")
 
@@ -309,7 +321,9 @@ assign_profiles <- function(
                                           final_assignments) |>
       dplyr::bind_cols(assignments |>
                          dplyr::select(-dplyr::all_of(raters))) |>
-      dplyr::select(dplyr::all_of(att_vec), "total", dplyr::all_of(raters))
+      dplyr::select(dplyr::all_of(att_vec), "total", dplyr::all_of(raters)) |>
+      dplyr::arrange(.data$total, dplyr::across(dplyr::everything(),
+                                                dplyr::desc))
   }
 
   # save output
