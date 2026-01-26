@@ -143,9 +143,9 @@ weighted_sampling <- function(
                                              TRUE ~ .data$samples.y)) |>
     dplyr::select(-"samples.x", -"samples.y") |>
     dplyr::filter(.data$total != 0) |>
-    dplyr::filter(.data$total != num_attributes * num_pls) |>
-    ratlas::only_if(round == 1)(dplyr::mutate)(.data$samples = 2) |>
-    ratlas::only_if(round == 2)(dplyr::mutate)(.data$samples = 3)
+    dplyr::filter(.data$total != (num_attributes * num_pls)) |>
+    ratlas::only_if(round == 1)(dplyr::mutate)(samples = 2) |>
+    ratlas::only_if(round == 2)(dplyr::mutate)(samples = 3)
 
   return(profile_sampling)
 }
