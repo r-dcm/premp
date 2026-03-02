@@ -16,7 +16,6 @@
 #' ranges to assign profiles during the second round of standard setting.
 #'
 #' @export
-#' @examples
 slice_stratified <- function(x, by, size, weight_by = NULL) {
   profiles_to_assign <- tibble::tibble()
   total_levels <- x |>
@@ -54,6 +53,17 @@ slice_stratified <- function(x, by, size, weight_by = NULL) {
 #'      point between levels 1 and 2, was the profile rated in level 2, 3, or 4?
 #'   2. `atts_mastered`: The total number of attributes mastered in the
 #'      profile that was rated.
+#' @param iter The number of iterations in the posterior distribution
+#' (default = 4,000).
+#' @param warmup The number of warm-up iterations (default = 2,000).
+#' @param cores The number of cores (default = 4).
+#' @param chains The number of chains (default = 4).
+#' @param refresh The interval between refreshing the visual display during
+#' model estimation (default = 0, no refresh).
+#' @param adapt_delta The likelihood of accepting the next step in traversing
+#' the posterior distribution, which is related to step size (default = .95).
+#' @param max_treedepth The maximum depth before making a U-turn when traversing
+#' the posterior distribution (default = 15).
 #'
 #' @details
 #' This function currently uses [brms::brm()] to estimate the logistic
@@ -65,22 +75,34 @@ slice_stratified <- function(x, by, size, weight_by = NULL) {
 #' @return A tibble with 1 row and 2 columns: `intercept` and `slope`. The one
 #'   row contains objects of type [posterior::draws_rvars], which represent the
 #'   posterior distribution for each parameter.
-fit_model <- function(dat) {
-  out <- capture.output(
+fit_model <- function(
+  dat,
+  iter = 4000,
+  warmup = 2000,
+  cores = 4,
+  chains = 4,
+  refresh = 0,
+  adapt_delta = .95,
+  max_treedepth = 15
+) {
+  out <- utils::capture.output(
     suppressMessages(
       mod <- brms::brm(y ~ 1 + atts_mastered, data = dat, family = "bernoulli",
-                       prior = c(brms::prior(normal(0, 1.5), class = Intercept),
-                                 brms::prior(normal(0, 0.5), class = b)),
-                       iter = 4000, warmup = 2000, chains = 4, cores = 4,
-                       refresh = 0,
-                       control = list(adapt_delta = 0.95, max_treedepth = 15))
+                       prior = c(brms::prior("normal(0, 1.5)",
+                                             class = "Intercept"),
+                                 brms::prior("normal(0, 0.5)",
+                                             class = "b")),
+                       iter = iter, warmup = warmup, chains = chains,
+                       cores = cores, refresh = refresh,
+                       control = list(adapt_delta = adapt_delta,
+                                      max_treedepth = max_treedepth))
     )
   )
 
   posterior::as_draws_rvars(mod,
                             variable = c("b_Intercept", "b_atts_mastered"))|>
     tibble::as_tibble() |>
-    dplyr::rename(intercept = b_Intercept, slope = b_atts_mastered)
+    dplyr::rename(intercept = "b_Intercept", slope = "b_atts_mastered")
 }
 
 
@@ -95,7 +117,9 @@ fit_model <- function(dat) {
 #' @param max_val The maximum value that `x` should be allowed to take.
 #'
 #' @return A double no larger than `max_val`.
-max_value <- function(x, max_val = 0.9999) {
+max_value <- function(
+  x,
+  max_val = 0.9999
+) {
   min(x, max_val)
 }
-
