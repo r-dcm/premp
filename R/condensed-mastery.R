@@ -9,21 +9,24 @@
 #' @param profiles A tibble with one row for each attribute mastery
 #' profiles that is eligible for assignment to raters. The rows correspond to
 #' the profile number in the `ratings` argument.
-#' @pl_labels A character vector containing the ordered performance levels.
-#' @att_levels An integer describing the number of categorical mastery classes
+#' @param pl_labels A character vector containing the ordered performance levels.
+#' @param att_levels An integer describing the number of categorical mastery classes
 #' for each attribute.
-#' @output_dir The output directory for the pinpointing ranges.
+#' @param cores The number of cores (default = 4).
+#' @param chains The number of chains (default = 4).
+#' @param output_dir The output directory for the pinpointing ranges.
 #'
 #' @return [tibble][tibble::tibble-package] A tibble containing the pinpoint
 #' ranges to assign profiles during the second round of standard setting.
 #'
 #' @export
-#' @examples
 condensed_mastery <- function(
   ratings,
   profiles,
   pl_labels,
   att_levels,
+  cores = 4,
+  chains = 4,
   output_dir
 ) {
   if (length(pl_labels) < 2) {
@@ -68,7 +71,7 @@ condensed_mastery <- function(
                                   levels = pl_labels)) |>
     tidyr::pivot_wider(names_from = "rating", values_from = "n",
                        values_fill = 0L, names_expand = TRUE) |>
-    dplyr::rename(profile_id = profile_num) |>
+    dplyr::rename(profile_id = "profile_num") |>
     dplyr::rowwise() |>
     dplyr::mutate(atts_mastered =
                     sum(dplyr::c_across(dplyr::any_of(att_vec)))) |>
@@ -127,7 +130,8 @@ condensed_mastery <- function(
                         names_to = "model",
                         values_to = "y") |>
     tidyr::nest(model_dat = c("profile_id", "atts_mastered", "y")) |>
-    dplyr::mutate(params = purrr::map(model_dat, fit_model)) |>
+    dplyr::mutate(params = purrr::map(.data$model_dat, fit_model,
+                                      cores = cores, chains = chains)) |>
     tidyr::unnest("params")
 
   # Calculate pinpointing ranges -------------------------------------------------

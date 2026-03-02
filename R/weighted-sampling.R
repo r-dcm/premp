@@ -17,7 +17,6 @@
 #' be assigned to raters during a standard setting event.
 #'
 #' @export
-#' @examples
 weighted_sampling <- function(
     eligible_profiles,
     num_profiles,
@@ -25,6 +24,11 @@ weighted_sampling <- function(
     round,
     num_pls
 ) {
+  # identify attributes
+  att_vec <- eligible_profiles |>
+    dplyr::select(-"total") |>
+    names()
+
   # calculate profile weights based on number of mastered attributes
   prof_weights <- eligible_profiles |>
     dplyr::count(.data$total) |>
@@ -51,19 +55,19 @@ weighted_sampling <- function(
   }
 
   prof_weights <- prof_weights |>
-    dplyr::rename(samples = count)
+    dplyr::rename(samples = "count")
 
   profile_sampling <- observed |>
     dplyr::select(-"n") |>
     dplyr::rowwise() |>
-    dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("EE")))) |>
+    dplyr::mutate(total = sum(dplyr::c_across(dplyr::any_of(att_vec)))) |>
     dplyr::ungroup() |>
     dplyr::left_join(prof_weights, by = "total") |>
     dplyr::filter(!is.na(.data$samples))
 
   # oversample to alleviate deficits
   deficits <- profile_sampling |>
-    dplyr::group_by(total) |>
+    dplyr::group_by(.data$total) |>
     dplyr::mutate(available = dplyr::n()) |>
     dplyr::ungroup() |>
     dplyr::mutate(deficit = .data$available - .data$samples) |>
