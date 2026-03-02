@@ -2,6 +2,7 @@
 
 export(assign_profiles)
 export(condensed_mastery)
+export(fit_model)
 export(slice_stratified)
 export(weighted_sampling)
 import(rlang)
