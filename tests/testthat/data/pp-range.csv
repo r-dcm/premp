@@ -1,0 +1,4 @@
+cut_point,predicted,pinpoint_min,pinpoint_max
+Approaching the Target,-5,0,12
+At Target,16,0,12
+Advanced,1,0,12
