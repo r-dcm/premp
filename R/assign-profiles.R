@@ -32,6 +32,7 @@
 #' @export
 assign_profiles <- function(
   num_assignment_groups,
+  table_design = FALSE,
   eligible_profiles,
   observed,
   observed_id = "n",
@@ -41,8 +42,6 @@ assign_profiles <- function(
   round,
   num_pls,
   range_of_profiles = NULL,
-  table_design = FALSE,
-  panelists_per_table = NULL,
   output_dir
 ) {
   # error checks
