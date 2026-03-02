@@ -75,6 +75,8 @@ slice_stratified <- function(x, by, size, weight_by = NULL) {
 #' @return A tibble with 1 row and 2 columns: `intercept` and `slope`. The one
 #'   row contains objects of type [posterior::draws_rvars], which represent the
 #'   posterior distribution for each parameter.
+#'
+#' @export
 fit_model <- function(
   dat,
   iter = 4000,
