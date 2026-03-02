@@ -1,6 +1,12 @@
 #' Title
 #'
-#' @param raters A vector containing the raters as character strings.
+#' @param num_assignment_groups The number of "assignment groups" for the
+#' profile assignments. When `table_design` is FALSE, the number of assignment
+#' groups is the number of panelists. When `table_design` is TRUE, the number of
+#' assignment groups is the number of tables of panelists.
+#' @param table_design Logical value indicating whether the panelists are
+#' grouped into tables and profile assigned is performed at the table level.
+#' The default value is FALSE.
 #' @param eligible_profiles A tibble with one row for each attribute mastery
 #' profiles that is eligible for assignment to raters.
 #' @param observed A tibble with one row for each attribute mastery profile that
@@ -19,16 +25,13 @@
 #' @param range_of_profiles The increment of the total skills mastered, based on
 #' the attribute mastery profiles, that should be retained for profile
 #' assignment. This should only be provided for Round 1.
-#' @param pinpoint_possible_profiles The tibble of possible profiles to retain
-#' for profile assignment in Round 2. This should only be provided for Round 2.
 #' @param output_dir The output directory for the profile assignments.
 #'
 #' @returns A [tibble][tibble::tibble-package].
 #'
 #' @export
-#' @examples
 assign_profiles <- function(
-  raters,
+  num_assignment_groups,
   eligible_profiles,
   observed,
   observed_id = "n",
@@ -38,7 +41,8 @@ assign_profiles <- function(
   round,
   num_pls,
   range_of_profiles = NULL,
-  pinpoint_possible_profiles = NULL,
+  table_design = FALSE,
+  panelists_per_table = NULL,
   output_dir
 ) {
   # error checks
@@ -65,22 +69,10 @@ assign_profiles <- function(
     )
   }
 
-  if (round == 1 && !is.null(pinpoint_possible_profiles)) {
-    rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(pinpoint_possible_profiles),
-      must = cli::format_message(paste(
-        "is not needed for Round 1."
-      ))
-    )
-  }
-
-  if (round == 2 && is.null(pinpoint_possible_profiles)) {
-    rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(pinpoint_possible_profiles),
-      must = cli::format_message(paste(
-        "must be provided for Round 2."
-      ))
-    )
+  if (table_design) {
+    raters <- glue::glue("table{1:num_assignment_groups}")
+  } else {
+    raters <- glue::glue("rater{1:num_assignment_groups}")
   }
 
   profiles_per_rater <- profiles_per_rater - profiles_seen_by_all
@@ -104,9 +96,9 @@ assign_profiles <- function(
     dplyr::arrange(.data$total, dplyr::across(dplyr::everything(),
                                               dplyr::desc)) |>
     # filter down to the total number in increments of the range of profiles
-    dplyr::mutate(keep = .data$total %% range_of_profiles == 0) |>
-    dplyr::filter(.data$keep) |>
-    dplyr::select(-"keep")
+    ratlas::only_if(round == 1)(dplyr::mutate)(keep = .data$total %% range_of_profiles == 0) |>
+    ratlas::only_if(round == 1)(dplyr::filter)(.data$keep) |>
+    ratlas::only_if(round == 1)(dplyr::select)(-"keep")
 
   # apply weighted sampling design
   profile_sampling <- weighted_sampling(eligible_profiles, num_profiles,
@@ -332,5 +324,8 @@ assign_profiles <- function(
     glue::glue("{output_dir}/profile_assignments_round_{round}.csv")
   )
 
-  return(final_assignments)
+  ret_list <- list(final_assignments = final_assignments,
+                   observed = observed)
+
+  return(ret_list)
 }
