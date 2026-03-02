@@ -6,25 +6,38 @@ Authors@R:
            comment = c(ORCID = "0000-0001-7339-0300"))
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
-Suggests: 
-    testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 URL: https://github.com/r-dcm/premp
 BugReports: https://github.com/r-dcm/premp/issues
+Depends:
+    R (>= 4.1.0)
 Imports: 
     brms,
+    cli,
     cmdstanr,
+    doParallel,
     dplyr,
     glue,
+    hardhat,
     posterior,
     purrr,
     ratlas,
     rdcmchecks,
     readr,
+    recipes,
     rlang,
+    rsample,
     tibble,
     tidybayes,
-    tidyr
+    tidyr,
+    tune,
+    workflows,
+    yardstick
+Suggests:
+    here,
+    parsnip,
+    ranger,
+    testthat (>= 3.0.0)
