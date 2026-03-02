@@ -5,7 +5,8 @@
 \title{Title}
 \usage{
 assign_profiles(
-  raters,
+  num_assignment_groups,
+  table_design = FALSE,
   eligible_profiles,
   observed,
   observed_id = "n",
@@ -19,7 +20,14 @@ assign_profiles(
 )
 }
 \arguments{
-\item{raters}{A vector containing the raters as character strings.}
+\item{num_assignment_groups}{The number of "assignment groups" for the
+profile assignments. When \code{table_design} is FALSE, the number of assignment
+groups is the number of panelists. When \code{table_design} is TRUE, the number of
+assignment groups is the number of tables of panelists.}
+
+\item{table_design}{Logical value indicating whether the panelists are
+grouped into tables and profile assigned is performed at the table level.
+The default value is FALSE.}
 
 \item{eligible_profiles}{A tibble with one row for each attribute mastery
 profiles that is eligible for assignment to raters.}
