@@ -5,151 +5,187 @@
 #'
 #' @param eligible_profiles A tibble with one row for each attribute mastery
 #' profiles that is eligible for assignment to raters.
-#' @param num_profiles The maximum number of profiles that be assigned during
-#' this round of the standard setting event.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
-#' @param round The round number of the standard setting event.
-#' @param num_pls The number of performance levels that can be assigned to any
-#' profile.
+#' @param observed_count_label A character string for the field name of the
+#' observed sample sizes in the observed parameter (default is 'n').
+#' @param profiles_per_level An integer specifying the number of profiles to
+#' assign to each rater at each level of the total skills mastered.
+#' @param raters A character vector containing the raters' ids.
+#' @param table_configuration A list containing parameters for configuring a
+#' table design. The allowable parameters are `panelists_per_table` indicating
+#' the number of panelists at each table and `proportion_of_shared_profiles`
+#' indicating the proportion of profiles that are common to all of the panelists
+#' at each table.
 #'
 #' @return [tibble][tibble::tibble-package] A tibble containing the profiles to
 #' be assigned to raters during a standard setting event.
-#'
-#' @export
 weighted_sampling <- function(
     eligible_profiles,
-    num_profiles,
     observed,
-    round,
-    num_pls
+    observed_count_label,
+    profiles_per_level,
+    raters,
+    table_configuration = NULL
 ) {
   # identify attributes
   att_vec <- eligible_profiles |>
     dplyr::select(-"total") |>
     names()
 
-  # calculate profile weights based on number of mastered attributes
-  prof_weights <- eligible_profiles |>
-    dplyr::count(.data$total) |>
-    dplyr::mutate(prob = .data$n / sum(.data$n),
-                  min_count = 1,
-                  count_prob = .data$prob * num_profiles,
-                  count = round(.data$prob * num_profiles, 0),
-                  count = dplyr::case_when(.data$count < .data$min_count ~
-                                             .data$min_count,
-                                    TRUE ~ .data$count)) |>
-    dplyr::select(-"n", -"prob", -"count_prob", -"min_count")
-
-  # remove sampled counts from highest frequency totals if necessary
-  while (sum(prof_weights$count) > num_profiles) {
-    tmp <- prof_weights |>
-      dplyr::filter(.data$count == max(.data$count)) |>
-      dplyr::slice_sample(n = 1) |>
-      dplyr::pull(.data$total)
-
-    prof_weights <- prof_weights |>
-      dplyr::mutate(count = dplyr::case_when(.data$total == tmp ~
-                                               .data$count - 1,
-                                             TRUE ~ .data$count))
-  }
-
-  prof_weights <- prof_weights |>
-    dplyr::rename(samples = "count")
-
-  profile_sampling <- observed |>
-    dplyr::select(-"n") |>
-    dplyr::rowwise() |>
-    dplyr::mutate(total = sum(dplyr::c_across(dplyr::any_of(att_vec)))) |>
-    dplyr::ungroup() |>
-    dplyr::left_join(prof_weights, by = "total") |>
-    dplyr::filter(!is.na(.data$samples))
-
-  # oversample to alleviate deficits
-  deficits <- profile_sampling |>
-    dplyr::group_by(.data$total) |>
-    dplyr::mutate(available = dplyr::n()) |>
-    dplyr::ungroup() |>
-    dplyr::mutate(deficit = .data$available - .data$samples) |>
-    dplyr::distinct(.data$total, .data$samples, .data$available,
-                    .data$deficit) |>
-    dplyr::filter(.data$deficit != 0)
-
-  surplus <- deficits |>
-    dplyr::filter(.data$deficit > 0)
-
-  short <- deficits |>
-    dplyr::filter(.data$deficit < 0)
-
-  num_short <- deficits |>
-    dplyr::filter(.data$deficit < 0) |>
-    dplyr::summarize(deficit = abs(sum(.data$deficit))) |>
-    dplyr::pull()
-
-  for (mm in seq_len(num_short)) {
-    total_add <- surplus |>
-      dplyr::slice_sample(n = 1) |>
-      dplyr::select("total") |>
-      dplyr::mutate(add = 1)
-
-    surplus <- surplus |>
-      dplyr::left_join(total_add, by = "total") |>
-      dplyr::mutate(samples = dplyr::case_when(!is.na(.data$add) ~
-                                                 .data$samples + 1,
-                                               TRUE ~ .data$samples),
-                    deficit = .data$available - .data$samples) |>
-      dplyr::select(-"add") |>
-      dplyr::filter(.data$deficit != 0)
-
-    deficits <- deficits |>
-      dplyr::left_join(total_add, by = "total") |>
-      dplyr::mutate(samples = dplyr::case_when(!is.na(.data$add) ~
-                                                 .data$samples + 1,
-                                               TRUE ~ .data$samples),
-                    deficit = .data$available - .data$samples) |>
-      dplyr::select(-"add")
-
-    total_short <- short |>
-      dplyr::slice_sample(n = 1) |>
-      dplyr::mutate(sub = 1) |>
-      dplyr::select("total", "sub")
-
-    short <- short |>
-      dplyr::left_join(total_short, by = "total") |>
-      dplyr::mutate(samples = dplyr::case_when(!is.na(.data$sub) ~
-                                                 .data$samples - 1,
-                                               TRUE ~ .data$samples),
-                    deficit = .data$available - .data$samples) |>
-      dplyr::select(-"sub") |>
-      dplyr::filter(.data$deficit != 0)
-
-    deficits <- deficits |>
-      dplyr::left_join(total_short, by = "total") |>
-      dplyr::mutate(samples = dplyr::case_when(!is.na(.data$sub) ~
-                                                 .data$samples - 1,
-                                               TRUE ~ .data$samples),
-                    deficit = .data$available - .data$samples) |>
-      dplyr::select(-"sub")
-  }
-
-  num_attributes <- profile_sampling |>
-    dplyr::select(-"pct", -"total", -"samples") |>
-    names() |>
-    length()
-
-  # adjust sample counts; sampling number at each total adjusted by round
-  profile_sampling <- profile_sampling |>
-    dplyr::left_join(deficits |>
-                       dplyr::select("total", "samples"),
-                     by = "total") |>
-    dplyr::mutate(samples = dplyr::case_when(is.na(.data$samples.y) ~
-                                               .data$samples.x,
-                                             TRUE ~ .data$samples.y)) |>
-    dplyr::select(-"samples.x", -"samples.y") |>
+  seen_by_all <- eligible_profiles |>
     dplyr::filter(.data$total != 0) |>
-    dplyr::filter(.data$total != (num_attributes * num_pls)) |>
-    ratlas::only_if(round == 1)(dplyr::mutate)(samples = 2) |>
-    ratlas::only_if(round == 2)(dplyr::mutate)(samples = 3)
+    dplyr::left_join(observed, by = att_vec) |>
+    dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
+    dplyr::mutate(size = 1) |>
+    slice_stratified(by = "total", size = "size", weight_by = "pct") |>
+    dplyr::select(-dplyr::all_of(observed_count_label))
+
+  eligible_profiles <- eligible_profiles |>
+    dplyr::anti_join(seen_by_all, att_vec)
+
+  att_levels <- eligible_profiles |>
+    dplyr::filter(.data$total != 0) |>
+    dplyr::distinct(.data$total)
+
+  eligible_profiles <- calculate_hamming(eligible_profiles,
+                                         seen_by_all |>
+                                           dplyr::select(-"total"),
+                                         att_vec)
+  eligible_profiles <- refine_eligible_profiles(eligible_profiles,
+                                                filter_function = "median",
+                                                raters = raters,
+                                                profiles_per_level =
+                                                  profiles_per_level)
+
+  remaining_to_sample <- profiles_per_level - 1
+
+  if (!is.null(table_configuration)) {
+    panelists_per_table <- table_configuration$panelists_per_table
+    proportion_of_shared_profiles <-
+      table_configuration$proportion_of_shared_profiles
+    table_shared_assignments <-
+      floor(round(profiles_per_level * proportion_of_shared_profiles, 0)) - 1
+  } else {
+    panelists_per_table <- NA_integer_
+    proportion_of_shared_profiles <- (profiles_per_level - 1) /
+      profiles_per_level
+    table_shared_assignments <- 0L
+  }
+
+  assignments <- tibble::tibble()
+
+  if (table_shared_assignments > 0) {
+    for (ii in seq_len(table_shared_assignments)) {
+      for (jj in seq_len(length(raters))) {
+        tmp_assignments <- eligible_profiles |>
+          dplyr::left_join(observed, by = att_vec) |>
+          dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
+          dplyr::filter(!!rlang::sym(observed_count_label) > 100) |>
+          dplyr::mutate(size = 1L) |>
+          slice_stratified(by = "total", size = "size", weight_by = "pct") |>
+          dplyr::select(-dplyr::all_of(observed_count_label))
+
+        assignments <- dplyr::bind_rows(assignments,
+                                        tmp_assignments |>
+                                          dplyr::mutate(table = raters[jj]))
+
+        eligible_profiles <- eligible_profiles |>
+          dplyr::anti_join(tmp_assignments, att_vec)
+
+        eligible_profiles <- calculate_hamming(eligible_profiles,
+                                               tmp_assignments |>
+                                                 dplyr::select(-"total"),
+                                               att_vec)
+        eligible_profiles <- refine_eligible_profiles(eligible_profiles,
+                                                      filter_function =
+                                                        "median",
+                                                      raters = raters,
+                                                      profiles_per_level =
+                                                        profiles_per_level)
+      }
+    }
+
+    assignments <- assignments |>
+      tidyr::crossing(panelist = glue::glue("rater{1:panelists_per_table}"))
+  }
+
+  remaining_to_sample <- remaining_to_sample - table_shared_assignments
+
+  if (!is.null(table_configuration)) {
+    rater_dict <- tibble::tibble(table = raters) |>
+      tidyr::crossing(panelist = glue::glue("rater{1:panelists_per_table}")) |>
+      tibble::rowid_to_column("rater_num")
+  } else {
+    rater_dict <- tibble::tibble(table = NA,
+                                 panelist = raters) |>
+      tibble::rowid_to_column("rater_num")
+  }
+
+  rater_iterator <- rater_dict |>
+    dplyr::pull(.data$rater_num)
+
+  if (remaining_to_sample > 0) {
+    for (ii in seq_len(remaining_to_sample)) {
+      for (jj in seq_len(length(rater_iterator))) {
+        tmp_assignments <- eligible_profiles |>
+          dplyr::left_join(observed, by = att_vec) |>
+          dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
+          dplyr::mutate(size = 1) |>
+          slice_stratified(by = "total", size = "size", weight_by = "pct") |>
+          dplyr::select(-dplyr::all_of(observed_count_label))
+
+        tmp_table <- rater_dict |>
+          dplyr::filter(.data$rater_num == jj) |>
+          dplyr::pull(.data$table)
+        tmp_panelist <- rater_dict |>
+          dplyr::filter(.data$rater_num == jj) |>
+          dplyr::pull(.data$panelist)
+
+        assignments <- dplyr::bind_rows(assignments,
+                                        tmp_assignments |>
+                                          dplyr::mutate(table = tmp_table,
+                                                        panelist =
+                                                          tmp_panelist))
+
+        eligible_profiles <- eligible_profiles |>
+          dplyr::anti_join(tmp_assignments, att_vec)
+
+        eligible_profiles <- calculate_hamming(eligible_profiles,
+                                               tmp_assignments |>
+                                                 dplyr::select(-"total"),
+                                               att_vec)
+        eligible_profiles <- refine_eligible_profiles(eligible_profiles,
+                                                      filter_function = "median",
+                                                      raters = raters,
+                                                      profiles_per_level =
+                                                        profiles_per_level)
+      }
+    }
+  }
+
+  if (!is.null(table_configuration)) {
+    profile_sampling <- seen_by_all |>
+      tidyr::crossing(table = raters,
+                      panelist = glue::glue("rater{1:panelists_per_table}")) |>
+      dplyr::bind_rows(assignments) |>
+      dplyr::mutate(assigned = 1L) |>
+      tidyr::pivot_wider(names_from = "panelist", values_from = "assigned",
+                         values_fill = 0L) |>
+      dplyr::arrange(.data$total, dplyr::across(dplyr::any_of(att_vec),
+                                                dplyr::desc),
+                     .data$table)
+  } else {
+    profile_sampling <- seen_by_all |>
+      tidyr::crossing(panelist = raters) |>
+      dplyr::bind_rows(assignments) |>
+      dplyr::mutate(assigned = 1L) |>
+      tidyr::pivot_wider(names_from = "panelist", values_from = "assigned",
+                         values_fill = 0L) |>
+      dplyr::arrange(.data$total, dplyr::across(dplyr::any_of(att_vec),
+                                                dplyr::desc)) |>
+      dplyr::select(-"table")
+  }
 
   return(profile_sampling)
 }
