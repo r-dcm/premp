@@ -59,7 +59,7 @@ assign_profiles <- function(
               c("panelists_per_table", "proportion_of_shared_profiles")))) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(table_configuration),
-        must = cli::format_message(paste(
+        must = cli::format_message(paste0(
           "must be a list containing `panelists_per_table` and ",
           "`proportion_of_shared_profiles`."
         ))
@@ -105,16 +105,8 @@ assign_profiles <- function(
     )
   }
 
-  if (typeof(range_of_profiles) != "integer") {
-    rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(range_of_profiles),
-      must = cli::format_message(paste(
-        "must be a vector of integer values."
-      ))
-    )
-  }
-
-  if (!is.vector(range_of_profiles)) {
+  if (typeof(range_of_profiles) != "integer" |
+      !is.vector(range_of_profiles)) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(range_of_profiles),
       must = cli::format_message(paste(
@@ -172,7 +164,7 @@ assign_profiles <- function(
   # save output
   readr::write_csv(
     profile_sampling,
-    glue::glue("{output_dir}/profile_assignments_round_{round}.csv")
+    glue::glue("{output_dir}/profile_assignments.csv")
   )
 
   ret_list <- list(profile_sampling = profile_sampling,
