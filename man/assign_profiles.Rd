@@ -6,16 +6,12 @@
 \usage{
 assign_profiles(
   num_assignment_groups,
-  table_design = FALSE,
+  table_configuration = NULL,
   eligible_profiles,
   observed,
-  observed_id = "n",
-  profiles_per_rater,
-  raters_per_profile,
-  profiles_seen_by_all = 1L,
-  round,
-  num_pls,
-  range_of_profiles = NULL,
+  observed_count_label = "n",
+  range_of_profiles,
+  profiles_per_level,
   output_dir
 )
 }
@@ -25,36 +21,27 @@ profile assignments. When \code{table_design} is FALSE, the number of assignment
 groups is the number of panelists. When \code{table_design} is TRUE, the number of
 assignment groups is the number of tables of panelists.}
 
-\item{table_design}{Logical value indicating whether the panelists are
-grouped into tables and profile assigned is performed at the table level.
-The default value is FALSE.}
+\item{table_configuration}{A list containing parameters for configuring a
+table design. The allowable parameters are \code{panelists_per_table} indicating
+the number of panelists at each table and \code{proportion_of_shared_profiles}
+indicating the proportion of profiles that are common to all of the panelists
+at each table.}
 
 \item{eligible_profiles}{A tibble with one row for each attribute mastery
-profiles that is eligible for assignment to raters.}
+profiles that is possible to be assigned to raters.}
 
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
 
-\item{observed_id}{A character string for the field name of the observed
-sample sizes in the observed parameter (default is 'n').}
-
-\item{profiles_per_rater}{A numeric value indicating the number of profiles
-to be rated by each rater.}
-
-\item{raters_per_profile}{The minimum number of raters who need to rate each
-#' profile.}
-
-\item{profiles_seen_by_all}{The number of profiles that should be rated by
-all raters (default is 1).}
-
-\item{round}{The round number of the standard setting event.}
-
-\item{num_pls}{The number of performance levels that can be assigned to any
-profile.}
+\item{observed_count_label}{A character string for the field name of the
+observed sample sizes in \code{observed} (default is 'n').}
 
 \item{range_of_profiles}{The increment of the total skills mastered, based on
-the attribute mastery profiles, that should be retained for profile
-assignment. This should only be provided for Round 1.}
+the attribute mastery profiles, that should be retained during profile
+assignment.}
+
+\item{profiles_per_level}{An integer specifying the number of profiles to
+assign to each rater at each level of the total skills mastered.}
 
 \item{output_dir}{The output directory for the profile assignments.}
 }

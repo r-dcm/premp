@@ -4,22 +4,35 @@
 \alias{weighted_sampling}
 \title{Weighted Sampling}
 \usage{
-weighted_sampling(eligible_profiles, num_profiles, observed, round, num_pls)
+weighted_sampling(
+  eligible_profiles,
+  observed,
+  observed_count_label,
+  profiles_per_level,
+  raters,
+  table_configuration = NULL
+)
 }
 \arguments{
 \item{eligible_profiles}{A tibble with one row for each attribute mastery
 profiles that is eligible for assignment to raters.}
 
-\item{num_profiles}{The maximum number of profiles that be assigned during
-this round of the standard setting event.}
-
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
 
-\item{round}{The round number of the standard setting event.}
+\item{observed_count_label}{A character string for the field name of the
+observed sample sizes in the observed parameter (default is 'n').}
 
-\item{num_pls}{The number of performance levels that can be assigned to any
-profile.}
+\item{profiles_per_level}{An integer specifying the number of profiles to
+assign to each rater at each level of the total skills mastered.}
+
+\item{raters}{A character vector containing the raters' ids.}
+
+\item{table_configuration}{A list containing parameters for configuring a
+table design. The allowable parameters are \code{panelists_per_table} indicating
+the number of panelists at each table and \code{proportion_of_shared_profiles}
+indicating the proportion of profiles that are common to all of the panelists
+at each table.}
 }
 \value{
 \link[tibble:tibble-package]{tibble} A tibble containing the profiles to
