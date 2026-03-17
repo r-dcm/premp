@@ -31,11 +31,9 @@ Imports:
     rlang,
     rsample,
     tibble,
-    tidybayes,
     tidyr,
     tune,
-    workflows,
-    yardstick
+    workflows
 Suggests:
     here,
     parsnip,
