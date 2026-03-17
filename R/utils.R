@@ -125,3 +125,153 @@ max_value <- function(
 ) {
   min(x, max_val)
 }
+
+#' Calculate Hamming distance
+#'
+#' This is a utility function to calculate the Hamming distance between the last
+#' assigned profile and the remaining profiles that are eligible for assignment.
+#'
+#' @param profiles A tibble containing the profiles that are eligible to be
+#' assigned to panelists. This tibble should have fields for each of the
+#' attributes and one field (`total`) for the total number of attributes
+#' mastered.
+#' @param assigned_profiles A tibble containing the assigned profiles. This
+#' tibble should only contain fields for each of the attribute.
+#' @param att_vec A character vector containing the attribute names.
+#'
+#' @return A tibble with the eligible profiles and the Hamming distance.
+calculate_hamming <- function(
+    profiles,
+    assigned_profiles,
+    att_vec
+) {
+  att_levels <- profiles |>
+    dplyr::filter(.data$total != 0) |>
+    dplyr::distinct(.data$total) |>
+    dplyr::pull(.data$total)
+
+  hamming_dist <- tibble::tibble()
+
+  for (aa in att_levels) {
+    ham_prof <- assigned_profiles |>
+      dplyr::mutate(total = rowSums(dplyr::across(dplyr::where(is.numeric)))) |>
+      dplyr::filter(.data$total == aa) |>
+      dplyr::select(-"total")
+
+    tmp_hamming_dist <- profiles |>
+      dplyr::filter(.data$total == aa) |>
+      tibble::rowid_to_column("prof_num") |>
+      tidyr::pivot_longer(cols = c(-"prof_num", -"total"),
+                          names_to = "att",
+                          values_to = "score") |>
+      dplyr::left_join(ham_prof |>
+                         tidyr::pivot_longer(cols = dplyr::everything(),
+                                             names_to = "att",
+                                             values_to = "score") |>
+                         dplyr::rename(orig_score = "score"),
+                       by = "att") |>
+      dplyr::group_by(.data$prof_num) |>
+      dplyr::mutate(ham_distance = abs(.data$score - .data$orig_score),
+                    ham_distance = sum(.data$ham_distance)) |>
+      dplyr::ungroup() |>
+      dplyr::select("prof_num", "att", "score", "total", "ham_distance") |>
+      tidyr::pivot_wider(names_from = "att", values_from = "score") |>
+      dplyr::select(dplyr::all_of(att_vec), "total",
+                    "hamming_distance" = "ham_distance")
+
+    hamming_dist <- dplyr::bind_rows(hamming_dist, tmp_hamming_dist)
+  }
+
+  return(hamming_dist)
+}
+
+#' Refine Profiles to Minimize Similarity of the Assigned Profiles
+#'
+#' This is a utility function to filter out profiles that are most similar to
+#' the most recently assigned profile.
+#'
+#' @param profiles A tibble containing the profiles that are eligible to be
+#' assigned to panelists. This tibble should have fields for each of the
+#' attributes and one field (`total`) for the total number of attributes
+#' mastered.
+#' @param filter_function The character string of the function to use for
+#' filtering profiles. The supported options are `median` and `mean`.
+#' @param filter_percentile A numeric value ranging from 0 to 1 to indicate the
+#' percentile used to filter out similar profiles (default is `NULL`). For
+#' example, a value of .60 indicates profiles with a Hamming distance below the
+#' 60th percentile will be filtered out of the set of eligible profiles.
+#' @param raters A character vector containing the rater names.
+#' @param profiles_per_level An integer value indicating the number of profiles
+#' to sample from each level of the number of attributes mastered.
+#'
+#' @return A tibble with the eligible profiles and the Hamming distance.
+refine_eligible_profiles <- function(
+    profiles,
+    filter_function = "median",
+    filter_percentile = NULL,
+    raters,
+    profiles_per_level
+) {
+  if (!is.null(filter_function) && !is.null(filter_percentile)) {
+    rdcmchecks::abort_bad_argument(
+      arg = rlang::caller_arg(filter_percentile),
+      must = cli::format_message(paste(
+        "must not be provided in addition to `filter_function`."
+      ))
+    )
+  }
+
+  if (!is.null(filter_percentile) &&
+      (filter_percentile < 0 || filter_percentile > 1)) {
+    rdcmchecks::abort_bad_argument(
+      arg = rlang::caller_arg(filter_percentile),
+      must = cli::format_message(paste(
+        "must be between 0 and 1."
+      ))
+    )
+  }
+
+  # don't refine eligible profiles if the refinement pushes the number eligible
+  # below the number that needs to be sampled
+  sx_threshold <- length(raters) * profiles_per_level * 3
+
+  if (!is.null(filter_percentile)) {
+    profiles <- profiles |>
+      dplyr::group_by(.data$total) |>
+      dplyr::mutate(num = dplyr::n(),
+                    hamming_percentile =
+                      dplyr::case_when(
+                        .data$num < sx_threshold ~ 1,
+                        TRUE ~ dplyr::percent_rank(.data$hamming_distance)
+                      )) |>
+      dplyr::select(-"num") |>
+      dplyr::filter(.data$hamming_percentile >= filter_percentile) |>
+      dplyr::ungroup() |>
+      dplyr::select(-"hamming_distance", -"hamming_percentile")
+  } else if (filter_function == "mean") {
+    profiles <- profiles |>
+      dplyr::group_by(.data$total) |>
+      dplyr::mutate(num = dplyr::n(),
+                    hamming_distance =
+                      dplyr::case_when(.data$num < sx_threshold ~ 0,
+                                       TRUE ~ .data$hamming_distance)) |>
+      dplyr::select(-"num") |>
+      dplyr::filter(.data$hamming_distance >= mean(.data$hamming_distance)) |>
+      dplyr::ungroup() |>
+      dplyr::select(-"hamming_distance")
+  } else if (filter_function == "median") {
+    profiles <- profiles |>
+      dplyr::group_by(.data$total) |>
+      dplyr::mutate(num = dplyr::n(),
+                    hamming_distance =
+                      dplyr::case_when(.data$num < sx_threshold ~ 0,
+                                       TRUE ~ .data$hamming_distance)) |>
+      dplyr::select(-"num") |>
+      dplyr::filter(.data$hamming_distance >=
+                      stats::median(.data$hamming_distance)) |>
+      dplyr::ungroup() |>
+      dplyr::select(-"hamming_distance")
+  }
+
+  return(profiles)
+}
