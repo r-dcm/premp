@@ -136,7 +136,7 @@ test_that("assigning profiles (rater design) in Round 1 works", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 12)
+  testthat::expect_equal(ncol(final_assignments), 13)
   # correct number of rows
   testthat::expect_equal(nrow(final_assignments), 55)
   # total attributes are correct

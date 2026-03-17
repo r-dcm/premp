@@ -1,4 +1,6 @@
 test_that("condensed mastery method works", {
+  set.seed(123)
+
   eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
@@ -12,34 +14,37 @@ test_that("condensed mastery method works", {
                                        TRUE ~ n)) |>
     dplyr::filter(!is.na(n))
 
-  raters <- glue::glue("rater{1:5}")
-
-  final_assignments <- assign_profiles(raters = raters,
+  final_assignments <- assign_profiles(num_assignment_groups = 5L,
+                                       table_configuration =
+                                         list(panelists_per_table = 4L,
+                                              proportion_of_shared_profiles =
+                                                .67),
                                        eligible_profiles = eligible_profiles,
                                        observed = observed,
-                                       profiles_per_rater = 10,
-                                       raters_per_profile = 2,
-                                       round = 1,
-                                       num_pls = 4,
-                                       range_of_profiles = 5,
-                                       output_dir = testthat::test_path())
+                                       range_of_profiles =
+                                         c(5L, 10L, 15L),
+                                       profiles_per_level = 3L,
+                                       output_dir = testthat::test_path("data"))
+
+
 
   observed <- final_assignments$observed
-  final_assignments <- final_assignments$final_assignments
+  final_assignments <- final_assignments$profile_sampling
 
   profiles <- final_assignments |>
-    dplyr::select(-"total", -dplyr::any_of(raters))
+    dplyr::select(-"total", -"table", -dplyr::starts_with("rater"))
 
   ratings <- final_assignments |>
-    tibble::rowid_to_column("profile_num") |> dplyr::select(-"total") |>
+    tibble::rowid_to_column("profile_num") |>
+    dplyr::select(-"total") |>
     tidyr::pivot_longer(cols = dplyr::starts_with("rater"),
                         names_to = "rater_id",
                         values_to = "rating") |>
     dplyr::filter(rating == 1) |>
     dplyr::rowwise() |>
-    dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("EE")))) |>
+    dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("att")))) |>
     dplyr::ungroup() |>
-    dplyr::mutate(bump = runif(30, -.75, .75),
+    dplyr::mutate(bump = runif(144, -.75, .75),
                   bump = dplyr::case_when(.data$bump <= -.5 ~ -1,
                                           .data$bump >= .5 ~ 1,
                                           TRUE ~ 0),
@@ -60,8 +65,10 @@ test_that("condensed mastery method works", {
                     cores = 1, chains = 1,
                     output_dir = testthat::test_path("data"))
 
-  cm_output <-
-    readr::read_csv(glue::glue("{testthat::test_path('data')}/pp-range.csv"))
+  suppressMessages(
+    cm_output <-
+      readr::read_csv(glue::glue("{testthat::test_path('data')}/pp-range.csv"))
+  )
 
   # check output type
   testthat::expect_contains(class(cm_output), "tbl_df")
@@ -83,7 +90,6 @@ test_that("condensed mastery method works", {
   # check for allowable values for pinpoint min and max
   testthat::expect_gte(min(cm_output$pinpoint_min), 0)
   testthat::expect_lte(max(cm_output$pinpoint_max), 16)
-
 })
 
 test_that("error works", {
@@ -100,4 +106,3 @@ test_that("error works", {
     "must have a value of at least 2."
   )
 })
-

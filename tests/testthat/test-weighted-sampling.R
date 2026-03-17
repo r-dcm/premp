@@ -1,4 +1,6 @@
 test_that("weighted profile sampling works", {
+  set.seed(123)
+
   observed_count_label <- "n"
   range_of_profiles <- c(5L, 10L, 15L, 20L, 25L)
   profiles_per_level <- 2L
@@ -24,12 +26,13 @@ test_that("weighted profile sampling works", {
 
   # remove unobserved profiles
   observed <- observed |>
-    dplyr::mutate(!!rlang::sym(observed_id) :=
-                    dplyr::case_when(is.na(!!rlang::sym(observed_id)) ~ 0,
+    dplyr::mutate(!!rlang::sym(observed_count_label) :=
+                    dplyr::case_when(is.na(!!rlang::sym(observed_count_label)) ~
+                                       0,
                                      TRUE ~ n),
-                  pct = !!rlang::sym(observed_id) /
-                    sum(!!rlang::sym(observed_id))) |>
-    dplyr::filter(!!rlang::sym(observed_id) != 0)
+                  pct = !!rlang::sym(observed_count_label) /
+                    sum(!!rlang::sym(observed_count_label))) |>
+    dplyr::filter(!!rlang::sym(observed_count_label) != 0)
 
   eligible_profiles <- eligible_profiles |>
     # calculate total number of mastered attributes/skills
@@ -53,7 +56,7 @@ test_that("weighted profile sampling works", {
                          c(glue::glue("att{1:7}"), "total", "table",
                          glue::glue("rater{1:4}")))
   # number sampled is correct
-  testthat::expect_equal(nrow(profile_sampling), 124)
+  testthat::expect_equal(nrow(profile_sampling), 125)
   # profiles assigned at range of profiles increment
   testthat::expect_equal(profile_sampling |>
                            dplyr::mutate(increment = .data$total %% 5) |>
@@ -63,7 +66,7 @@ test_that("weighted profile sampling works", {
   testthat::expect_equal(profile_sampling |>
                            dplyr::count(.data$total) |>
                            dplyr::pull(.data$n),
-                         c(24, 25, 25, 25, 25))
+                         rep(25, 5))
 })
 
 # test_that("weighted profile sampling with shortage works", {
