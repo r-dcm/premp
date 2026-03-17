@@ -75,7 +75,9 @@ assign_profiles <- function(
       )
     }
 
-    if (!is.integer(table_configuration$panelists_per_table)) {
+    panelists_per_table <- table_configuration$panelists_per_table
+
+    if (!is.integer(panelists_per_table)) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(panelists_per_table),
         must = cli::format_message(paste(
@@ -84,11 +86,15 @@ assign_profiles <- function(
       )
     }
 
-    if (!is.double(table_configuration$proportion_of_shared_profiles) |
-        table_configuration$proportion_of_shared_profiles < 0 |
-        table_configuration$proportion_of_shared_profiles > 1) {
+    proportion_of_shared_profiles <-
+      table_configuration$proportion_of_shared_profiles
+
+    if (!is.double(proportion_of_shared_profiles) |
+        proportion_of_shared_profiles < 0 |
+        proportion_of_shared_profiles > 1) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(proportion_of_shared_profiles),
+        arg =
+          rlang::caller_arg(proportion_of_shared_profiles),
         must = cli::format_message(paste(
           "must be a double value between 0 and 1."
         ))
