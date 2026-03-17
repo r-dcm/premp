@@ -40,9 +40,7 @@ condensed_mastery <- function(
 
   # code adapted from https://github.com/atlas-aai/standard-setting/blob/main/01-pinpoint-ranges.R
   pinpoint_interval <- 0.89
-  min_pinpoint_range <- 3
-
-  att_levels <- att_levels - 1
+  min_pinpoint_range <- 2
 
   # set options
   cmdstan_v <- cmdstanr::cmdstan_version(error_on_NA = FALSE)
@@ -136,14 +134,28 @@ condensed_mastery <- function(
 
   # Calculate pinpointing ranges -------------------------------------------------
   ## Predicted cut points are defined as the value of attributes mastered at the
-  ## inflection point of the logistic curve. The x value of the inflection point
-  ## is given by -B_0 / B_1.
+  ## inflection point of the logistic curve. The minimum predicted cut point is
+  ## the lesser of the x value with a model-predicted .20 probability and 2
+  ## below the inflection point. The maximum predicted cut point is the greater
+  ## of the x value with a model-predicted .80 probability and 2 above the
+  ## inflection point.
   pinpoint_ranges <- model_results |>
-    dplyr::mutate(predicted = -.data$intercept / .data$slope,
-                  range = tidybayes::mean_hdci(.data$predicted,
-                                               .width =
-                                                 pinpoint_interval)) |>
-    tidyr::unnest("range") |>
+    dplyr::mutate(intercept = purrr::map(.data$intercept,
+                                         posterior::as_draws_df),
+                  slope = purrr::map(.data$slope, posterior::as_draws_df)) |>
+    tidyr::unnest("intercept") |>
+    dplyr::group_by(.data$model, .data$slope) |>
+    dplyr::summarize(intercept = mean(.data$x), .groups = "drop") |>
+    tidyr::unnest("slope") |>
+    dplyr::group_by(.data$model, .data$intercept) |>
+    dplyr::summarize(slope = mean(.data$x), .groups = "drop") |>
+    dplyr::mutate(.value = ((-1 * log((1 / .5) - 1)) - .data$intercept) /
+                    .data$slope,
+                  .lower = ((-1 * log((1 / .2) - 1)) - .data$intercept) /
+                    .data$slope,
+                  .upper = ((-1 * log((1 / .8) - 1)) - .data$intercept) /
+                    .data$slope) |>
+    dplyr::select(-"intercept", -"slope") |>
     dplyr::mutate(.value = round(.data$.value, digits = 0),
                   .lower = floor(.data$.lower),
                   .upper = ceiling(.data$.upper)) |>
