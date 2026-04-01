@@ -21,12 +21,12 @@
 #' @return [tibble][tibble::tibble-package] A tibble containing the profiles to
 #' be assigned to raters during a standard setting event.
 weighted_sampling <- function(
-    eligible_profiles,
-    observed,
-    observed_count_label,
-    profiles_per_level,
-    raters,
-    table_configuration = NULL
+  eligible_profiles,
+  observed,
+  observed_count_label,
+  profiles_per_level,
+  raters,
+  table_configuration = NULL
 ) {
   # identify attributes
   att_vec <- eligible_profiles |>
@@ -43,10 +43,6 @@ weighted_sampling <- function(
 
   eligible_profiles <- eligible_profiles |>
     dplyr::anti_join(seen_by_all, att_vec)
-
-  att_levels <- eligible_profiles |>
-    dplyr::filter(.data$total != 0) |>
-    dplyr::distinct(.data$total)
 
   eligible_profiles <- calculate_hamming(eligible_profiles,
                                          seen_by_all |>
@@ -77,7 +73,7 @@ weighted_sampling <- function(
 
   if (table_shared_assignments > 0) {
     for (ii in seq_len(table_shared_assignments)) {
-      for (jj in seq_len(length(raters))) {
+      for (jj in seq_along(raters)) {
         tmp_assignments <- eligible_profiles |>
           dplyr::left_join(observed, by = att_vec) |>
           dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
@@ -127,7 +123,7 @@ weighted_sampling <- function(
 
   if (remaining_to_sample > 0) {
     for (ii in seq_len(remaining_to_sample)) {
-      for (jj in seq_len(length(rater_iterator))) {
+      for (jj in seq_along(rater_iterator)) {
         tmp_assignments <- eligible_profiles |>
           dplyr::left_join(observed, by = att_vec) |>
           dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
@@ -156,7 +152,8 @@ weighted_sampling <- function(
                                                  dplyr::select(-"total"),
                                                att_vec)
         eligible_profiles <- refine_eligible_profiles(eligible_profiles,
-                                                      filter_function = "median",
+                                                      filter_function =
+                                                        "median",
                                                       raters = raters,
                                                       profiles_per_level =
                                                         profiles_per_level)
@@ -187,5 +184,5 @@ weighted_sampling <- function(
       dplyr::select(-"table")
   }
 
-  return(profile_sampling)
+  return(profile_sampling) # nolint
 }

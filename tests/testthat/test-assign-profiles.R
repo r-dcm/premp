@@ -17,17 +17,16 @@ test_that("assigning profiles (table design) in Round 1 works", {
                                        TRUE ~ n)) |>
     dplyr::filter(!is.na(n))
 
-  final_assignments <- assign_profiles(num_assignment_groups = 5L,
-                                       table_configuration =
-                                         list(panelists_per_table = 4L,
-                                              proportion_of_shared_profiles =
-                                                .67),
-                                       eligible_profiles = eligible_profiles,
-                                       observed = observed,
-                                       range_of_profiles =
-                                         c(5L, 10L, 15L, 20L, 25L),
-                                       profiles_per_level = 3L,
-                                       output_dir = testthat::test_path("data"))
+  final_assignments <- assign_profiles(
+    num_assignment_groups = 5L,
+    table_configuration = list(panelists_per_table = 4L,
+                               proportion_of_shared_profiles = .67),
+    eligible_profiles = eligible_profiles,
+    observed = observed,
+    range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_level = 3L,
+    output_dir = testthat::test_path("data")
+  )
 
   observed <- final_assignments$observed
   final_assignments <- final_assignments$profile_sampling
@@ -58,7 +57,7 @@ test_that("assigning profiles (table design) in Round 1 works", {
   # column names are correct
   testthat::expect_equal(colnames(final_assignments),
                          c(glue::glue("att{1:7}"), "total", "table",
-                                      glue::glue("rater{1:4}")))
+                           glue::glue("rater{1:4}")))
   # every rater assigned correct number of profiles
   testthat::expect_equal(final_assignments |>
                            dplyr::select(dplyr::starts_with("rater")) |>
@@ -219,54 +218,52 @@ test_that("assign profiles -- error messages work", {
     dplyr::filter(!is.na(n))
 
   # test incorrect arguments
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   .67),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(assign_profiles(
+    num_assignment_groups = 5,
+    table_configuration = list(panelists_per_table = 4L,
+                               proportion_of_shared_profiles = .67),
+    eligible_profiles = eligible_profiles,
+    observed = observed,
+    range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_level = 3L,
+    output_dir = testthat::test_path("data")
+  ))
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be an integer."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            c(panelists_per_table = 4L,
-                                              proportion_of_shared_profiles =
-                                                .67),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = c(panelists_per_table = 4L,
+                              proportion_of_shared_profiles = .67),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be a list."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelits_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   .67),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = list(panelits_per_table = 4L,
+                                 proportion_of_shared_profiles = .67),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
@@ -276,163 +273,166 @@ test_that("assign profiles -- error messages work", {
     )
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   .67,
-                                                 panelists_per_table = 3L),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration =
+        list(panelists_per_table = 4L,
+             proportion_of_shared_profiles = .67,
+             panelists_per_table = 3L),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be a list of length 2."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4,
-                                                 proportion_of_shared_profiles =
-                                                   .67),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = list(panelists_per_table = 4,
+                                 proportion_of_shared_profiles = .67),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be an integer."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   1.1),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = list(panelists_per_table = 4L,
+                                 proportion_of_shared_profiles = 1.1),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be a double value between 0 and 1."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   -0.1),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = list(panelists_per_table = 4L,
+                                 proportion_of_shared_profiles = -0.1),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be a double value between 0 and 1."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   "a"),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = list(panelists_per_table = 4L,
+                                 proportion_of_shared_profiles = "a"),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be a double value between 0 and 1."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   .67),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          observed_count_label = 5,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration =
+        list(panelists_per_table = 4L,
+             proportion_of_shared_profiles = .67),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      observed_count_label = 5,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be a character string."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   .67),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = list(panelists_per_table = 4L,
+                                 proportion_of_shared_profiles = .67),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be a vector of integer values."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   .67),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles = list(5L),
-                                          profiles_per_level = 3L,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = list(panelists_per_table = 4L,
+                                 proportion_of_shared_profiles = .67),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = list(5L),
+      profiles_per_level = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
     "must be a vector of integer values."
   )
 
-  err <- rlang::catch_cnd(assign_profiles(num_assignment_groups = 5L,
-                                          table_configuration =
-                                            list(panelists_per_table = 4L,
-                                                 proportion_of_shared_profiles =
-                                                   .67),
-                                          eligible_profiles = eligible_profiles,
-                                          observed = observed,
-                                          range_of_profiles =
-                                            c(5L, 10L, 15L, 20L, 25L),
-                                          profiles_per_level = 3,
-                                          output_dir =
-                                            testthat::test_path("data")))
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      num_assignment_groups = 5L,
+      table_configuration = list(panelists_per_table = 4L,
+                                 proportion_of_shared_profiles = .67),
+      eligible_profiles = eligible_profiles,
+      observed = observed,
+      range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_level = 3,
+      output_dir = testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
@@ -456,17 +456,17 @@ test_that("assign profiles -- few attributes work (table design)", {
                                        TRUE ~ n)) |>
     dplyr::filter(!is.na(n))
 
-  final_assignments <- assign_profiles(num_assignment_groups = 5L,
-                                       table_configuration =
-                                         list(panelists_per_table = 4L,
-                                              proportion_of_shared_profiles =
-                                                .67),
-                                       eligible_profiles = eligible_profiles,
-                                       observed = observed,
-                                       range_of_profiles =
-                                         c(5L, 10L, 15L, 20L, 25L),
-                                       profiles_per_level = 3L,
-                                       output_dir = testthat::test_path("data"))
+  final_assignments <- assign_profiles(
+    num_assignment_groups = 5L,
+    table_configuration =
+      list(panelists_per_table = 4L,
+           proportion_of_shared_profiles = .67),
+    eligible_profiles = eligible_profiles,
+    observed = observed,
+    range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_level = 3L,
+    output_dir = testthat::test_path("data")
+  )
 
   observed <- final_assignments$observed
   final_assignments <- final_assignments$profile_sampling

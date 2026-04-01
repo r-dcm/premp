@@ -54,7 +54,7 @@ test_that("weighted profile sampling works", {
   testthat::expect_contains(class(profile_sampling), "tbl_df")
   testthat::expect_equal(names(profile_sampling),
                          c(glue::glue("att{1:7}"), "total", "table",
-                         glue::glue("rater{1:4}")))
+                           glue::glue("rater{1:4}")))
   # number sampled is correct
   testthat::expect_equal(nrow(profile_sampling), 125)
   # profiles assigned at range of profiles increment

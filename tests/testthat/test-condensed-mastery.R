@@ -14,19 +14,16 @@ test_that("condensed mastery method works", {
                                        TRUE ~ n)) |>
     dplyr::filter(!is.na(n))
 
-  final_assignments <- assign_profiles(num_assignment_groups = 5L,
-                                       table_configuration =
-                                         list(panelists_per_table = 4L,
-                                              proportion_of_shared_profiles =
-                                                .67),
-                                       eligible_profiles = eligible_profiles,
-                                       observed = observed,
-                                       range_of_profiles =
-                                         c(5L, 10L, 15L),
-                                       profiles_per_level = 3L,
-                                       output_dir = testthat::test_path("data"))
-
-
+  final_assignments <- assign_profiles(
+    num_assignment_groups = 5L,
+    table_configuration = list(panelists_per_table = 4L,
+                               proportion_of_shared_profiles = .67),
+    eligible_profiles = eligible_profiles,
+    observed = observed,
+    range_of_profiles = c(5L, 10L, 15L),
+    profiles_per_level = 3L,
+    output_dir = testthat::test_path("data")
+  )
 
   observed <- final_assignments$observed
   final_assignments <- final_assignments$profile_sampling
@@ -93,13 +90,16 @@ test_that("condensed mastery method works", {
 })
 
 test_that("error works", {
-  err <- rlang::catch_cnd(condensed_mastery(ratings = NULL,
-                                            profiles = NULL,
-                                            pl_labels = 1,
-                                            att_levels = 4,
-                                            output_dir =
-                                              testthat::test_path("data")
-  ) )
+  err <- rlang::catch_cnd(
+    condensed_mastery(
+      ratings = NULL,
+      profiles = NULL,
+      pl_labels = 1,
+      att_levels = 4,
+      output_dir =
+        testthat::test_path("data")
+    )
+  )
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,

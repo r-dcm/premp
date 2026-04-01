@@ -88,8 +88,6 @@ fit_ml <- function(
         mod_tune <-
           tune::tune_grid(mod_wf,
                           resamples = mod_folds,
-                          # metrics =
-                          #   yardstick::metric_set(!!rlang::sym(tuning_metric)),
                           grid = 10)
       )
     )
@@ -112,22 +110,6 @@ fit_ml <- function(
     workflows::fit(data = train_data)
 
   mod_ratings <- stats::predict(mod_fit,
-                                  ratings_data |>
-                                    dplyr::select(-"rating") |>
-                                    dplyr::mutate(
-                                      dplyr::across(dplyr::any_of(att_vec),
-                                                    ~ factor(.,
-                                                             levels =
-                                                               0:att_levels))
-                                    ),
-                                  type = "class") |>
-
-    dplyr::rename(pred_pl = ".pred_class") |>
-    dplyr::bind_cols(ratings_data |>
-                       dplyr::select(-"rating")) |>
-    dplyr::select(dplyr::any_of(att_vec), "pred_pl")
-
-  mod_probs <- stats::predict(mod_fit,
                                 ratings_data |>
                                   dplyr::select(-"rating") |>
                                   dplyr::mutate(
@@ -136,7 +118,23 @@ fit_ml <- function(
                                                            levels =
                                                              0:att_levels))
                                   ),
-                                type = "prob")
+                                type = "class") |>
+
+    dplyr::rename(pred_pl = ".pred_class") |>
+    dplyr::bind_cols(ratings_data |>
+                       dplyr::select(-"rating")) |>
+    dplyr::select(dplyr::any_of(att_vec), "pred_pl")
+
+  mod_probs <- stats::predict(mod_fit,
+                              ratings_data |>
+                                dplyr::select(-"rating") |>
+                                dplyr::mutate(
+                                  dplyr::across(dplyr::any_of(att_vec),
+                                                ~ factor(.,
+                                                         levels =
+                                                           0:att_levels))
+                                ),
+                              type = "prob")
 
   prob_labels <- glue::glue("prob_pl_{1:num_pls}")
 
@@ -215,10 +213,8 @@ fit_ml <- function(
   saveRDS(output_stats,
           glue::glue("{output_dir}/assignment_stats.rds"))
 
-  ret_list <- list(fitted_model = mod_fit,
-                   rated_profile_predictions = mod_ratings,
-                   all_possible_profile_predictions = all_poss_ratings,
-                   assignment_stats = output_stats)
-
-  return(ret_list)
+  list(fitted_model = mod_fit,
+       rated_profile_predictions = mod_ratings,
+       all_possible_profile_predictions = all_poss_ratings,
+       assignment_stats = output_stats)
 }

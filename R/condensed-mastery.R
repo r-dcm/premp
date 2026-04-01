@@ -4,14 +4,15 @@
 #' the condensed mastery standard setting method.
 #'
 #' @param ratings A tibble with one row for each rater's rating of an assigned
-#' profile, including columns for the profile number, the mastery status for
-#' each attribute, and the raters' ratings.
+#'   profile, including columns for the profile number, the mastery status for
+#'   each attribute, and the raters' ratings.
 #' @param profiles A tibble with one row for each attribute mastery
-#' profiles that is eligible for assignment to raters. The rows correspond to
-#' the profile number in the `ratings` argument.
-#' @param pl_labels A character vector containing the ordered performance levels.
-#' @param att_levels An integer describing the number of categorical mastery classes
-#' for each attribute.
+#'   profiles that is eligible for assignment to raters. The rows correspond to
+#'.  the profile number in the `ratings` argument.
+#' @param pl_labels A character vector containing the ordered performance
+#'   levels.
+#' @param att_levels An integer describing the number of categorical mastery
+#'   classes for each attribute.
 #' @param cores The number of cores (default = 4).
 #' @param chains The number of chains (default = 4).
 #' @param output_dir The output directory for the pinpointing ranges.
@@ -38,8 +39,6 @@ condensed_mastery <- function(
     )
   }
 
-  # code adapted from https://github.com/atlas-aai/standard-setting/blob/main/01-pinpoint-ranges.R
-  pinpoint_interval <- 0.89
   min_pinpoint_range <- 2
 
   # set options
@@ -76,7 +75,7 @@ condensed_mastery <- function(
     dplyr::ungroup() |>
     dplyr::select("profile_id", "atts_mastered", dplyr::any_of(pl_labels))
 
-  # Fit models -------------------------------------------------------------------
+  # Fit models -----------------------------------------------------------------
   ## Step 1: Calculate how many panelists put each profile in each PLD or higher
   rf_dat <- rf_dat |>
     tidyr::pivot_longer(cols = -c("profile_id", "atts_mastered"),
@@ -132,7 +131,7 @@ condensed_mastery <- function(
                                       cores = cores, chains = chains)) |>
     tidyr::unnest("params")
 
-  # Calculate pinpointing ranges -------------------------------------------------
+  # Calculate pinpointing ranges -----------------------------------------------
   ## Predicted cut points are defined as the value of attributes mastered at the
   ## inflection point of the logistic curve. The minimum predicted cut point is
   ## the lesser of the x value with a model-predicted .20 probability and 2

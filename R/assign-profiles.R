@@ -55,8 +55,12 @@ assign_profiles <- function(
       )
     }
 
-    if (any(!(names(table_configuration) %in%
-              c("panelists_per_table", "proportion_of_shared_profiles")))) {
+    if (
+      any(
+        !(names(table_configuration) %in%
+            c("panelists_per_table", "proportion_of_shared_profiles"))
+      )
+    ) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(table_configuration),
         must = cli::format_message(paste0(
@@ -89,9 +93,9 @@ assign_profiles <- function(
     proportion_of_shared_profiles <-
       table_configuration$proportion_of_shared_profiles
 
-    if (!is.double(proportion_of_shared_profiles) |
-        proportion_of_shared_profiles < 0 |
-        proportion_of_shared_profiles > 1) {
+    if (!is.double(proportion_of_shared_profiles) ||
+          proportion_of_shared_profiles < 0 ||
+          proportion_of_shared_profiles > 1) {
       rdcmchecks::abort_bad_argument(
         arg =
           rlang::caller_arg(proportion_of_shared_profiles),
@@ -111,8 +115,7 @@ assign_profiles <- function(
     )
   }
 
-  if (typeof(range_of_profiles) != "integer" |
-      !is.vector(range_of_profiles)) {
+  if (typeof(range_of_profiles) != "integer" || !is.vector(range_of_profiles)) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(range_of_profiles),
       must = cli::format_message(paste(
@@ -131,9 +134,6 @@ assign_profiles <- function(
   }
 
   table_design <- ifelse(is.null(table_configuration), FALSE, TRUE)
-
-  att_vec <- eligible_profiles |>
-    names()
 
   if (table_design) {
     raters <- glue::glue("table{1:num_assignment_groups}")
@@ -173,8 +173,6 @@ assign_profiles <- function(
     glue::glue("{output_dir}/profile_assignments.csv")
   )
 
-  ret_list <- list(profile_sampling = profile_sampling,
-                   observed = observed)
-
-  return(ret_list)
+  list(profile_sampling = profile_sampling,
+       observed = observed)
 }

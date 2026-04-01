@@ -30,15 +30,19 @@ slice_stratified <- function(x, by, size, weight_by = NULL) {
       dplyr::distinct(!!rlang::sym(size)) |>
       dplyr::pull(!!rlang::sym(size))
     tmp <- tmp |>
-      ratlas::only_if(!is.null(weight_by))(dplyr::slice_sample)(n = to_sample, weight_by = !!rlang::sym(weight_by)) |>
+      ratlas::only_if(!is.null(weight_by))(dplyr::slice_sample)(
+        n = to_sample, weight_by = !!rlang::sym(weight_by)
+      ) |>
       ratlas::only_if(is.null(weight_by))(dplyr::slice_sample)(n = to_sample) |>
-      ratlas::only_if(!is.null(weight_by))(dplyr::select)(-!!rlang::sym(size), -!!rlang::sym(weight_by)) |>
+      ratlas::only_if(!is.null(weight_by))(dplyr::select)(
+        -!!rlang::sym(size), -!!rlang::sym(weight_by)
+      ) |>
       ratlas::only_if(is.null(weight_by))(dplyr::select)(-!!rlang::sym(size))
 
     profiles_to_assign <- dplyr::bind_rows(profiles_to_assign, tmp)
   }
 
-  return(profiles_to_assign)
+  return(profiles_to_assign) # nolint
 }
 
 #' Fit Standard Setting Logistic Regression Model
@@ -87,22 +91,20 @@ fit_model <- function(
   adapt_delta = .95,
   max_treedepth = 15
 ) {
-  out <- utils::capture.output(
-    suppressMessages(
-      mod <- brms::brm(y ~ 1 + atts_mastered, data = dat, family = "bernoulli",
-                       prior = c(brms::prior("normal(0, 1.5)",
-                                             class = "Intercept"),
-                                 brms::prior("normal(0, 0.5)",
-                                             class = "b")),
-                       iter = iter, warmup = warmup, chains = chains,
-                       cores = cores, refresh = refresh,
-                       control = list(adapt_delta = adapt_delta,
-                                      max_treedepth = max_treedepth))
-    )
+  suppressMessages(
+    mod <- brms::brm(y ~ 1 + atts_mastered, data = dat, family = "bernoulli",
+                     prior = c(brms::prior("normal(0, 1.5)",
+                                           class = "Intercept"),
+                               brms::prior("normal(0, 0.5)",
+                                           class = "b")),
+                     iter = iter, warmup = warmup, chains = chains,
+                     cores = cores, refresh = refresh,
+                     control = list(adapt_delta = adapt_delta,
+                                    max_treedepth = max_treedepth))
   )
 
   posterior::as_draws_rvars(mod,
-                            variable = c("b_Intercept", "b_atts_mastered"))|>
+                            variable = c("b_Intercept", "b_atts_mastered")) |>
     tibble::as_tibble() |>
     dplyr::rename(intercept = "b_Intercept", slope = "b_atts_mastered")
 }
@@ -141,9 +143,9 @@ max_value <- function(
 #'
 #' @return A tibble with the eligible profiles and the Hamming distance.
 calculate_hamming <- function(
-    profiles,
-    assigned_profiles,
-    att_vec
+  profiles,
+  assigned_profiles,
+  att_vec
 ) {
   att_levels <- profiles |>
     dplyr::filter(.data$total != 0) |>
@@ -182,7 +184,7 @@ calculate_hamming <- function(
     hamming_dist <- dplyr::bind_rows(hamming_dist, tmp_hamming_dist)
   }
 
-  return(hamming_dist)
+  return(hamming_dist) # nolint
 }
 
 #' Refine Profiles to Minimize Similarity of the Assigned Profiles
@@ -206,11 +208,11 @@ calculate_hamming <- function(
 #'
 #' @return A tibble with the eligible profiles and the Hamming distance.
 refine_eligible_profiles <- function(
-    profiles,
-    filter_function = "median",
-    filter_percentile = NULL,
-    raters,
-    profiles_per_level
+  profiles,
+  filter_function = "median",
+  filter_percentile = NULL,
+  raters,
+  profiles_per_level
 ) {
   if (!is.null(filter_function) && !is.null(filter_percentile)) {
     rdcmchecks::abort_bad_argument(
@@ -222,7 +224,7 @@ refine_eligible_profiles <- function(
   }
 
   if (!is.null(filter_percentile) &&
-      (filter_percentile < 0 || filter_percentile > 1)) {
+        (filter_percentile < 0 || filter_percentile > 1)) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(filter_percentile),
       must = cli::format_message(paste(
@@ -233,7 +235,7 @@ refine_eligible_profiles <- function(
 
   # don't refine eligible profiles if the refinement pushes the number eligible
   # below the number that needs to be sampled
-  sx_threshold <- length(raters) * profiles_per_level * 3
+  sx_threshold <- length(raters) * profiles_per_level * 3 # nolint
 
   if (!is.null(filter_percentile)) {
     profiles <- profiles |>
@@ -273,5 +275,5 @@ refine_eligible_profiles <- function(
       dplyr::select(-"hamming_distance")
   }
 
-  return(profiles)
+  return(profiles) # nolint
 }
