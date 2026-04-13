@@ -9,7 +9,7 @@
 #' the number of panelists at each table and `proportion_of_shared_profiles`
 #' indicating the proportion of profiles that are common to all of the panelists
 #' at each table.
-#' @param eligible_profiles A tibble with one row for each attribute mastery
+#' @param possible_profiles A tibble with one row for each attribute mastery
 #' profiles that is possible to be assigned to raters.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
@@ -28,7 +28,7 @@
 assign_profiles <- function(
   num_assignment_groups,
   table_configuration = NULL,
-  eligible_profiles,
+  possible_profiles,
   observed,
   observed_count_label = "n",
   range_of_profiles,
@@ -133,6 +133,20 @@ assign_profiles <- function(
     )
   }
 
+  unobserved_in_observed <- observed |>
+    dplyr::filter(!!rlang::sym(observed_count_label) == 0 |
+                    is.na(!!rlang::sym(observed_count_label))) |>
+    nrow() > 0
+
+  if (unobserved_in_observed) {
+    rdcmchecks::abort_bad_argument(
+      arg = rlang::caller_arg(profiles_per_level),
+      must = cli::format_message(paste(
+        "should only include profiles that were observed."
+      ))
+    )
+  }
+
   table_design <- ifelse(is.null(table_configuration), FALSE, TRUE)
 
   if (table_design) {
@@ -141,17 +155,7 @@ assign_profiles <- function(
     raters <- glue::glue("rater{1:num_assignment_groups}")
   }
 
-  # remove unobserved profiles
-  observed <- observed |>
-    dplyr::mutate(!!rlang::sym(observed_count_label) :=
-                    dplyr::case_when(is.na(!!rlang::sym(observed_count_label)) ~
-                                       0,
-                                     TRUE ~ n),
-                  pct = !!rlang::sym(observed_count_label) /
-                    sum(!!rlang::sym(observed_count_label))) |>
-    dplyr::filter(!!rlang::sym(observed_count_label) != 0)
-
-  eligible_profiles <- eligible_profiles |>
+  possible_profiles <- possible_profiles |>
     # calculate total number of mastered attributes/skills
     dplyr::rowwise() |>
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
@@ -162,7 +166,7 @@ assign_profiles <- function(
     dplyr::filter(.data$total %in% range_of_profiles)
 
   # apply weighted sampling design
-  profile_sampling <- weighted_sampling(eligible_profiles, observed,
+  profile_sampling <- weighted_sampling(possible_profiles, observed,
                                         observed_count_label,
                                         profiles_per_level, raters,
                                         table_configuration)
@@ -173,6 +177,5 @@ assign_profiles <- function(
     glue::glue("{output_dir}/profile_assignments.csv")
   )
 
-  list(profile_sampling = profile_sampling,
-       observed = observed)
+  list(profile_sampling = profile_sampling)
 }

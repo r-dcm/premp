@@ -6,9 +6,6 @@
 #' @param ratings A tibble with one row for each rater's rating of an assigned
 #'   profile, including columns for the profile number, the mastery status for
 #'   each attribute, and the raters' ratings.
-#' @param profiles A tibble with one row for each attribute mastery
-#'   profiles that is eligible for assignment to raters. The rows correspond to
-#'.  the profile number in the `ratings` argument.
 #' @param pl_labels A character vector containing the ordered performance
 #'   levels.
 #' @param att_levels An integer describing the number of categorical mastery
@@ -23,7 +20,6 @@
 #' @export
 condensed_mastery <- function(
   ratings,
-  profiles,
   pl_labels,
   att_levels,
   cores = 4,
@@ -45,10 +41,14 @@ condensed_mastery <- function(
   cmdstan_v <- cmdstanr::cmdstan_version(error_on_NA = FALSE)
   options(brms.backend = ifelse(is.null(cmdstan_v), "rstan", "cmdstanr"))
 
-  att_vec <- profiles |>
+  att_vec <- ratings |>
+    dplyr::select(-"profile_num", -dplyr::starts_with("rater"), -"rating",
+                  -dplyr::starts_with("table")) |>
     names()
 
-  profiles <- profiles |>
+  profiles <- ratings |>
+    dplyr::select(-"profile_num", -dplyr::starts_with("rater"), -"rating",
+                  -dplyr::starts_with("table")) |>
     dplyr::rowwise() |>
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
     dplyr::ungroup() |>

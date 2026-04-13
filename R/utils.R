@@ -207,7 +207,7 @@ calculate_hamming <- function(
 #' to sample from each level of the number of attributes mastered.
 #'
 #' @return A tibble with the eligible profiles and the Hamming distance.
-refine_eligible_profiles <- function(
+refine_possible_profiles <- function(
   profiles,
   filter_function = "median",
   filter_percentile = NULL,

@@ -3,7 +3,7 @@
 #' Apply a weighted sampling procedure to sample profiles that will be assigned
 #' to raters during a sample setting event.
 #'
-#' @param eligible_profiles A tibble with one row for each attribute mastery
+#' @param possible_profiles A tibble with one row for each attribute mastery
 #' profiles that is eligible for assignment to raters.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
@@ -21,7 +21,7 @@
 #' @return [tibble][tibble::tibble-package] A tibble containing the profiles to
 #' be assigned to raters during a standard setting event.
 weighted_sampling <- function(
-  eligible_profiles,
+    possible_profiles,
   observed,
   observed_count_label,
   profiles_per_level,
@@ -29,11 +29,11 @@ weighted_sampling <- function(
   table_configuration = NULL
 ) {
   # identify attributes
-  att_vec <- eligible_profiles |>
+  att_vec <- possible_profiles |>
     dplyr::select(-"total") |>
     names()
 
-  seen_by_all <- eligible_profiles |>
+  seen_by_all <- possible_profiles |>
     dplyr::filter(.data$total != 0) |>
     dplyr::left_join(observed, by = att_vec) |>
     dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
@@ -41,14 +41,14 @@ weighted_sampling <- function(
     slice_stratified(by = "total", size = "size", weight_by = "pct") |>
     dplyr::select(-dplyr::all_of(observed_count_label))
 
-  eligible_profiles <- eligible_profiles |>
+  possible_profiles <- possible_profiles |>
     dplyr::anti_join(seen_by_all, att_vec)
 
-  eligible_profiles <- calculate_hamming(eligible_profiles,
+  possible_profiles <- calculate_hamming(possible_profiles,
                                          seen_by_all |>
                                            dplyr::select(-"total"),
                                          att_vec)
-  eligible_profiles <- refine_eligible_profiles(eligible_profiles,
+  possible_profiles <- refine_possible_profiles(possible_profiles,
                                                 filter_function = "median",
                                                 raters = raters,
                                                 profiles_per_level =
@@ -74,7 +74,7 @@ weighted_sampling <- function(
   if (table_shared_assignments > 0) {
     for (ii in seq_len(table_shared_assignments)) {
       for (jj in seq_along(raters)) {
-        tmp_assignments <- eligible_profiles |>
+        tmp_assignments <- possible_profiles |>
           dplyr::left_join(observed, by = att_vec) |>
           dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
           dplyr::filter(!!rlang::sym(observed_count_label) > 100) |>
@@ -86,14 +86,14 @@ weighted_sampling <- function(
                                         tmp_assignments |>
                                           dplyr::mutate(table = raters[jj]))
 
-        eligible_profiles <- eligible_profiles |>
+        possible_profiles <- possible_profiles |>
           dplyr::anti_join(tmp_assignments, att_vec)
 
-        eligible_profiles <- calculate_hamming(eligible_profiles,
+        possible_profiles <- calculate_hamming(possible_profiles,
                                                tmp_assignments |>
                                                  dplyr::select(-"total"),
                                                att_vec)
-        eligible_profiles <- refine_eligible_profiles(eligible_profiles,
+        possible_profiles <- refine_possible_profiles(possible_profiles,
                                                       filter_function =
                                                         "median",
                                                       raters = raters,
@@ -124,7 +124,7 @@ weighted_sampling <- function(
   if (remaining_to_sample > 0) {
     for (ii in seq_len(remaining_to_sample)) {
       for (jj in seq_along(rater_iterator)) {
-        tmp_assignments <- eligible_profiles |>
+        tmp_assignments <- possible_profiles |>
           dplyr::left_join(observed, by = att_vec) |>
           dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
           dplyr::mutate(size = 1) |>
@@ -144,14 +144,14 @@ weighted_sampling <- function(
                                                         panelist =
                                                           tmp_panelist))
 
-        eligible_profiles <- eligible_profiles |>
+        possible_profiles <- possible_profiles |>
           dplyr::anti_join(tmp_assignments, att_vec)
 
-        eligible_profiles <- calculate_hamming(eligible_profiles,
+        possible_profiles <- calculate_hamming(possible_profiles,
                                                tmp_assignments |>
                                                  dplyr::select(-"total"),
                                                att_vec)
-        eligible_profiles <- refine_eligible_profiles(eligible_profiles,
+        possible_profiles <- refine_possible_profiles(possible_profiles,
                                                       filter_function =
                                                         "median",
                                                       raters = raters,

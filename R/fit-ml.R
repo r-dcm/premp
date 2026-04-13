@@ -194,7 +194,7 @@ fit_ml <- function(
                                    nrow(),
                                  students_with_assigned_profile =
                                    assignment_stats$n,
-                                 pct_students_with_assigned_profile =
+                                 prop_students_with_assigned_profile =
                                    assignment_stats |>
                                    dplyr::pull(.data$pct),
                                  prediction_accuracy = acc)
