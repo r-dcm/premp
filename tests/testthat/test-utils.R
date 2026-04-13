@@ -2,7 +2,7 @@ test_that("slice stratified works", {
   observed_id <- "n"
   range_of_profiles <- 5
 
-  eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
                                                       att4 = c(0:4),
@@ -10,9 +10,9 @@ test_that("slice stratified works", {
                                                       att6 = c(0:4),
                                                       att7 = c(0:4)))
 
-  obs <- runif(nrow(eligible_profiles), 1, 10000)
+  obs <- runif(nrow(possible_profiles), 1, 10000)
 
-  observed <- eligible_profiles |>
+  observed <- possible_profiles |>
     dplyr::mutate(n = obs,
                   n = dplyr::case_when(n < 1000 ~ NA,
                                        TRUE ~ n)) |>
@@ -27,7 +27,7 @@ test_that("slice stratified works", {
                     sum(!!rlang::sym(observed_id))) |>
     dplyr::filter(!!rlang::sym(observed_id) != 0)
 
-  eligible_profiles <- eligible_profiles |>
+  possible_profiles <- possible_profiles |>
     # calculate total number of mastered attributes/skills
     dplyr::rowwise() |>
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
@@ -39,11 +39,11 @@ test_that("slice stratified works", {
     dplyr::filter(.data$keep) |>
     dplyr::select(-"keep")
 
-  att_vec <- eligible_profiles |>
+  att_vec <- possible_profiles |>
     dplyr::select(-"total") |>
     names()
 
-  seen_by_all <- eligible_profiles |>
+  seen_by_all <- possible_profiles |>
     dplyr::filter(.data$total != 0) |>
     dplyr::left_join(observed, by = att_vec) |>
     dplyr::filter(!is.na(!!rlang::sym(observed_id))) |>
@@ -127,7 +127,7 @@ test_that("refining based on Hamming distance work", {
                              total = c(3, 3, 3),
                              hamming_distance = c(0, 2, 2))
 
-  refined_output <- refine_eligible_profiles(profiles, filter_function,
+  refined_output <- refine_possible_profiles(profiles, filter_function,
                                              filter_percentile, raters,
                                              profiles_per_level = 2)
 
@@ -147,7 +147,7 @@ test_that("refining based on Hamming distance work", {
                              total = rep(c(3, 3, 3), times = 5),
                              hamming_distance = rep(c(0, 2, 2), times = 5))
 
-  refined_output <- refine_eligible_profiles(profiles, filter_function,
+  refined_output <- refine_possible_profiles(profiles, filter_function,
                                              filter_percentile, raters,
                                              profiles_per_level = 2)
 
@@ -170,7 +170,7 @@ test_that("refining based on Hamming distance work", {
                              total = rep(c(3, 3, 3), times = 5),
                              hamming_distance = rep(c(0, 2, 2), times = 5))
 
-  refined_output <- refine_eligible_profiles(profiles, filter_function,
+  refined_output <- refine_possible_profiles(profiles, filter_function,
                                              filter_percentile, raters,
                                              profiles_per_level = 2)
 
@@ -193,7 +193,7 @@ test_that("refining based on Hamming distance work", {
                              total = rep(c(3, 3, 3), times = 5),
                              hamming_distance = rep(1:5, times = 3))
 
-  refined_output <- refine_eligible_profiles(profiles, filter_function,
+  refined_output <- refine_possible_profiles(profiles, filter_function,
                                              filter_percentile, raters,
                                              profiles_per_level = 2)
 
@@ -219,7 +219,7 @@ test_that("refining based on Hamming distance work", {
                              total = rep(c(3, 3, 3), times = 5),
                              hamming_distance = rep(c(0, 2, 2), times = 5))
 
-  refined_output <- refine_eligible_profiles(profiles, filter_function,
+  refined_output <- refine_possible_profiles(profiles, filter_function,
                                              filter_percentile, raters,
                                              profiles_per_level = 2)
 
@@ -238,7 +238,7 @@ test_that("refining based on Hamming distance -- error messages work", {
   profiles <- tibble::tibble()
   profiles_per_level <- 2L
 
-  err <- rlang::catch_cnd(refine_eligible_profiles(profiles, filter_function,
+  err <- rlang::catch_cnd(refine_possible_profiles(profiles, filter_function,
                                                    filter_percentile, raters,
                                                    profiles_per_level))
   testthat::expect_s3_class(err, "rlang_error")
@@ -253,7 +253,7 @@ test_that("refining based on Hamming distance -- error messages work", {
   profiles <- tibble::tibble()
   profiles_per_level <- 2L
 
-  err <- rlang::catch_cnd(refine_eligible_profiles(profiles, filter_function,
+  err <- rlang::catch_cnd(refine_possible_profiles(profiles, filter_function,
                                                    filter_percentile, raters,
                                                    profiles_per_level))
   testthat::expect_s3_class(err, "rlang_error")
@@ -264,7 +264,7 @@ test_that("refining based on Hamming distance -- error messages work", {
 
   filter_percentile = 1.01
 
-  err <- rlang::catch_cnd(refine_eligible_profiles(profiles, filter_function,
+  err <- rlang::catch_cnd(refine_possible_profiles(profiles, filter_function,
                                                    filter_percentile, raters,
                                                    profiles_per_level))
   testthat::expect_s3_class(err, "rlang_error")

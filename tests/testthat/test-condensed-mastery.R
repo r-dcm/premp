@@ -1,31 +1,31 @@
 test_that("condensed mastery method works", {
   set.seed(123)
 
-  eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
                                                       att4 = c(0:4)))
 
-  obs <- runif(nrow(eligible_profiles), 1, 10000)
+  obs <- runif(nrow(possible_profiles), 1, 10000)
 
-  observed <- eligible_profiles |>
+  observed <- possible_profiles |>
     dplyr::mutate(n = obs,
                   n = dplyr::case_when(n < 1000 ~ NA,
                                        TRUE ~ n)) |>
-    dplyr::filter(!is.na(n))
+    dplyr::filter(!is.na(n)) |>
+    dplyr::mutate(pct = n / sum(n))
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
     table_configuration = list(panelists_per_table = 4L,
                                proportion_of_shared_profiles = .67),
-    eligible_profiles = eligible_profiles,
+    possible_profiles = possible_profiles,
     observed = observed,
     range_of_profiles = c(5L, 10L, 15L),
     profiles_per_level = 3L,
     output_dir = testthat::test_path("data")
   )
 
-  observed <- final_assignments$observed
   final_assignments <- final_assignments$profile_sampling
 
   profiles <- final_assignments |>
@@ -58,7 +58,7 @@ test_that("condensed mastery method works", {
 
   pl_labels <- c("Emerging", "Approaching the Target", "At Target", "Advanced")
 
-  condensed_mastery(ratings, profiles, pl_labels, att_levels = 4,
+  condensed_mastery(ratings, pl_labels, att_levels = 4,
                     cores = 1, chains = 1,
                     output_dir = testthat::test_path("data"))
 
@@ -93,7 +93,6 @@ test_that("error works", {
   err <- rlang::catch_cnd(
     condensed_mastery(
       ratings = NULL,
-      profiles = NULL,
       pl_labels = 1,
       att_levels = 4,
       output_dir =

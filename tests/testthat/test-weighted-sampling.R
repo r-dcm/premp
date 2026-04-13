@@ -8,7 +8,7 @@ test_that("weighted profile sampling works", {
   table_configuration = list(panelists_per_table = 4L,
                              proportion_of_shared_profiles = .67)
 
-  eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
                                                       att4 = c(0:4),
@@ -16,9 +16,9 @@ test_that("weighted profile sampling works", {
                                                       att6 = c(0:4),
                                                       att7 = c(0:4)))
 
-  obs <- runif(nrow(eligible_profiles), 1, 10000)
+  obs <- runif(nrow(possible_profiles), 1, 10000)
 
-  observed <- eligible_profiles |>
+  observed <- possible_profiles |>
     dplyr::mutate(n = obs,
                   n = dplyr::case_when(n < 1000 ~ NA,
                                        TRUE ~ n)) |>
@@ -34,7 +34,7 @@ test_that("weighted profile sampling works", {
                     sum(!!rlang::sym(observed_count_label))) |>
     dplyr::filter(!!rlang::sym(observed_count_label) != 0)
 
-  eligible_profiles <- eligible_profiles |>
+  possible_profiles <- possible_profiles |>
     # calculate total number of mastered attributes/skills
     dplyr::rowwise() |>
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
@@ -45,7 +45,7 @@ test_that("weighted profile sampling works", {
     dplyr::filter(.data$total %in% range_of_profiles)
 
   # apply weighted sampling design
-  profile_sampling <- weighted_sampling(eligible_profiles, observed,
+  profile_sampling <- weighted_sampling(possible_profiles, observed,
                                         observed_count_label,
                                         profiles_per_level, raters,
                                         table_configuration)
@@ -81,14 +81,14 @@ test_that("weighted profile sampling works", {
 #   total_ratings <- length(raters) * profiles_per_rater
 #   num_profiles <- floor(total_ratings / raters_per_profile)
 #
-#   eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+#   possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
 #                                                       att2 = c(0:4),
 #                                                       att3 = c(0:4),
 #                                                       att4 = c(0:4)))
 #
-#   obs <- runif(nrow(eligible_profiles), 1, 10000)
+#   obs <- runif(nrow(possible_profiles), 1, 10000)
 #
-#   observed <- eligible_profiles |>
+#   observed <- possible_profiles |>
 #     dplyr::mutate(n = obs,
 #                   n = dplyr::case_when(n < 8000 ~ NA,
 #                                        TRUE ~ n)) |>
@@ -103,7 +103,7 @@ test_that("weighted profile sampling works", {
 #                     sum(!!rlang::sym(observed_id))) |>
 #     dplyr::filter(!!rlang::sym(observed_id) != 0)
 #
-#   eligible_profiles <- eligible_profiles |>
+#   possible_profiles <- possible_profiles |>
 #     # calculate total number of mastered attributes/skills
 #     dplyr::rowwise() |>
 #     dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
@@ -123,7 +123,7 @@ test_that("weighted profile sampling works", {
 #     dplyr::select(-"to_keep", - "num")
 #
 #   # apply weighted sampling design
-#   profile_sampling <- weighted_sampling(eligible_profiles, num_profiles,
+#   profile_sampling <- weighted_sampling(possible_profiles, num_profiles,
 #                                         observed, round, num_pls)
 #
 #   # check column names

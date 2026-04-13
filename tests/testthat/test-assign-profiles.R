@@ -1,7 +1,7 @@
 test_that("assigning profiles (table design) in Round 1 works", {
   set.seed(123)
 
-  eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
                                                       att4 = c(0:4),
@@ -9,19 +9,20 @@ test_that("assigning profiles (table design) in Round 1 works", {
                                                       att6 = c(0:4),
                                                       att7 = c(0:4)))
 
-  obs <- runif(nrow(eligible_profiles), 1, 10000)
+  obs <- runif(nrow(possible_profiles), 1, 10000)
 
-  observed <- eligible_profiles |>
+  observed <- possible_profiles |>
     dplyr::mutate(n = obs,
                   n = dplyr::case_when(n < 1000 ~ NA,
                                        TRUE ~ n)) |>
-    dplyr::filter(!is.na(n))
+    dplyr::filter(!is.na(n)) |>
+    dplyr::mutate(pct = n / sum(n))
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
     table_configuration = list(panelists_per_table = 4L,
                                proportion_of_shared_profiles = .67),
-    eligible_profiles = eligible_profiles,
+    possible_profiles = possible_profiles,
     observed = observed,
     range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
@@ -96,7 +97,7 @@ test_that("assigning profiles (table design) in Round 1 works", {
 test_that("assigning profiles (rater design) in Round 1 works", {
   set.seed(123)
 
-  eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
                                                       att4 = c(0:4),
@@ -104,17 +105,18 @@ test_that("assigning profiles (rater design) in Round 1 works", {
                                                       att6 = c(0:4),
                                                       att7 = c(0:4)))
 
-  obs <- runif(nrow(eligible_profiles), 1, 10000)
+  obs <- runif(nrow(possible_profiles), 1, 10000)
 
-  observed <- eligible_profiles |>
+  observed <- possible_profiles |>
     dplyr::mutate(n = obs,
                   n = dplyr::case_when(n < 1000 ~ NA,
                                        TRUE ~ n)) |>
-    dplyr::filter(!is.na(n))
+    dplyr::filter(!is.na(n)) |>
+    dplyr::mutate(pct = n / sum(n))
 
   final_assignments <- assign_profiles(num_assignment_groups = 5L,
                                        table_configuration = NULL,
-                                       eligible_profiles = eligible_profiles,
+                                       possible_profiles = possible_profiles,
                                        observed = observed,
                                        range_of_profiles =
                                          c(5L, 10L, 15L, 20L, 25L),
@@ -201,7 +203,7 @@ test_that("assigning profiles (rater design) in Round 1 works", {
 test_that("assign profiles -- error messages work", {
   set.seed(123)
 
-  eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
                                                       att4 = c(0:4),
@@ -209,20 +211,21 @@ test_that("assign profiles -- error messages work", {
                                                       att6 = c(0:4),
                                                       att7 = c(0:4)))
 
-  obs <- runif(nrow(eligible_profiles), 1, 10000)
+  obs <- runif(nrow(possible_profiles), 1, 10000)
 
-  observed <- eligible_profiles |>
+  observed <- possible_profiles |>
     dplyr::mutate(n = obs,
                   n = dplyr::case_when(n < 1000 ~ NA,
                                        TRUE ~ n)) |>
-    dplyr::filter(!is.na(n))
+    dplyr::filter(!is.na(n)) |>
+    dplyr::mutate(pct = n / sum(n))
 
   # test incorrect arguments
   err <- rlang::catch_cnd(assign_profiles(
     num_assignment_groups = 5,
     table_configuration = list(panelists_per_table = 4L,
                                proportion_of_shared_profiles = .67),
-    eligible_profiles = eligible_profiles,
+    possible_profiles = possible_profiles,
     observed = observed,
     range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
@@ -239,7 +242,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = c(panelists_per_table = 4L,
                               proportion_of_shared_profiles = .67),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -257,7 +260,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = list(panelits_per_table = 4L,
                                  proportion_of_shared_profiles = .67),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -280,7 +283,7 @@ test_that("assign profiles -- error messages work", {
         list(panelists_per_table = 4L,
              proportion_of_shared_profiles = .67,
              panelists_per_table = 3L),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -298,7 +301,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = list(panelists_per_table = 4,
                                  proportion_of_shared_profiles = .67),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -316,7 +319,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = list(panelists_per_table = 4L,
                                  proportion_of_shared_profiles = 1.1),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -334,7 +337,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = list(panelists_per_table = 4L,
                                  proportion_of_shared_profiles = -0.1),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -352,7 +355,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = list(panelists_per_table = 4L,
                                  proportion_of_shared_profiles = "a"),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -371,7 +374,7 @@ test_that("assign profiles -- error messages work", {
       table_configuration =
         list(panelists_per_table = 4L,
              proportion_of_shared_profiles = .67),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       observed_count_label = 5,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
@@ -390,7 +393,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = list(panelists_per_table = 4L,
                                  proportion_of_shared_profiles = .67),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -408,7 +411,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = list(panelists_per_table = 4L,
                                  proportion_of_shared_profiles = .67),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = list(5L),
       profiles_per_level = 3L,
@@ -426,7 +429,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       table_configuration = list(panelists_per_table = 4L,
                                  proportion_of_shared_profiles = .67),
-      eligible_profiles = eligible_profiles,
+      possible_profiles = possible_profiles,
       observed = observed,
       range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3,
@@ -443,25 +446,26 @@ test_that("assign profiles -- error messages work", {
 test_that("assign profiles -- few attributes work (table design)", {
   set.seed(1234)
 
-  eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
                                                       att4 = c(0:4)))
 
-  obs <- runif(nrow(eligible_profiles), 1, 10000)
+  obs <- runif(nrow(possible_profiles), 1, 10000)
 
-  observed <- eligible_profiles |>
+  observed <- possible_profiles |>
     dplyr::mutate(n = obs,
                   n = dplyr::case_when(n < 1000 ~ NA,
                                        TRUE ~ n)) |>
-    dplyr::filter(!is.na(n))
+    dplyr::filter(!is.na(n)) |>
+    dplyr::mutate(pct = n / sum(n))
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
     table_configuration =
       list(panelists_per_table = 4L,
            proportion_of_shared_profiles = .67),
-    eligible_profiles = eligible_profiles,
+    possible_profiles = possible_profiles,
     observed = observed,
     range_of_profiles = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
@@ -536,22 +540,23 @@ test_that("assign profiles -- few attributes work (table design)", {
 test_that("assign profiles -- few attributes work (rater design)", {
   set.seed(1234)
 
-  eligible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
+  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
                                                       att3 = c(0:4),
                                                       att4 = c(0:4)))
 
-  obs <- runif(nrow(eligible_profiles), 1, 10000)
+  obs <- runif(nrow(possible_profiles), 1, 10000)
 
-  observed <- eligible_profiles |>
+  observed <- possible_profiles |>
     dplyr::mutate(n = obs,
                   n = dplyr::case_when(n < 1000 ~ NA,
                                        TRUE ~ n)) |>
-    dplyr::filter(!is.na(n))
+    dplyr::filter(!is.na(n)) |>
+    dplyr::mutate(pct = n / sum(n))
 
   final_assignments <- assign_profiles(num_assignment_groups = 5L,
                                        table_configuration = NULL,
-                                       eligible_profiles = eligible_profiles,
+                                       possible_profiles = possible_profiles,
                                        observed = observed,
                                        range_of_profiles =
                                          c(5L, 10L, 15L, 20L, 25L),

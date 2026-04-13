@@ -41,14 +41,14 @@ test_that("fitting the machine learning model works", {
   testthat::expect_equal(colnames(assignment_stats),
                          c("profiles_assigned",
                            "students_with_assigned_profile",
-                           "pct_students_with_assigned_profile",
+                           "prop_students_with_assigned_profile",
                            "prediction_accuracy"))
 
   # check for allowable values
   testthat::expect_gte(assignment_stats$prediction_accuracy, 0)
   testthat::expect_lte(assignment_stats$prediction_accuracy, 1)
-  testthat::expect_gte(assignment_stats$pct_students_with_assigned_profile, 0)
-  testthat::expect_lte(assignment_stats$pct_students_with_assigned_profile, 1)
+  testthat::expect_gte(assignment_stats$prop_students_with_assigned_profile, 0)
+  testthat::expect_lte(assignment_stats$prop_students_with_assigned_profile, 1)
   testthat::expect_equal(assignment_stats$profiles_assigned,
                          profile_preds |>
                            dplyr::select(dplyr::starts_with("att")) |>
