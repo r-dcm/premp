@@ -36,6 +36,9 @@ Imports:
     workflows
 Suggests:
     here,
+    knitr,
     parsnip,
     ranger,
+    rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: knitr

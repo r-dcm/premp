@@ -1,0 +1,370 @@
+---
+title: "Introduction to premp"
+output: rmarkdown::html_vignette
+bibliography: bib/references.bib
+biblio-style: apa
+csl: bib/apa.csl
+link-citations: true
+vignette: >
+  %\VignetteIndexEntry{Introduction to premp}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+premp is an R package that supports application of a machine-learning extension of the condensed mastery profiles standard setting method [@cmp].
+premp provides functionality for assigning attribute mastery profiles to panelists, fitting a logistic regression model to pin point the inflection point between adjacent performance levels following the range finding round, and fitting a machine learning model based on panelist ratings to classify each profile into one of the performance levels.
+Here, you'll find a brief overview of how to use the premp package to apply the machine-learning extension of the condensed masteryi profiles standard setting method.
+
+```{r}
+#| label: load-premp
+
+library(premp)
+```
+
+## Identifying Possible Profiles
+
+We begin with identifying which attribute mastery profiles are possible.
+In practice, this will be determined based on the assessment design.
+For example, adaptive routing may render some attribute mastery profiles impossible (e.g., mastery of the highest level of an attribute may render some levels of mastery impossible as the student routes to assess the next attribute).
+For the purposes of this vignette, we created the set of possible profiles based on all possible combinations of attribute mastery. 
+
+```{r}
+#| label: possible-profiles
+
+possible_profiles <- tibble::tibble(tidyr::crossing(EE1 = c(0:4),
+                                                    EE2 = c(0:4),
+                                                    EE3 = c(0:4),
+                                                    EE4 = c(0:4),
+                                                    EE5 = c(0:4),
+                                                    EE6 = c(0:4),
+                                                    EE7 = c(0:4),
+                                                    EE8 = c(0:4)))
+```
+
+## Observed Profiles
+
+Next, the profiles observed during the administration of the assessment are loaded.
+For the purposes of this vignette, we simulated the number of students classified into each possible profiles, and we imposed missing data where the simulated sample size was less than 1,000 to indicate profiles that were not observed.
+In practice, this step will merely involve loading the data set with the observed profiles and the recorded sample sizes for each profile.
+
+```{r}
+#| label: observed-profiles
+
+obs <- runif(nrow(possible_profiles), 1, 10000)
+
+observed <- possible_profiles |>
+  dplyr::mutate(n = obs,
+                n = dplyr::case_when(n < 1000 ~ NA,
+                                     TRUE ~ n)) |>
+  dplyr::filter(!is.na(n)) |> 
+  dplyr::mutate(pct = n / sum(n))
+```
+
+## Assigning Profiles for the Rangefinding Round
+
+Given the possible and observed profiles, profiles are assigned to panelists using `assign_profiles()`.
+This function takes user-specified panelist design as the input, and it outputs the assignment of profiles to panelists.
+
+For this example, we are using a table design.
+Specifically, there are five tables (`num_assignment_groups`) with four panelists per table (`panelists_per_table`).
+The function balances profile assignment so that panelists at each table have two-thirds of the assigned profiles in common (`proportion_of_shared_profiles`; e.g., with three profiles assigned to each panelist, two of the three assigned profiles will be common to all panelists at the table).
+The user also specifies the range of profiles to be used for assignment (`range_of_profiles`) and the number of profiles to assign per level (`profiles_per_level`).
+The `observed_count_label` parameter specifies the field name for the observed profiles' sample sizes.
+The range of profiles is based on the number of levels mastered for each attribute measured by the assessment.
+For instance, if there are five assessed attributes with three levels each (e.g., scores of 0, 1, or 2 are possible for each attribute), the possible levels mastered ranges from 0 (i.e., no mastery of any level for any attribute) to 10 (i.e., mastery of all levels for all attributes).
+The range of profiles specifies the profiles to retain for assignment based on the sum of levels mastered across all attributes.
+In this example, we specify that profiles with 5, 10, 15, 20, 25, and 30 levels mastered should be retained and that each panelist should be assigned three profiles at each of these levels.
+
+```{r}
+#| label: table-rangefinding-assignment
+
+final_assignments <- assign_profiles(num_assignment_groups = 5L,
+                                     table_configuration =
+                                       list(panelists_per_table = 4L,
+                                            proportion_of_shared_profiles =
+                                              .67),
+                                     possible_profiles = possible_profiles,
+                                     observed = observed,
+                                     observed_count_label = "n",
+                                     range_of_profiles =
+                                       c(5L, 10L, 15L, 20L, 25L, 30L),
+                                     profiles_per_level = 3L,
+                                     output_dir = here::here("vignettes"))
+
+final_assignments <- final_assignments$profile_sampling
+```
+
+Alternatively, we could assign profiles directly to panelists without using a table-based design.
+The following example assigns profiles to 10 panelists, where one of the profiles is common to all panelists.
+The panelist-based design uses the same settings for range of profiles and profiles per level.
+Notably, there is no `table` field in the output when using a panelist-based design.
+
+```{r}
+#| label: panelist-rangefinding-assignment
+#| eval: FALSE
+
+final_assignments <- assign_profiles(num_assignment_groups = 10L,
+                                     possible_profiles = possible_profiles,
+                                     observed = observed,
+                                     observed_count_label = "n",
+                                     range_of_profiles =
+                                       c(5L, 10L, 15L, 20L, 25L, 30L),
+                                     profiles_per_level = 3L,
+                                     output_dir = here::here("vignettes"))
+
+final_assignments <- final_assignments$profile_sampling
+```
+
+## Panelist Ratings
+
+At this point, the assigned profiles are presented to panelists at the standard setting event, where panelists provide performance level ratings to each of the assigned profiles.
+For the purposes of this example, we have simulated panelist ratings.
+In practice, a dataset with fields for the profile number, attribute names/labels, table id (when applicable), rater id, and rating will need to be loaded.
+
+```{r}
+#| label: panelist-ratings
+
+profiles <- final_assignments |>
+  dplyr::select(-"total", -dplyr::starts_with("table"),
+                -dplyr::starts_with("rater"))
+
+panelists_per_table <- 4
+
+ratings <- final_assignments |>
+  tibble::rowid_to_column("profile_num") |>
+  tidyr::pivot_longer(cols = dplyr::starts_with("rater"), names_to = "rater_id",
+                      values_to = "rating") |>
+  dplyr::filter(.data$rating == 1) |>
+  dplyr::mutate(bump = runif(360, -.75, .75),
+                bump = dplyr::case_when(.data$bump <= -.5 ~ -1,
+                                        .data$bump >= .5 ~ 1,
+                                        TRUE ~ 0),
+                base = dplyr::case_when(.data$total <= 8 ~ 1,
+                                        .data$total <= 16 ~ 2,
+                                        .data$total <= 24 ~ 3,
+                                        TRUE ~ 4),
+                rating = .data$base + .data$bump) |>
+  dplyr::rowwise() |>
+  dplyr::mutate(rating = max(1, .data$rating),
+                rating = min(4, .data$rating)) |>
+  dplyr::ungroup() |>
+  dplyr::select("profile_num", dplyr::starts_with("EE"), "table", "rater_id",
+                "rating")
+```
+
+## Identifying Profile Ranges for Pinpointing
+
+Having collected panelists' ratings during the rangefinding round, `condensed_mastery()` fits a logistic regression model to identify possible inflection points between adjacent performance levels.
+This function receives the panelists' ratings, performance level labels, number of levels per attribute, and output directory as input.
+The function automatically saves the potential inflection points in the output direct.
+
+```{r}
+#| label: identify-range-pinpointing
+
+pl_labels <- c("Emerging", "Approaching the Target", "At Target", "Advanced")
+
+condensed_mastery(ratings, pl_labels, att_levels = 4,
+                  output_dir = here::here("vignettes"))
+```
+
+## Assigning Profiles for the Pinpointing Round
+
+Before assigning profiles to panelists for the pinpointing round, users must first identify the number of levels mastered across all of the assessed attributes that should be retained for assignment in the pinpointing round.
+Then, the previously assigned profiles should be removed from the set of possible profiles.
+In this example, we do this by reading in the potential inflection points between adjacent performance levels (i.e., the output of `condensed_mastery()`), and we retain the possible profiles where the total number of levels mastered is one of the potential inflection points and the profile was not assigned during the rangefinding round.
+Then the profiles eligible for pinpointing assignment and the observed profiles are used to assigned to panelists using `assign_profiles()`.
+In the example, the panel design for the pinpointing round is largely similar to the design of the rangefinding round.
+The primary difference is that only two profiles are assigned at each level during pinpointing whereas three profiles were assigned at each level during rangefinding.
+
+```{r}
+#| label: table-pinpointing-assignment
+
+pp <- readr::read_csv(here::here("vignettes/pp-range.csv"))
+
+retain_totals <- pp |>
+    tidyr::crossing(atts_mastered = 1:32) |>
+    dplyr::mutate(keep = as.numeric(.data$atts_mastered >= .data$pinpoint_min &
+                                      .data$atts_mastered <=
+                                      .data$pinpoint_max)) |>
+    dplyr::filter(.data$keep == 1) |>
+    dplyr::select(-"keep") |>
+    dplyr::distinct(.data$atts_mastered) |>
+    dplyr::arrange(.data$atts_mastered) |>
+    dplyr::pull()
+
+att_vec <- possible_profiles |> 
+  names()
+
+possible_profiles <- possible_profiles |>
+  dplyr::anti_join(final_assignments, by = att_vec) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("EE")))) |>
+    dplyr::ungroup() |>
+    dplyr::select(-"total")
+
+final_assignments <- assign_profiles(num_assignment_groups = 5L,
+                                     table_configuration =
+                                       list(panelists_per_table = 4L,
+                                            proportion_of_shared_profiles =
+                                              .67),
+                                     possible_profiles = possible_profiles,
+                                     observed = observed,
+                                     observed_count_label = "n",
+                                     range_of_profiles = retain_totals,
+                                     profiles_per_level = 2L,
+                                     output_dir = here::here("vignettes"))
+
+final_assignments <- final_assignments$profile_sampling
+```
+
+As with profile assignment for the rangefinding round, we can also use a panelist-based design for the pinpointing round.
+Like the rangefinding round, this example assigns profiles to 10 panelists and the remaining settings are consistent with the table-based design.
+
+```{r}
+#| label: panelist-pinpointing-assignment
+#| eval: FALSE
+
+pp <- readr::read_csv(here::here("vignettes/pp-range.csv"))
+
+retain_totals <- pp |>
+    tidyr::crossing(atts_mastered = 1:32) |>
+    dplyr::mutate(keep = as.numeric(.data$atts_mastered >= .data$pinpoint_min &
+                                      .data$atts_mastered <=
+                                      .data$pinpoint_max)) |>
+    dplyr::filter(.data$keep == 1) |>
+    dplyr::select(-"keep") |>
+    dplyr::distinct(.data$atts_mastered) |>
+    dplyr::arrange(.data$atts_mastered) |>
+    dplyr::pull()
+
+att_vec <- possible_profiles |> 
+  names()
+
+possible_profiles <- possible_profiles |>
+  dplyr::anti_join(final_assignments, by = att_vec) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("EE")))) |>
+    dplyr::ungroup() |>
+    dplyr::select(-"total")
+
+final_assignments <- assign_profiles(num_assignment_groups = 10L,
+                                     possible_profiles = possible_profiles,
+                                     observed = observed,
+                                     observed_count_label = "n",
+                                     range_of_profiles = retain_totals,
+                                     profiles_per_level = 2L,
+                                     output_dir = here::here("vignettes"))
+
+final_assignments <- final_assignments$profile_sampling
+```
+
+## Preparing the Ratings for the Machine Learning Extension
+
+Now that the panelists have rated profiles during the rangefinding and pinpointing rounds, the ratings from each round need to be compiled into a dataset and prepared for the machine learning extension.
+The ratings from the rangefinding round can be pulled from the `ratings` object where we simulated panelist ratings for this example.
+Similarly, we simulated ratings for the profiles assigned during the pinpointing round.
+In practice, these files will just need to be loaded.
+
+```{r}
+#| label: ml-data-prep
+
+panelists_per_table <- 4
+
+ratings_r1 <- ratings
+
+ratings_r2 <- final_assignments |>
+  tibble::rowid_to_column("profile_num") |>
+  dplyr::select(-"total") |>
+  tidyr::pivot_longer(cols = dplyr::starts_with("rater"), names_to = "rater_id",
+                      values_to = "rating") |>
+  dplyr::filter(rating == 1) |>
+  dplyr::rowwise() |>
+  dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("EE")))) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(bump = runif(960, -.75, .75),
+                bump = dplyr::case_when(.data$bump <= -.5 ~ -1,
+                                        .data$bump >= .5 ~ 1,
+                                        TRUE ~ 0),
+                base = dplyr::case_when(.data$total <= 8 ~ 1,
+                                        .data$total <= 16 ~ 2,
+                                        .data$total <= 24 ~ 3,
+                                        TRUE ~ 4),
+                rating = .data$base + .data$bump) |>
+  dplyr::rowwise() |>
+  dplyr::mutate(rating = max(1, .data$rating),
+                rating = min(4, .data$rating)) |>
+  dplyr::ungroup() |>
+  dplyr::select("profile_num", dplyr::starts_with("EE"), "table", "rater_id",
+                "rating")
+
+ratings_data <- dplyr::bind_rows(ratings_r1, ratings_r2) |>
+  dplyr::select(-"profile_num")
+```
+
+Finally, we fit the machine learning model using `fit_ml()`.
+Users define the machine learning workflow, using models with functionality supported by tidymodels [@tidymodels_package].
+The workflow can include hyperparameters that need to be tuned, or the workflow can have values specified for pertinent hyperparameters.
+The set of all possible profiles is then included with the workflow as input into `fit_ml()`.
+Users also specify the number of levels per attribute, the number of performance levels, and the output directory.
+Output from `fit_ml()` includes:
+
+- the fitted model
+- the model-based performance level predictions for each of the assigned profiles
+- the model-based performance level predictions for all of the possible profiles
+- assignment statistics describing the total number of profiles assigned, the number and percentage of students with one of the assigned profiles, and the accuracy of predictions for the assigned profiles
+
+The assignment statistics allow for a comprehensive evaluation of model generalizability and performance.
+For example, these statistics allow the user to evaluate whether a substantial percentage of students were represented in the assigned profiles.
+To demonstrate, in this example, we randomly assigned observed profiles with a uniform distribution, meaning profiles were generally observed with the same level of prevalence.
+Consequently, the assigned profiles do not represent a large percentage of students.
+Similarly, the statistics allow the user to evaluate whether the predictions accurately recovered panelist ratings.
+For this example, panelist ratings were accurately predicted for more than 80% of profiles.
+
+```{r}
+#| label: fit-ml
+
+workflow <-
+  parsnip::rand_forest(mtry = 1,
+                       trees = parsnip::tune(),
+                       min_n = parsnip::tune()) |>
+  parsnip::set_mode("classification") |>
+  parsnip::set_engine("ranger")
+
+workflow <-
+  parsnip::rand_forest(mtry = 1,
+                       trees = 100,
+                       min_n = 1) |>
+  parsnip::set_mode("classification") |>
+  parsnip::set_engine("ranger")
+
+possible_profiles <- tibble::tibble(tidyr::crossing(EE1 = c(0:4),
+                                                    EE2 = c(0:4),
+                                                    EE3 = c(0:4),
+                                                    EE4 = c(0:4),
+                                                    EE5 = c(0:4),
+                                                    EE6 = c(0:4),
+                                                    EE7 = c(0:4),
+                                                    EE8 = c(0:4)))
+
+user_workflow <- workflow
+att_levels <- 4
+num_pls <- 4
+output_dir <- here::here()
+
+fit_ml(workflow, ratings_data, possible_profiles, observed, att_levels = 4,
+       num_pls = 4, output_dir = here::here("vignettes"))
+```
+
+## References
