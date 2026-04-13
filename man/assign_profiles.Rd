@@ -7,7 +7,7 @@
 assign_profiles(
   num_assignment_groups,
   table_configuration = NULL,
-  eligible_profiles,
+  possible_profiles,
   observed,
   observed_count_label = "n",
   range_of_profiles,
@@ -27,7 +27,7 @@ the number of panelists at each table and \code{proportion_of_shared_profiles}
 indicating the proportion of profiles that are common to all of the panelists
 at each table.}
 
-\item{eligible_profiles}{A tibble with one row for each attribute mastery
+\item{possible_profiles}{A tibble with one row for each attribute mastery
 profiles that is possible to be assigned to raters.}
 
 \item{observed}{A tibble with one row for each attribute mastery profile that

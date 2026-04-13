@@ -6,7 +6,6 @@
 \usage{
 condensed_mastery(
   ratings,
-  profiles,
   pl_labels,
   att_levels,
   cores = 4,
@@ -19,14 +18,11 @@ condensed_mastery(
 profile, including columns for the profile number, the mastery status for
 each attribute, and the raters' ratings.}
 
-\item{profiles}{A tibble with one row for each attribute mastery
-profiles that is eligible for assignment to raters. The rows correspond to
-the profile number in the \code{ratings} argument.}
+\item{pl_labels}{A character vector containing the ordered performance
+levels.}
 
-\item{pl_labels}{A character vector containing the ordered performance levels.}
-
-\item{att_levels}{An integer describing the number of categorical mastery classes
-for each attribute.}
+\item{att_levels}{An integer describing the number of categorical mastery
+classes for each attribute.}
 
 \item{cores}{The number of cores (default = 4).}
 

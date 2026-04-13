@@ -5,7 +5,7 @@
 \title{Weighted Sampling}
 \usage{
 weighted_sampling(
-  eligible_profiles,
+  possible_profiles,
   observed,
   observed_count_label,
   profiles_per_level,
@@ -14,7 +14,7 @@ weighted_sampling(
 )
 }
 \arguments{
-\item{eligible_profiles}{A tibble with one row for each attribute mastery
+\item{possible_profiles}{A tibble with one row for each attribute mastery
 profiles that is eligible for assignment to raters.}
 
 \item{observed}{A tibble with one row for each attribute mastery profile that
