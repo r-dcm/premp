@@ -31,11 +31,13 @@ slice_stratified <- function(x, by, size, weight_by = NULL) {
       dplyr::pull(!!rlang::sym(size))
     tmp <- tmp |>
       ratlas::only_if(!is.null(weight_by))(dplyr::slice_sample)(
-        n = to_sample, weight_by = !!rlang::sym(weight_by)
+        n = to_sample,
+        weight_by = !!rlang::sym(weight_by)
       ) |>
       ratlas::only_if(is.null(weight_by))(dplyr::slice_sample)(n = to_sample) |>
       ratlas::only_if(!is.null(weight_by))(dplyr::select)(
-        -!!rlang::sym(size), -!!rlang::sym(weight_by)
+        -!!rlang::sym(size),
+        -!!rlang::sym(weight_by)
       ) |>
       ratlas::only_if(is.null(weight_by))(dplyr::select)(-!!rlang::sym(size))
 
@@ -92,19 +94,28 @@ fit_model <- function(
   max_treedepth = 15
 ) {
   suppressMessages(
-    mod <- brms::brm(y ~ 1 + atts_mastered, data = dat, family = "bernoulli",
-                     prior = c(brms::prior("normal(0, 1.5)",
-                                           class = "Intercept"),
-                               brms::prior("normal(0, 0.5)",
-                                           class = "b")),
-                     iter = iter, warmup = warmup, chains = chains,
-                     cores = cores, refresh = refresh,
-                     control = list(adapt_delta = adapt_delta,
-                                    max_treedepth = max_treedepth))
+    mod <- brms::brm(
+      y ~ 1 + atts_mastered,
+      data = dat,
+      family = "bernoulli",
+      prior = c(
+        brms::prior("normal(0, 1.5)", class = "Intercept"),
+        brms::prior("normal(0, 0.5)", class = "b")
+      ),
+      iter = iter,
+      warmup = warmup,
+      chains = chains,
+      cores = cores,
+      refresh = refresh,
+      silent = 2,
+      control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth)
+    )
   )
 
-  posterior::as_draws_rvars(mod,
-                            variable = c("b_Intercept", "b_atts_mastered")) |>
+  posterior::as_draws_rvars(
+    mod,
+    variable = c("b_Intercept", "b_atts_mastered")
+  ) |>
     tibble::as_tibble() |>
     dplyr::rename(intercept = "b_Intercept", slope = "b_atts_mastered")
 }
@@ -163,23 +174,34 @@ calculate_hamming <- function(
     tmp_hamming_dist <- profiles |>
       dplyr::filter(.data$total == aa) |>
       tibble::rowid_to_column("prof_num") |>
-      tidyr::pivot_longer(cols = c(-"prof_num", -"total"),
-                          names_to = "att",
-                          values_to = "score") |>
-      dplyr::left_join(ham_prof |>
-                         tidyr::pivot_longer(cols = dplyr::everything(),
-                                             names_to = "att",
-                                             values_to = "score") |>
-                         dplyr::rename(orig_score = "score"),
-                       by = "att") |>
+      tidyr::pivot_longer(
+        cols = c(-"prof_num", -"total"),
+        names_to = "att",
+        values_to = "score"
+      ) |>
+      dplyr::left_join(
+        ham_prof |>
+          tidyr::pivot_longer(
+            cols = dplyr::everything(),
+            names_to = "att",
+            values_to = "score"
+          ) |>
+          dplyr::rename(orig_score = "score"),
+        by = "att"
+      ) |>
       dplyr::group_by(.data$prof_num) |>
-      dplyr::mutate(ham_distance = abs(.data$score - .data$orig_score),
-                    ham_distance = sum(.data$ham_distance)) |>
+      dplyr::mutate(
+        ham_distance = abs(.data$score - .data$orig_score),
+        ham_distance = sum(.data$ham_distance)
+      ) |>
       dplyr::ungroup() |>
       dplyr::select("prof_num", "att", "score", "total", "ham_distance") |>
       tidyr::pivot_wider(names_from = "att", values_from = "score") |>
-      dplyr::select(dplyr::all_of(att_vec), "total",
-                    "hamming_distance" = "ham_distance")
+      dplyr::select(
+        dplyr::all_of(att_vec),
+        "total",
+        "hamming_distance" = "ham_distance"
+      )
 
     hamming_dist <- dplyr::bind_rows(hamming_dist, tmp_hamming_dist)
   }
@@ -223,8 +245,10 @@ refine_possible_profiles <- function(
     )
   }
 
-  if (!is.null(filter_percentile) &&
-        (filter_percentile < 0 || filter_percentile > 1)) {
+  if (
+    !is.null(filter_percentile) &&
+      (filter_percentile < 0 || filter_percentile > 1)
+  ) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(filter_percentile),
       must = cli::format_message(paste(
@@ -240,12 +264,13 @@ refine_possible_profiles <- function(
   if (!is.null(filter_percentile)) {
     profiles <- profiles |>
       dplyr::group_by(.data$total) |>
-      dplyr::mutate(num = dplyr::n(),
-                    hamming_percentile =
-                      dplyr::case_when(
-                        .data$num < sx_threshold ~ 1,
-                        TRUE ~ dplyr::percent_rank(.data$hamming_distance)
-                      )) |>
+      dplyr::mutate(
+        num = dplyr::n(),
+        hamming_percentile = dplyr::case_when(
+          .data$num < sx_threshold ~ 1,
+          TRUE ~ dplyr::percent_rank(.data$hamming_distance)
+        )
+      ) |>
       dplyr::select(-"num") |>
       dplyr::filter(.data$hamming_percentile >= filter_percentile) |>
       dplyr::ungroup() |>
@@ -253,10 +278,13 @@ refine_possible_profiles <- function(
   } else if (filter_function == "mean") {
     profiles <- profiles |>
       dplyr::group_by(.data$total) |>
-      dplyr::mutate(num = dplyr::n(),
-                    hamming_distance =
-                      dplyr::case_when(.data$num < sx_threshold ~ 0,
-                                       TRUE ~ .data$hamming_distance)) |>
+      dplyr::mutate(
+        num = dplyr::n(),
+        hamming_distance = dplyr::case_when(
+          .data$num < sx_threshold ~ 0,
+          TRUE ~ .data$hamming_distance
+        )
+      ) |>
       dplyr::select(-"num") |>
       dplyr::filter(.data$hamming_distance >= mean(.data$hamming_distance)) |>
       dplyr::ungroup() |>
@@ -264,16 +292,56 @@ refine_possible_profiles <- function(
   } else if (filter_function == "median") {
     profiles <- profiles |>
       dplyr::group_by(.data$total) |>
-      dplyr::mutate(num = dplyr::n(),
-                    hamming_distance =
-                      dplyr::case_when(.data$num < sx_threshold ~ 0,
-                                       TRUE ~ .data$hamming_distance)) |>
+      dplyr::mutate(
+        num = dplyr::n(),
+        hamming_distance = dplyr::case_when(
+          .data$num < sx_threshold ~ 0,
+          TRUE ~ .data$hamming_distance
+        )
+      ) |>
       dplyr::select(-"num") |>
-      dplyr::filter(.data$hamming_distance >=
-                      stats::median(.data$hamming_distance)) |>
+      dplyr::filter(
+        .data$hamming_distance >= stats::median(.data$hamming_distance)
+      ) |>
       dplyr::ungroup() |>
       dplyr::select(-"hamming_distance")
   }
 
   return(profiles) # nolint
+}
+
+#' Retaining Profiles From Rangefinding
+#'
+#' Define a function to extract the levels of the total number of attributes
+#' mastered to retain based on the logistic regression models fit using
+#' `fit_lr()`.
+#'
+#' @param pinpoint_ranges A tibble containing the output of `fit_lr()`.
+#' @param num_attributes An integer specifying the number of measured
+#' attributes.
+#' @param attribute_levels An integer specifying the number of levels per
+#' attribute.
+#'
+#' @return A vector containing the levels of the number of skills mastered to
+#' retain based on the output of `fit_lr()`.
+#'
+#' @export
+profiles_to_retain <- function(
+  pinpoint_ranges,
+  num_attributes,
+  attribute_levels
+) {
+  pinpoint_ranges |>
+    tidyr::crossing(atts_mastered = 1:(num_attributes * attribute_levels)) |>
+    dplyr::mutate(
+      keep = as.numeric(
+        .data$atts_mastered >= .data$pinpoint_min &
+          .data$atts_mastered <= .data$pinpoint_max
+      )
+    ) |>
+    dplyr::filter(.data$keep == 1) |>
+    dplyr::select(-"keep") |>
+    dplyr::distinct(.data$atts_mastered) |>
+    dplyr::arrange(.data$atts_mastered) |>
+    dplyr::pull()
 }

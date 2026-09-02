@@ -8,15 +8,31 @@ utils::globalVariables(c("case_wts"))
 #' profiles that is eligible for assignment to raters.
 #' @param ratings_data A tibble with the profiles rated by the panelists and
 #' the panelists' ratings in long format.
-#' @param possible_profiles A tibble with all of the possible profiles.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
+#' @param possible_profiles A tibble with all of the possible profiles.
 #' @param att_levels A numeric value for the number of levels where mastery can
 #' be demonstrated. For example, `att_level` is 1 for a dichotomous attribute
 #' (i.e., nonmastery or mastery), and `att_level` is 2 for attributes where the
 #' possible scores are 0, 1, and 2.
 #' @param num_pls The number of performance levels that can be assigned to any
 #' profile.
+#' @param rating_id A character string for the field name of the panelists'
+#' ratings (default is 'rating').
+#' @param observed_count_label A character string for the field name of the
+#' observed sample sizes in `observed` (default is 'n').
+#' @param observed_proportion_label A character string for the field name of the
+#' observed proportions in `observed` (default is 'prop').
+#' @param metrics A character vector containing the evaluation metrics that
+#' should be included in the output. Can include any of `"accuracy"`,
+#' `"adjacent"`, `"kappa"`, `"auc"`, or `"assignment"`. Including `"accuracy"`
+#' calculates classification accuracy. Including `"adjacent"` calculates
+#' adjacent classification accuracy. Including `"kappa"` calculates Cohen's
+#' kappa. Including `"auc"` calculates the area under the receiver operating
+#' characteristic curve. Including `"assignment"` calculates assignment
+#' statistics from the standard setting procedure -- the number of profiles
+#' assigned, the number of students with the assigned profiles, and the
+#' proportion of students with the assigned profiles.
 #' @param output_dir The directory path for saving the output.
 #'
 #' @return A list containing the fitted model, the model predictions to the
@@ -26,18 +42,25 @@ utils::globalVariables(c("case_wts"))
 fit_ml <- function(
   user_workflow,
   ratings_data,
-  possible_profiles,
   observed,
+  possible_profiles,
   att_levels,
   num_pls,
+  rating_id = "rating",
+  observed_count_label = "n",
+  observed_proportion_label = "prop",
+  metrics,
   output_dir
 ) {
   att_vec <- observed |>
-    dplyr::select(-"n", -"pct") |>
+    dplyr::select(
+      -!!rlang::sym(observed_count_label),
+      -!!rlang::sym(observed_proportion_label)
+    ) |>
     names()
 
   ratings_data <- ratings_data |>
-    dplyr::select(dplyr::all_of(att_vec), "rating")
+    dplyr::select(dplyr::all_of(att_vec), !!rlang::sym(rating_id))
 
   data_split <- rsample::initial_split(ratings_data, prop = .90)
   train_data <- rsample::training(data_split)
@@ -45,18 +68,23 @@ fit_ml <- function(
 
   train_data <- train_data |>
     dplyr::left_join(observed, by = att_vec) |>
-    dplyr::mutate(dplyr::across(dplyr::any_of(att_vec),
-                                ~ factor(., levels = 0:att_levels))) |>
+    dplyr::mutate(dplyr::across(
+      dplyr::any_of(att_vec),
+      ~ factor(., levels = 0:att_levels)
+    )) |>
     dplyr::mutate(rating = factor(.data$rating, levels = 1:num_pls)) |>
-    dplyr::mutate(pct = dplyr::case_when(is.na(pct) ~ .000000001,
-                                         TRUE ~ pct)) |>
-    dplyr::select(-"n") |>
-    dplyr::rename(case_wts = "pct") |>
+    dplyr::mutate(
+      !!rlang::sym(observed_proportion_label) := dplyr::case_when(
+        is.na(!!rlang::sym(observed_proportion_label)) ~ .000000001,
+        TRUE ~ !!rlang::sym(observed_proportion_label)
+      )
+    ) |>
+    dplyr::select(-!!rlang::sym(observed_count_label)) |>
+    dplyr::rename(case_wts = !!rlang::sym(observed_proportion_label)) |>
     dplyr::mutate(case_wts = hardhat::importance_weights(.data$case_wts))
 
   mod_recipe <-
-    recipes::recipe(rating ~ .,
-                    data = train_data)
+    recipes::recipe(rating ~ ., data = train_data)
 
   mod_wf <-
     workflows::workflow() |>
@@ -66,7 +94,8 @@ fit_ml <- function(
 
   hyperparameters_present <- workflows::extract_parameter_set_dials(mod_wf) |>
     tibble::as_tibble() |>
-    nrow() > 0
+    nrow() >
+    0
 
   if (hyperparameters_present) {
     mod_folds <- rsample::vfold_cv(train_data)
@@ -74,8 +103,9 @@ fit_ml <- function(
     doParallel::registerDoParallel()
 
     all_pl_present <- train_data |>
-      dplyr::distinct(.data$rating) |>
-      nrow() == num_pls
+      dplyr::distinct(!!rlang::sym(rating_id)) |>
+      nrow() ==
+      num_pls
 
     if (all_pl_present) {
       tuning_metric <- "roc_auc"
@@ -86,9 +116,7 @@ fit_ml <- function(
     suppressWarnings(
       suppressMessages(
         mod_tune <-
-          tune::tune_grid(mod_wf,
-                          resamples = mod_folds,
-                          grid = 10)
+          tune::tune_grid(mod_wf, resamples = mod_folds, grid = 10)
       )
     )
 
@@ -109,112 +137,74 @@ fit_ml <- function(
     final_wf |>
     workflows::fit(data = train_data)
 
-  mod_ratings <- stats::predict(mod_fit,
-                                ratings_data |>
-                                  dplyr::select(-"rating") |>
-                                  dplyr::mutate(
-                                    dplyr::across(dplyr::any_of(att_vec),
-                                                  ~ factor(.,
-                                                           levels =
-                                                             0:att_levels))
-                                  ),
-                                type = "class") |>
-
-    dplyr::rename(pred_pl = ".pred_class") |>
-    dplyr::bind_cols(ratings_data |>
-                       dplyr::select(-"rating")) |>
-    dplyr::select(dplyr::any_of(att_vec), "pred_pl")
-
-  mod_probs <- stats::predict(mod_fit,
-                              ratings_data |>
-                                dplyr::select(-"rating") |>
-                                dplyr::mutate(
-                                  dplyr::across(dplyr::any_of(att_vec),
-                                                ~ factor(.,
-                                                         levels =
-                                                           0:att_levels))
-                                ),
-                              type = "prob")
-
-  prob_labels <- glue::glue("prob_pl_{1:num_pls}")
-
-  mod_ratings <- dplyr::bind_cols(mod_ratings, mod_probs)
-  names(mod_ratings) <- c(att_vec, "pred_pl", prob_labels)
-
-  mod_ratings <- dplyr::bind_cols(mod_ratings,
-                                  ratings_data |>
-                                    dplyr::select("rating"))
-
-  all_poss_pred <- stats::predict(mod_fit,
-                                  possible_profiles |>
-                                    dplyr::mutate(
-                                      dplyr::across(dplyr::any_of(att_vec),
-                                                    ~ factor(.,
-                                                             levels =
-                                                               0:att_levels))
-                                    ),
-                                  type = "class") |>
-
-    dplyr::rename(pred_pl = ".pred_class") |>
-    dplyr::bind_cols(possible_profiles) |>
-    dplyr::select(dplyr::any_of(att_vec), "pred_pl")
-
-  all_poss_probs <- stats::predict(mod_fit,
-                                   possible_profiles |>
-                                     dplyr::mutate(
-                                       dplyr::across(dplyr::any_of(att_vec),
-                                                     ~ factor(.,
-                                                              levels =
-                                                                0:att_levels))
-                                     ),
-                                   type = "prob")
-
-  prob_labels <- glue::glue("prob_pl_{1:num_pls}")
-
-  all_poss_ratings <- dplyr::bind_cols(all_poss_pred, all_poss_probs)
-  names(all_poss_ratings) <- c(att_vec, "pred_pl", prob_labels)
-
-  acc <- mod_ratings |>
-    dplyr::select("pred_pl", "rating") |>
-    dplyr::mutate(pred_pl = as.numeric(.data$pred_pl),
-                  acc = as.numeric(.data$pred_pl == .data$rating)) |>
-    dplyr::summarize(acc = mean(.data$acc)) |>
-    dplyr::pull(.data$acc)
-
-  assignment_stats <- mod_ratings |>
-    dplyr::select(dplyr::all_of(att_vec)) |>
-    dplyr::distinct() |>
-    dplyr::left_join(observed, by = att_vec) |>
-    dplyr::summarize(n = sum(.data$n),
-                     pct = sum(.data$pct))
-
-  output_stats <- tibble::tibble(profiles_assigned = mod_ratings |>
-                                   dplyr::select(dplyr::any_of(att_vec)) |>
-                                   dplyr::distinct() |>
-                                   nrow(),
-                                 students_with_assigned_profile =
-                                   assignment_stats$n,
-                                 prop_students_with_assigned_profile =
-                                   assignment_stats |>
-                                   dplyr::pull(.data$pct),
-                                 prediction_accuracy = acc)
-
   # Save fitted model
   saveRDS(mod_fit, glue::glue("{output_dir}/fitted_model.rds"))
 
-  # Save model predictions of ratings
-  saveRDS(mod_ratings, glue::glue("{output_dir}/rated_profile_predictions.rds"))
+  # in-sample agreement
+  in_sample_preds <- assign_pl(
+    mod_fit,
+    train_data |>
+      dplyr::select(-"case_wts"),
+    possible_profiles,
+    att_levels = 4,
+    num_pls = 4,
+    rating_id = "rating",
+    output_dir = output_dir
+  )
 
-  # Save model predictions for all possible profiles
-  saveRDS(all_poss_ratings,
-          glue::glue("{output_dir}/all_possible_profile_predictions.rds"))
+  in_sample_preds$model_ratings <- in_sample_preds$model_ratings |>
+    dplyr::mutate(dplyr::across(dplyr::where(is.factor),
+                                ~ as.numeric(as.character(.x)))) |>
+    dplyr::mutate(pred_pl = factor(.data$pred_pl, levels = 1:num_pls),
+                  rating = factor(.data$rating, levels = 1:num_pls))
 
-  # Save overall stats
-  saveRDS(output_stats,
-          glue::glue("{output_dir}/assignment_stats.rds"))
+  in_sample_agreement <- eval_agreement(
+    model_ratings = in_sample_preds$model_ratings,
+    metrics = c("accuracy", "auc", "kappa", "assignment"),
+    observed,
+    num_pls = 4,
+    rating_id = "rating",
+    observed_count_label = observed_count_label,
+    observed_proportion_label = observed_proportion_label,
+    output_dir = output_dir
+  )
 
-  list(fitted_model = mod_fit,
-       rated_profile_predictions = mod_ratings,
-       all_possible_profile_predictions = all_poss_ratings,
-       assignment_stats = output_stats)
+  # Save in-sample agreement
+  saveRDS(in_sample_agreement,
+          glue::glue("{output_dir}/in_sample_agreement.rds"))
+
+  # out-of-sample agreement
+  oos_preds <- assign_pl(
+    mod_fit,
+    test_data,
+    possible_profiles,
+    att_levels = 4,
+    num_pls = 4,
+    rating_id = "rating",
+    output_dir = output_dir
+  )
+
+  oos_preds$model_ratings <- oos_preds$model_ratings |>
+    dplyr::mutate(dplyr::across(dplyr::where(is.factor),
+                                ~ as.numeric(as.character(.x)))) |>
+    dplyr::mutate(pred_pl = factor(.data$pred_pl, levels = 1:num_pls),
+                  rating = factor(.data$rating, levels = 1:num_pls))
+
+  oos_agreement <- eval_agreement(
+    model_ratings = oos_preds$model_ratings,
+    metrics = c("accuracy", "auc", "kappa", "assignment"),
+    observed,
+    num_pls = 4,
+    rating_id = "rating",
+    observed_count_label = observed_count_label,
+    observed_proportion_label = observed_proportion_label,
+    output_dir = output_dir
+  ) |>
+    dplyr::filter(!stringr::str_detect(.data$.metric, "_assigned"))
+
+  # Save in-sample agreement
+  saveRDS(oos_agreement,
+          glue::glue("{output_dir}/out_of_sample_agreement.rds"))
+
+  pmp(mod_fit, in_sample_agreement, oos_agreement)
 }

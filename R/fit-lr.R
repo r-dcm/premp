@@ -18,7 +18,7 @@
 #' ranges to assign profiles during the second round of standard setting.
 #'
 #' @export
-condensed_mastery <- function(
+fit_lr <- function(
   ratings,
   pl_labels,
   att_levels,
@@ -42,18 +42,25 @@ condensed_mastery <- function(
   options(brms.backend = ifelse(is.null(cmdstan_v), "rstan", "cmdstanr"))
 
   att_vec <- ratings |>
-    dplyr::select(-"profile_num", -dplyr::starts_with("rater"), -"rating",
-                  -dplyr::starts_with("table")) |>
+    dplyr::select(
+      -"profile_num",
+      -dplyr::starts_with("rater"),
+      -"rating",
+      -dplyr::starts_with("table")
+    ) |>
     names()
 
   profiles <- ratings |>
-    dplyr::select(-"profile_num", -dplyr::starts_with("rater"), -"rating",
-                  -dplyr::starts_with("table")) |>
+    dplyr::select(
+      -"profile_num",
+      -dplyr::starts_with("rater"),
+      -"rating",
+      -dplyr::starts_with("table")
+    ) |>
     dplyr::rowwise() |>
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
     dplyr::ungroup() |>
-    dplyr::arrange(.data$total, dplyr::across(dplyr::everything(),
-                                              dplyr::desc))
+    dplyr::arrange(.data$total, dplyr::across(dplyr::everything(), dplyr::desc))
 
   pl_dict <- tibble::tibble(pl = pl_labels) |>
     dplyr::mutate(pl_num = dplyr::row_number())
@@ -64,22 +71,29 @@ condensed_mastery <- function(
     dplyr::left_join(pl_dict, by = c("rating" = "pl_num")) |>
     dplyr::mutate(rating = .data$pl) |>
     dplyr::select(-"pl") |>
-    dplyr::mutate(rating = factor(.data$rating,
-                                  levels = pl_labels)) |>
-    tidyr::pivot_wider(names_from = "rating", values_from = "n",
-                       values_fill = 0L, names_expand = TRUE) |>
+    dplyr::mutate(rating = factor(.data$rating, levels = pl_labels)) |>
+    tidyr::pivot_wider(
+      names_from = "rating",
+      values_from = "n",
+      values_fill = 0L,
+      names_expand = TRUE
+    ) |>
     dplyr::rename(profile_id = "profile_num") |>
     dplyr::rowwise() |>
-    dplyr::mutate(atts_mastered =
-                    sum(dplyr::c_across(dplyr::any_of(att_vec)))) |>
+    dplyr::mutate(
+      atts_mastered = sum(dplyr::c_across(dplyr::any_of(att_vec)))
+    ) |>
     dplyr::ungroup() |>
     dplyr::select("profile_id", "atts_mastered", dplyr::any_of(pl_labels))
 
   # Fit models -----------------------------------------------------------------
   ## Step 1: Calculate how many panelists put each profile in each PLD or higher
   rf_dat <- rf_dat |>
-    tidyr::pivot_longer(cols = -c("profile_id", "atts_mastered"),
-                        names_to = "pl", values_to = "num") |>
+    tidyr::pivot_longer(
+      cols = -c("profile_id", "atts_mastered"),
+      names_to = "pl",
+      values_to = "num"
+    ) |>
     dplyr::left_join(pl_dict, by = c("pl")) |>
     dplyr::group_by(.data$profile_id) |>
     dplyr::mutate(total_ratings = sum(.data$num)) |>
@@ -88,16 +102,21 @@ condensed_mastery <- function(
   for (ii in 2:length(pl_labels)) {
     rf_dat <- rf_dat |>
       dplyr::group_by(.data$profile_id) |>
-      dplyr::mutate(tmp = dplyr::case_when(.data$pl_num >= ii ~ num,
-                                           TRUE ~ 0),
-                    !!rlang::sym(pl_labels[ii]) := sum(.data$tmp)) |>
+      dplyr::mutate(
+        tmp = dplyr::case_when(.data$pl_num >= ii ~ num, TRUE ~ 0),
+        !!rlang::sym(pl_labels[ii]) := sum(.data$tmp)
+      ) |>
       dplyr::ungroup() |>
       dplyr::select(-"tmp")
   }
 
   rf_dat <- rf_dat |>
-    dplyr::select("profile_id", "atts_mastered", "total_ratings",
-                  dplyr::any_of(pl_labels[2:length(pl_labels)])) |>
+    dplyr::select(
+      "profile_id",
+      "atts_mastered",
+      "total_ratings",
+      dplyr::any_of(pl_labels[2:length(pl_labels)])
+    ) |>
     dplyr::distinct()
 
   ## Step 2: Convert counts to long-format (i.e., 0s and 1s)
@@ -110,11 +129,16 @@ condensed_mastery <- function(
   for (ii in 2:length(pl_labels)) {
     tmp_rf <- rf_dat |>
       dplyr::group_by(.data$profile_id, .data$atts_mastered) |>
-      dplyr::reframe(!!rlang::sym(pl_labels[ii]) :=
-                       c(rep(0L,
-                             .data$total_ratings -
-                               max(!!rlang::sym(pl_labels[ii]))),
-                         rep(1L, max(!!rlang::sym(pl_labels[ii]))))) |>
+      dplyr::reframe(
+        !!rlang::sym(pl_labels[ii]) := c(
+          rep(
+            0L,
+            .data$total_ratings -
+              max(!!rlang::sym(pl_labels[ii]))
+          ),
+          rep(1L, max(!!rlang::sym(pl_labels[ii])))
+        )
+      ) |>
       dplyr::ungroup() |>
       dplyr::select(-"profile_id", -"atts_mastered")
 
@@ -123,12 +147,20 @@ condensed_mastery <- function(
 
   ## Step 3: Fit a model for each cut point
   model_results <- long_rf |>
-    tidyr::pivot_longer(cols = dplyr::any_of(pl_labels[2:length(pl_labels)]),
-                        names_to = "model",
-                        values_to = "y") |>
+    tidyr::pivot_longer(
+      cols = dplyr::any_of(pl_labels[2:length(pl_labels)]),
+      names_to = "model",
+      values_to = "y"
+    ) |>
     tidyr::nest(model_dat = c("profile_id", "atts_mastered", "y")) |>
-    dplyr::mutate(params = purrr::map(.data$model_dat, fit_model,
-                                      cores = cores, chains = chains)) |>
+    dplyr::mutate(
+      params = purrr::map(
+        .data$model_dat,
+        fit_model,
+        cores = cores,
+        chains = chains
+      )
+    ) |>
     tidyr::unnest("params")
 
   # Calculate pinpointing ranges -----------------------------------------------
@@ -139,37 +171,47 @@ condensed_mastery <- function(
   ## of the x value with a model-predicted .80 probability and 2 above the
   ## inflection point.
   pinpoint_ranges <- model_results |>
-    dplyr::mutate(intercept = purrr::map(.data$intercept,
-                                         posterior::as_draws_df),
-                  slope = purrr::map(.data$slope, posterior::as_draws_df)) |>
+    dplyr::mutate(
+      intercept = purrr::map(.data$intercept, posterior::as_draws_df),
+      slope = purrr::map(.data$slope, posterior::as_draws_df)
+    ) |>
     tidyr::unnest("intercept") |>
     dplyr::group_by(.data$model, .data$slope) |>
     dplyr::summarize(intercept = mean(.data$x), .groups = "drop") |>
     tidyr::unnest("slope") |>
     dplyr::group_by(.data$model, .data$intercept) |>
     dplyr::summarize(slope = mean(.data$x), .groups = "drop") |>
-    dplyr::mutate(.value = ((-1 * log((1 / .5) - 1)) - .data$intercept) /
-                    .data$slope,
-                  .lower = ((-1 * log((1 / .2) - 1)) - .data$intercept) /
-                    .data$slope,
-                  .upper = ((-1 * log((1 / .8) - 1)) - .data$intercept) /
-                    .data$slope) |>
+    dplyr::mutate(
+      .value = ((-1 * log((1 / .5) - 1)) - .data$intercept) /
+        .data$slope,
+      .lower = ((-1 * log((1 / .2) - 1)) - .data$intercept) /
+        .data$slope,
+      .upper = ((-1 * log((1 / .8) - 1)) - .data$intercept) /
+        .data$slope
+    ) |>
     dplyr::select(-"intercept", -"slope") |>
-    dplyr::mutate(.value = round(.data$.value, digits = 0),
-                  .lower = floor(.data$.lower),
-                  .upper = ceiling(.data$.upper)) |>
+    dplyr::mutate(
+      .value = round(.data$.value, digits = 0),
+      .lower = floor(.data$.lower),
+      .upper = ceiling(.data$.upper)
+    ) |>
     dplyr::rowwise() |>
-    dplyr::mutate(.lower = min(.data$.value - min_pinpoint_range,
-                               .data$.lower),
-                  .lower = max(.data$.lower, 0),
-                  .upper = max(.data$.value + min_pinpoint_range,
-                               .data$.upper),
-                  .upper = min(.data$.upper,
-                               length(att_vec) * att_levels)) |>
+    dplyr::mutate(
+      .lower = min(.data$.value - min_pinpoint_range, .data$.lower),
+      .lower = max(.data$.lower, 0),
+      .upper = max(.data$.value + min_pinpoint_range, .data$.upper),
+      .upper = min(.data$.upper, length(att_vec) * att_levels)
+    ) |>
     dplyr::ungroup() |>
-    dplyr::select(cut_point = "model", predicted = ".value",
-                  pinpoint_min = ".lower", pinpoint_max = ".upper")
+    dplyr::select(
+      cut_point = "model",
+      predicted = ".value",
+      pinpoint_min = ".lower",
+      pinpoint_max = ".upper"
+    )
 
   pinpoint_ranges |>
     readr::write_csv(glue::glue("{output_dir}/pp-range.csv"))
+
+  pinpoint_ranges
 }
