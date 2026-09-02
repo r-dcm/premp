@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to premp</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to premp</h1>
+
+
+
+<p>premp is an R package that supports application of a
+machine-learning-based extension of the condensed mastery profiles
+standard setting method <span class="citation">(<a href="#ref-cmp">Clark
+et al., 2017</a>)</span>. premp provides functionality for assigning
+attribute mastery profiles to panelists, fitting a logistic regression
+model to pinpoint the range around inflection points between adjacent
+performance levels following the rangefinding round, fitting a machine
+learning model based on panelist ratings to classify each profile into
+one of the performance levels, predicting performance levels of profiles
+using the machine learning model, evaluation the performance of the
+machine learning model, and conducting a validation exercise. Here,
+you’ll find a brief overview of how to use the premp package to apply
+the machine-learning-based standard setting method.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(premp)</span></code></pre></div>
+<div id="identifying-possible-profiles" class="section level2">
+<h2>Identifying Possible Profiles</h2>
+<p>We begin with identifying which attribute mastery profiles that are
+possible. In practice, this will be determined based on the assessment
+design. For example, adaptive routing may render some attribute mastery
+profiles impossible (e.g., mastery of the highest level of an attribute
+may route students to a higher level on the next attribute and thus some
+mastery patterns involving lower levels are not possible). For the
+purposes of this vignette, we created the set of possible profiles based
+on all possible combinations of attribute mastery. In this example, we
+have an assessment where eight attributes are measured, and each
+attribute is measured at four levels, meaning there are five possible
+mastery scores for each attribute: No mastery, Mastery of Level 1,
+Mastery of Level 2, Mastery of Level 3, Mastery of Level 4.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>possible_profiles <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes/possible_profiles.rds&quot;</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>possible_profiles</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 390,625 × 8</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt;    att_1 att_2 att_3 att_4 att_5 att_6 att_7 att_8</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt;  1     0     0     0     0     0     0     0     0</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt;  2     0     0     0     0     0     0     0     1</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt;  3     0     0     0     0     0     0     0     2</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt;  4     0     0     0     0     0     0     0     3</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt;  5     0     0     0     0     0     0     0     4</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt;  6     0     0     0     0     0     0     1     0</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt;  7     0     0     0     0     0     0     1     1</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt;  8     0     0     0     0     0     0     1     2</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt;  9     0     0     0     0     0     0     1     3</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; 10     0     0     0     0     0     0     1     4</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; # ℹ 390,615 more rows</span></span></code></pre></div>
+</div>
+<div id="observed-profiles" class="section level2">
+<h2>Observed Profiles</h2>
+<p>Next, the profiles observed during the administration of the
+assessment are loaded. The observed profiles object should include a
+column for each of the assessed attributes (i.e., the attribute mastery
+statuses – <code>att_1</code>, <code>att_2</code>, and so on), a column
+for the number of times each profile was observed (e.g.,
+<code>n</code>), and a column for the proportion of students with the
+observed profile (e.g., <code>prop</code>).</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>observed <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes/observed.rds&quot;</span>))</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>observed</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 351,538 × 10</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;    att_1 att_2 att_3 att_4 att_5 att_6 att_7 att_8     n       prop</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt;  1     0     0     0     0     0     0     0     0 5647. 0.00000292</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt;  2     0     0     0     0     0     0     0     1 8855. 0.00000457</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt;  3     0     0     0     0     0     0     0     3 9308. 0.00000481</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;  4     0     0     0     0     0     0     0     4 8310. 0.00000429</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt;  5     0     0     0     0     0     0     1     0 2426. 0.00000125</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;  6     0     0     0     0     0     0     1     1 6346. 0.00000328</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt;  7     0     0     0     0     0     0     1     2 3115. 0.00000161</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;  8     0     0     0     0     0     0     1     3 2409. 0.00000124</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;  9     0     0     0     0     0     0     1     4 1991. 0.00000103</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; 10     0     0     0     0     0     0     2     0 5275. 0.00000272</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; # ℹ 351,528 more rows</span></span></code></pre></div>
+</div>
+<div id="assigning-profiles-for-the-rangefinding-round" class="section level2">
+<h2>Assigning Profiles for the Rangefinding Round</h2>
+<p>Given the observed profiles, profiles are assigned to panelists using
+<code>assign_profiles()</code>. This function takes user-specified
+information about the panel design as the input, and it outputs the
+panelists’ profile assignments.</p>
+<p>For this example, we are using a table-based panel design.
+Specifically, there are five tables (i.e.,
+<code>num_assignment_groups = 5L</code>) with four panelists per table
+(i.e., <code>panelists_per_table = 4L</code>). The function balances
+profile assignment so that one profile is seen by all panelists at all
+of the tables (i.e., <code>shared_profiles = 1</code>) and the panelists
+at each table have two-thirds of the assigned profiles in common (i.e.,
+<code>proportion_of_shared_profiles = .67</code>). To demonstrate, with
+three profiles assigned to each panelist at each level of the total
+levels mastered, one profile will be seen by all of hte panelsits, and
+two of the three assigned profiles assigned to each panelist, which
+includes the profile seen by all panelists, will be common to all
+panelists at the table. If the user wants to assign the same set of
+profiles to all panelists at a table, this can be done with
+<code>proportion_of_shared_profiles = 1</code>. The user also specifies
+the values of the total number of skills mastered to be used for
+assignment (i.e.,
+<code>included_totals = c(5L, 10L, 15L, 20L, 25L, 30L)</code>) and the
+number of profiles to assign per level (i.e.,
+<code>profiles_per_level = 3L</code>). The total number of skills
+mastered is based on the total number of levels mastered across the
+attributes measured by the assessment. For instance, with eight assessed
+attributes with four levels each (e.g., scores of 0, 1, 2, 3, or 4 are
+possible for each attribute), the possible levels mastered ranges from 0
+(i.e., no mastery of any level for any attribute) to 32 (i.e., mastery
+of all levels for all attributes). <code>included_totals</code>
+specifies the profiles to retain for assignment based on the sum of
+levels mastered across all attributes. In this example, we specified
+that profiles with 5, 10, 15, 20, 25, and 30 levels mastered should be
+retained and that each panelist should be assigned three profiles at
+each of these levels. The <code>observed_count_label</code> parameter
+specifies the field name for the observed profiles’ sample sizes (e.g.,
+“n”), and the <code>observed_proportion_label</code> parameter specifies
+the field name for the observed profiles’ proportions (e.g.,
+“prop”).</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>final_assignments <span class="ot">&lt;-</span> <span class="fu">assign_profiles</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="at">num_assignment_groups =</span> <span class="dv">5</span><span class="dt">L</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">table_configuration =</span> <span class="fu">list</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    <span class="at">panelists_per_table =</span> <span class="dv">4</span><span class="dt">L</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="at">proportion_of_shared_profiles =</span> .<span class="dv">67</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  ),</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="at">observed =</span> observed,</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="at">observed_count_label =</span> <span class="st">&quot;n&quot;</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  <span class="at">observed_proportion_label =</span> <span class="st">&quot;prop&quot;</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="at">shared_profiles =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="at">included_totals =</span> <span class="fu">c</span>(<span class="dv">5</span><span class="dt">L</span>, <span class="dv">10</span><span class="dt">L</span>, <span class="dv">15</span><span class="dt">L</span>, <span class="dv">20</span><span class="dt">L</span>, <span class="dv">25</span><span class="dt">L</span>, <span class="dv">30</span><span class="dt">L</span>),</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="at">profiles_per_level =</span> <span class="dv">3</span><span class="dt">L</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>)</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>final_assignments</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; # A tibble: 180 × 14</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt;    att_1 att_2 att_3 att_4 att_5 att_6 att_7 att_8 total table  rater1 rater2</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;glue&gt;  &lt;int&gt;  &lt;int&gt;</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt;  1     2     0     0     3     0     0     0     0     5 table2      1      1</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;  2     1     3     0     0     1     0     0     0     5 table1      0      1</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;  3     1     2     0     0     1     0     1     0     5 table3      1      0</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;  4     1     0     1     0     3     0     0     0     5 table2      0      0</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;  5     1     0     1     0     0     3     0     0     5 table5      0      1</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt;  6     1     0     0     0     3     0     1     0     5 table3      0      0</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;  7     1     0     0     0     0     3     0     1     5 table1      0      0</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt;  8     1     0     0     0     0     1     3     0     5 table4      1      1</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;  9     0     4     0     1     0     0     0     0     5 table2      0      0</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; 10     0     3     1     0     0     0     1     0     5 table5      1      1</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; # ℹ 170 more rows</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; # ℹ 2 more variables: rater3 &lt;int&gt;, rater4 &lt;int&gt;</span></span></code></pre></div>
+<p>The output of <code>assign_profiles()</code> includes a column for
+each measured attribute, the total number of skills mastered, table
+number (when applicable), and a column for each rater. In the column for
+each rater, values of 1 indicate the panelist is assigned the profile,
+and values of 0 indicate the panelist is not assigned the profile. In a
+table-based design, there is one column for each rater at each table. In
+other words, <code>rater1</code> at <code>table1</code> is different
+than <code>rater1</code> at <code>table2</code>.</p>
+<p>Instead of a table-based design, we could assign profiles directly to
+panelists. The following example assigns profiles to 10 panelists, where
+one of profile is common to all panelists (i.e.,
+<code>shared_profiles = 1L</code>). The panelist-based design uses the
+same settings for <code>included_totals</code> and
+<code>profiles_per_level</code>. Note that the
+<code>table_configuration</code> is not provided to
+<code>assign_profiles()</code>, indicating a panelist-based design.
+Consequently, there is no <code>table</code> field in the output when
+using a panelist-based design.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>final_assignments <span class="ot">&lt;-</span> <span class="fu">assign_profiles</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">num_assignment_groups =</span> <span class="dv">10</span><span class="dt">L</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">observed =</span> observed,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">observed_count_label =</span> <span class="st">&quot;n&quot;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">observed_proportion_label =</span> <span class="st">&quot;prop&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">shared_profiles =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">included_totals =</span> <span class="fu">c</span>(<span class="dv">5</span><span class="dt">L</span>, <span class="dv">10</span><span class="dt">L</span>, <span class="dv">15</span><span class="dt">L</span>, <span class="dv">20</span><span class="dt">L</span>, <span class="dv">25</span><span class="dt">L</span>, <span class="dv">30</span><span class="dt">L</span>),</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="at">profiles_per_level =</span> <span class="dv">3</span><span class="dt">L</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="panelist-ratings" class="section level2">
+<h2>Panelist Ratings</h2>
+<p>At this point in the standard setting process, the assigned profiles
+are presented to panelists at the standard setting event, where
+panelists provide performance level ratings to each assigned profiles.
+The dataset with fields for the profile number, attribute names/labels,
+table id (when applicable), rater id, and rating will need to be
+loaded.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>ratings <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes/ratings_r1.rds&quot;</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>ratings</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 360 × 12</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt;    profile_num att_1 att_2 att_3 att_4 att_5 att_6 att_7 att_8 table  rater_id</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt;          &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;glue&gt; &lt;chr&gt;   </span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt;  1           1     3     0     0     2     0     0     0     0 table3 rater1  </span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt;  2           1     3     0     0     2     0     0     0     0 table3 rater2  </span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt;  3           1     3     0     0     2     0     0     0     0 table3 rater3  </span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt;  4           1     3     0     0     2     0     0     0     0 table3 rater4  </span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt;  5           2     1     3     0     0     0     0     1     0 table1 rater1  </span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt;  6           2     1     3     0     0     0     0     1     0 table1 rater2  </span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt;  7           2     1     3     0     0     0     0     1     0 table1 rater3  </span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt;  8           2     1     3     0     0     0     0     1     0 table1 rater4  </span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt;  9           3     1     3     0     0     0     0     1     0 table2 rater1  </span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; 10           3     1     3     0     0     0     0     1     0 table2 rater2  </span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; # ℹ 350 more rows</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; # ℹ 1 more variable: rating &lt;dbl&gt;</span></span></code></pre></div>
+</div>
+<div id="identifying-profile-ranges-for-pinpointing" class="section level2">
+<h2>Identifying Profile Ranges for Pinpointing</h2>
+<p><code>fit_lr()</code> fits a logistic regression model to identify a
+range around the inflection points between adjacent performance levels
+based on the ratings from the rangefinding round. This function receives
+the panelists’ ratings, the performance level labels, the number of
+levels per attribute, and the output directory as input. The function
+automatically saves the ranges of potential inflection points to the
+output directory as <code>pp-range.csv</code>; however, it also returns
+these ranges, which we save in <code>pinpoint_ranges</code>.
+<code>pinpoint_ranges</code> contains a column specifying the cut-point,
+along with columns for the predicted inflection point, the lower bound
+for the range around the inflection point, and the upper bound for the
+range around the inflection point. For example, the range around the
+predicted inflection point for the cut-point between the
+<em>Emerging</em> and <em>Approaching the Target</em> performance levels
+(labelled as “Approaching the Target” in <code>pinpoint_ranges</code>)
+is 8 skills mastered with a lower bound of 3 skills mastered and an
+upper bound of 12 skills mastered.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>pl_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Emerging&quot;</span>, <span class="st">&quot;Approaching the Target&quot;</span>, <span class="st">&quot;At Target&quot;</span>, <span class="st">&quot;Advanced&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>pinpoint_ranges <span class="ot">&lt;-</span> <span class="fu">fit_lr</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  ratings,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  pl_labels,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">att_levels =</span> <span class="dv">4</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>pinpoint_ranges</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 4</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;   cut_point              predicted pinpoint_min pinpoint_max</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                      &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; 1 Advanced                      23           20           27</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; 2 Approaching the Target         8            3           12</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; 3 At Target                     17           14           21</span></span></code></pre></div>
+</div>
+<div id="assigning-profiles-for-the-pinpointing-round" class="section level2">
+<h2>Assigning Profiles for the Pinpointing Round</h2>
+<p>The range around the inflection points are used to retain observed
+profiles for possible assignment in the pinpointing round. Then, the
+previously assigned profiles should be removed from the set of possible
+profiles. We retain the possible profiles where the total number of
+levels mastered is within the identified range around each inflection
+point with <code>profiles_to_retain()</code>. The profiles eligible for
+pinpointing assignment (i.e., the output of
+<code>profiles_to_retain()</code>) and the observed profiles are used to
+assigned to panelists using <code>assign_profiles()</code>. Of note, the
+profiles assigned in the rangefinding round (i.e.,
+<code>assigned_profiles = ratings</code>) are input into
+<code>assign_profiles()</code> when assigning profiles for the
+pinpointing round to ensure these profiles are not assigned again. In
+the example, the design for the pinpointing round is largely similar to
+the design of the rangefinding round. The primary difference is that
+only two profiles are assigned at each level during pinpointing (i.e.,
+<code>profiles_per_level = 2L</code>) whereas three profiles were
+assigned at each level during rangefinding. The format of the output
+remains the same.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>retain_totals <span class="ot">&lt;-</span> <span class="fu">profiles_to_retain</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  pinpoint_ranges,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">num_attributes =</span> <span class="dv">8</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="at">attribute_levels =</span> <span class="dv">4</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>final_assignments <span class="ot">&lt;-</span> <span class="fu">assign_profiles</span>(</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="at">num_assignment_groups =</span> <span class="dv">5</span><span class="dt">L</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="at">table_configuration =</span> <span class="fu">list</span>(</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>    <span class="at">panelists_per_table =</span> <span class="dv">4</span><span class="dt">L</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>    <span class="at">proportion_of_shared_profiles =</span> .<span class="dv">67</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>  ),</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  <span class="at">observed =</span> observed,</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>  <span class="at">observed_count_label =</span> <span class="st">&quot;n&quot;</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>  <span class="at">observed_proportion_label =</span> <span class="st">&quot;prop&quot;</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>  <span class="at">shared_profiles =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>  <span class="at">included_totals =</span> retain_totals,</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>  <span class="at">profiles_per_level =</span> <span class="dv">2</span><span class="dt">L</span>,</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>  <span class="at">assigned_profiles =</span> ratings,</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>  <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>)</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>final_assignments</span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; # A tibble: 600 × 14</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt;    att_1 att_2 att_3 att_4 att_5 att_6 att_7 att_8 total table  rater1 rater2</span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;glue&gt;  &lt;int&gt;  &lt;int&gt;</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a><span class="co">#&gt;  1     3     0     0     0     0     0     0     0     3 table5      0      0</span></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co">#&gt;  2     1     1     0     1     0     0     0     0     3 table3      0      0</span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co">#&gt;  3     1     1     0     0     1     0     0     0     3 table2      0      0</span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a><span class="co">#&gt;  4     1     0     1     0     0     1     0     0     3 table2      1      0</span></span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="co">#&gt;  5     1     0     0     2     0     0     0     0     3 table3      1      0</span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt;  6     1     0     0     1     1     0     0     0     3 table2      0      1</span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt;  7     1     0     0     0     0     0     2     0     3 table1      1      1</span></span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt;  8     1     0     0     0     0     0     2     0     3 table2      1      1</span></span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">#&gt;  9     1     0     0     0     0     0     2     0     3 table3      1      1</span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="co">#&gt; 10     1     0     0     0     0     0     2     0     3 table4      1      1</span></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="co">#&gt; # ℹ 590 more rows</span></span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a><span class="co">#&gt; # ℹ 2 more variables: rater3 &lt;int&gt;, rater4 &lt;int&gt;</span></span></code></pre></div>
+<p>As with profile assignment for the rangefinding round, we could also
+use a panelist-based design for the pinpointing round. Like the
+rangefinding round, this example assigns profiles to 10 panelists and
+the remaining settings are consistent with the table-based design.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>final_assignments <span class="ot">&lt;-</span> <span class="fu">assign_profiles</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="at">num_assignment_groups =</span> <span class="dv">10</span><span class="dt">L</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="at">observed =</span> observed,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="at">observed_count_label =</span> <span class="st">&quot;n&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="at">observed_proportion_label =</span> <span class="st">&quot;prop&quot;</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">shared_profiles =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="at">included_totals =</span> retain_totals,</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="at">profiles_per_level =</span> <span class="dv">2</span><span class="dt">L</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="at">assigned_profiles =</span> ratings,</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="preparing-the-ratings-for-modeling" class="section level2">
+<h2>Preparing the Ratings for Modeling</h2>
+<p>Once the panelists have rated profiles during the pinpointing round,
+the ratings from the rangefinding and pinpointing rounds need to be
+compiled into a single dataset. The panelists’ ratings from each round
+will need to be loaded. The compiled data set will need columns for each
+of the measured attributes, table id (when applicable), rater id, and
+rating. Of note, the compiled data should be in long format (i.e., one
+row per profile and panelist rating).</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>ratings_r1 <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes/ratings_r1.rds&quot;</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>ratings_r2 <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes/ratings_r2.rds&quot;</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>ratings_data <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(ratings_r1, ratings_r2) <span class="sc">|&gt;</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span><span class="st">&quot;profile_num&quot;</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>ratings_data</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1,320 × 11</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt;    att_1 att_2 att_3 att_4 att_5 att_6 att_7 att_8 table  rater_id rating</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;glue&gt; &lt;chr&gt;     &lt;dbl&gt;</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt;  1     3     0     0     2     0     0     0     0 table3 rater1        2</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt;  2     3     0     0     2     0     0     0     0 table3 rater2        1</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt;  3     3     0     0     2     0     0     0     0 table3 rater3        1</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co">#&gt;  4     3     0     0     2     0     0     0     0 table3 rater4        1</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt;  5     1     3     0     0     0     0     1     0 table1 rater1        1</span></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="co">#&gt;  6     1     3     0     0     0     0     1     0 table1 rater2        1</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co">#&gt;  7     1     3     0     0     0     0     1     0 table1 rater3        1</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt;  8     1     3     0     0     0     0     1     0 table1 rater4        2</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co">#&gt;  9     1     3     0     0     0     0     1     0 table2 rater1        1</span></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co">#&gt; 10     1     3     0     0     0     0     1     0 table2 rater2        2</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt; # ℹ 1,310 more rows</span></span></code></pre></div>
+</div>
+<div id="fitting-the-machine-learning-models" class="section level2">
+<h2>Fitting the Machine Learning Models</h2>
+<p>We fit the machine learning model to the panelist rating data using
+<code>fit_ml()</code>. Users define the machine learning workflow, using
+models with functionality supported by tidymodels <span class="citation">(<a href="#ref-tidymodels_package">Kuhn &amp; Wickham,
+2020</a>)</span>. When the model involves hyperparameters, the workflow
+can specify that the hyperparameters need to be tuned or the
+hyperparameters can be prespecified. The workflow, panelist rating data,
+observed profiles, and possible profiles are included as input to
+<code>fit_ml()</code>. Users also specify the number of levels per
+attribute (i.e., <code>att_levels</code>), the number of performance
+levels (i.e., <code>num_pls</code>), the label for the panelist ratings
+column in the panelist rating data (i.e.,
+<code>rating_id = &quot;rating&quot;</code>), the label for the counts in the
+observed profiles (i.e., <code>observed_count_label = &quot;n&quot;</code>), the
+label for the proportions in the observed profiles (i.e.,
+<code>observed_proportion_label = &quot;prop&quot;</code>), the desired agreement
+metrics (i.e., <code>metrics = c(&quot;accuracy&quot;)</code>), and the output
+directory. Output from <code>fit_ml()</code> is an S7 class that
+includes the fitted model, the in-sample agreement metrics, and the
+out-of-sample agreement metrics.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>workflow <span class="ot">&lt;-</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  parsnip<span class="sc">::</span><span class="fu">rand_forest</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>    <span class="at">mtry =</span> <span class="dv">1</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>    <span class="at">trees =</span> parsnip<span class="sc">::</span><span class="fu">tune</span>(),</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>    <span class="at">min_n =</span> parsnip<span class="sc">::</span><span class="fu">tune</span>()</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  parsnip<span class="sc">::</span><span class="fu">set_mode</span>(<span class="st">&quot;classification&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  parsnip<span class="sc">::</span><span class="fu">set_engine</span>(<span class="st">&quot;ranger&quot;</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>workflow <span class="ot">&lt;-</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>  parsnip<span class="sc">::</span><span class="fu">rand_forest</span>(<span class="at">mtry =</span> <span class="dv">1</span>, <span class="at">trees =</span> <span class="dv">100</span>, <span class="at">min_n =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>  parsnip<span class="sc">::</span><span class="fu">set_mode</span>(<span class="st">&quot;classification&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  parsnip<span class="sc">::</span><span class="fu">set_engine</span>(<span class="st">&quot;ranger&quot;</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>possible_profiles <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes/possible_profiles.rds&quot;</span>))</span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>fitted_model <span class="ot">&lt;-</span> <span class="fu">fit_ml</span>(</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>  <span class="at">user_workflow =</span> workflow,</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>  ratings_data,</span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>  observed,</span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>  possible_profiles,</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>  <span class="at">att_levels =</span> <span class="dv">4</span>,</span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a>  <span class="at">num_pls =</span> <span class="dv">4</span>,</span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a>  <span class="at">rating_id =</span> <span class="st">&quot;rating&quot;</span>,</span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>  <span class="at">observed_count_label =</span> <span class="st">&quot;n&quot;</span>,</span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a>  <span class="at">observed_proportion_label =</span> <span class="st">&quot;prop&quot;</span>,</span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>  <span class="at">metrics =</span> <span class="fu">c</span>(<span class="st">&quot;accuracy&quot;</span>, <span class="st">&quot;auc&quot;</span>, <span class="st">&quot;kappa&quot;</span>, <span class="st">&quot;assignment&quot;</span>),</span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>  <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="model-evaluation" class="section level2">
+<h2>Model Evaluation</h2>
+<p>The <code>fitted_model</code> object includes information to evaluate
+model performance. The model agreement output includes a data frame with
+the requested evaluation metrics for in-sample and out-of-sample
+agreement, with one row per metric. The in-sample agreement can be
+accessed using <code>fitted_model@in_sample_agreement</code>, and the
+out-of-sample agreement can be accessed using
+<code>fitted_model_out_of_sample_agreement</code>.</p>
+<p>The supported evaluation metrics are <code>accuracy</code> (i.e.,
+classification accuracy), <code>adjacent</code> (i.e., adjacent
+classification accuracy), <code>kappa</code> (i.e., Cohen’s kappa),
+<code>auc</code> (i.e., area under the receiver operating characteristic
+curve [ROC AUC]), and <code>assignment</code> (i.e., the number of
+profiles assigned, the number of students with the assigned profiles,
+and the proportion of students with the assigned profiles). Other than
+<code>assignment</code>, the evaluation metrics are intended to quantify
+how well the fitted model recovered the panelists’ ratings. The
+<code>assignment</code> metrics are only included in
+<code>@in_sample_agreement</code> as these are only intended to reflect
+whether the profiles used to train the model generally reflect the
+distribution of observed profiles.</p>
+<p>For this example, focusing first on the in-sample agreement (i.e.,
+<code>fitted_model@in_sample_agreement</code>), the classification
+accuracy (i.e., the percentage of panelist ratings that were accurately
+predicted) was approximately 77%, with a ROC AUC of .93 and a Cohen’s
+kappa of .70. These performance metrics indicate acceptable agreement
+between the model predictions and panelist ratings, indicating a
+successful application of the method. However, the in-sample agreement
+is based on how well the model fits the data used to fit the model, and
+these metrics may not be the best reflection of how well the model
+generalizes. The <code>assignment</code> metrics in
+<code>@in_sample_agreement</code> allow for a comprehensive evaluation
+of model generalizability as it pertains to model training. For
+instance, these statistics allow the user to evaluate whether a
+substantial percentage of students were represented in the assigned
+profiles. To demonstrate, in this example, we randomly assigned observed
+profiles with a uniform distribution, meaning profiles were generally
+observed with the same level of prevalence. Consequently, the assigned
+profiles represent a small proportion of students, which may have
+implications for generalizability if we were to observe this proportion
+of students represented in the assigned profiles in an actual standard
+setting. Users will have to define their own evaluation thresholds to
+determine whether the machine learning models demonstrate sufficient
+evidence of generalizability, accuracy, and reliability as well as
+whether the models are trained on profiles reflecting an adequate
+proportion of the student population.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>fitted_model<span class="sc">@</span>in_sample_agreement</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 3</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt;   .metric                             .estimator     .estimate</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                               &lt;chr&gt;              &lt;dbl&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; 1 accuracy                            multiclass       0.766  </span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; 2 roc_auc                             hand_till        0.924  </span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; 3 cohens_kappa                        multiclass       0.685  </span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt; 4 profiles_assigned                   &lt;NA&gt;           608      </span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; 5 students_with_assigned_profile      &lt;NA&gt;       3983482.     </span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; 6 prop_students_with_assigned_profile &lt;NA&gt;             0.00206</span></span></code></pre></div>
+<p>Focusing now on out-of-sample agreement (i.e.,
+<code>fitted_model@out_of_sample_agreement</code>), the classification
+accuracy (i.e., the percentage of panelist ratings that were accurately
+predicted) was approximately 73%, with a ROC AUC of .89 and a Cohen’s
+kappa of .63. Of note, it is expected that the evaluation metrics will
+reflect poorer performance for out-of-sample agreement as these reflect
+performance with profiles that the model has not seen before.
+Consequently, out-of-sample agreement is a better reflection of model
+generalizability. Estimates approaching the in-sample agreement rates
+indicate increasing model generalizability. For example, out-of-sample
+classification accuracy of 73% compared to in-sample classification
+accuracy of 77% would indicate better generalizability than if the
+out-of-sample classification accuracy had been 65%.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>fitted_model<span class="sc">@</span>out_of_sample_agreement</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 3</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt;   .metric      .estimator .estimate</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;          &lt;dbl&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt; 1 accuracy     multiclass     0.726</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; 2 roc_auc      hand_till      0.877</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; 3 cohens_kappa multiclass     0.626</span></span></code></pre></div>
+</div>
+<div id="model-validation" class="section level2">
+<h2>Model Validation</h2>
+<p>A validation step is necessary to gather evidence that the model is
+producing reasonable performance level predictions since the model can
+likely only be trained on panelist rating data reflecting a small subset
+of the observed profiles. In the validation exercise, previously unseen
+profiles are shown to panelists along with the model-predicted
+performance levels. The panelists are then asked whether they agree with
+the model-predicted performance level.</p>
+<p>First, a new set of unseen profiles must be assigned to the
+panelists. This set of profiles is assigned similar to assignment for
+the range finding and pinpointing rounds, with the exception that all
+previous assignments are input into <code>assign_profiles()</code> so
+that only new profiles are assigned during the validation exercise.
+Notably, the standard setting design (e.g., number of panelists) should
+not change from range finding and pinpointing to the validation
+exercise, but there may be design choices pertaining to which profiles
+to assign (e.g., the number of profiles to assign at each level).</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>validation_assignments <span class="ot">&lt;-</span> <span class="fu">assign_profiles</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>    <span class="at">num_assignment_groups =</span> <span class="dv">5</span><span class="dt">L</span>,</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>    <span class="at">table_configuration =</span> <span class="fu">list</span>(</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>      <span class="at">panelists_per_table =</span> <span class="dv">4</span><span class="dt">L</span>,</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>      <span class="at">proportion_of_shared_profiles =</span> .<span class="dv">67</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>    ),</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>    <span class="at">observed =</span> observed,</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>    <span class="at">observed_count_label =</span> <span class="st">&quot;n&quot;</span>,</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>    <span class="at">observed_proportion_label =</span> <span class="st">&quot;prop&quot;</span>,</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>    <span class="at">shared_profiles =</span> <span class="dv">1</span><span class="dt">L</span>,</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>    <span class="at">included_totals =</span> <span class="fu">c</span>(<span class="dv">5</span><span class="dt">L</span>, <span class="dv">10</span><span class="dt">L</span>, <span class="dv">15</span><span class="dt">L</span>, <span class="dv">20</span><span class="dt">L</span>, <span class="dv">25</span><span class="dt">L</span>),</span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a>    <span class="at">profiles_per_level =</span> <span class="dv">2</span><span class="dt">L</span>,</span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a>    <span class="at">assigned_profiles =</span> ratings,</span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>    <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a>  )</span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a>validation_assignments</span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="co">#&gt; # A tibble: 125 × 14</span></span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="co">#&gt;    att_1 att_2 att_3 att_4 att_5 att_6 att_7 att_8 total table  rater1 rater2</span></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;glue&gt;  &lt;int&gt;  &lt;int&gt;</span></span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="co">#&gt;  1     3     0     0     0     0     0     2     0     5 table1      0      0</span></span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a><span class="co">#&gt;  2     2     0     1     2     0     0     0     0     5 table5      0      1</span></span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a><span class="co">#&gt;  3     2     0     1     1     0     0     0     1     5 table3      0      1</span></span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a><span class="co">#&gt;  4     2     0     0     2     0     0     0     1     5 table5      0      0</span></span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a><span class="co">#&gt;  5     1     3     0     1     0     0     0     0     5 table1      0      1</span></span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="co">#&gt;  6     1     1     0     0     0     1     0     2     5 table2      0      1</span></span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="co">#&gt;  7     1     0     1     2     0     0     1     0     5 table3      0      0</span></span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="co">#&gt;  8     1     0     0     4     0     0     0     0     5 table2      0      0</span></span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co">#&gt;  9     1     0     0     1     1     0     1     1     5 table3      1      0</span></span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="co">#&gt; 10     0     2     0     0     0     0     3     0     5 table2      1      0</span></span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="co">#&gt; # ℹ 115 more rows</span></span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a><span class="co">#&gt; # ℹ 2 more variables: rater3 &lt;int&gt;, rater4 &lt;int&gt;</span></span></code></pre></div>
+<p>Once the set of profiles for the validation exercise have been
+identified, performance levels can be assigned to each of the profiles
+in the validation exercise using <code>assign_pl()</code>. Prior to
+inputting <code>validation_assignments</code> into
+<code>assign_pl()</code>, we need to insert a dummy column for rating
+(i.e., <code>mutate(rating = NA)</code>). Further, we need to remove
+<code>total</code> from <code>validation_assignments</code> (i.e.,
+<code>select(-&quot;total&quot;)</code>), pivot the data into long-form (i.e.,
+<code>pivot_longer(cols = dplyr::starts_with(&quot;rater&quot;), names_to = &quot;rater_id&quot;, values_to = &quot;assigned&quot;)</code>),
+filter down to only the assigned profiles (i.e.,
+<code>filter(assigned == 1)</code>, and remove <code>assigned</code>
+(i.e., <code>select(-&quot;assigned&quot;)</code>). Because this is the validation
+exercise, we are only interesting in the model ratings, so we limit the
+output of <code>assign_pl()</code> using
+<code>$model_ratings</code>.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>validation_pl <span class="ot">&lt;-</span> <span class="fu">assign_pl</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  fitted_model<span class="sc">@</span>model,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  validation_assignments <span class="sc">|&gt;</span> </span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">rating =</span> <span class="cn">NA</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span><span class="st">&quot;total&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>    tidyr<span class="sc">::</span><span class="fu">pivot_longer</span>(<span class="at">cols =</span> dplyr<span class="sc">::</span><span class="fu">starts_with</span>(<span class="st">&quot;rater&quot;</span>),</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>                        <span class="at">names_to =</span> <span class="st">&quot;rater_id&quot;</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>                        <span class="at">values_to =</span> <span class="st">&quot;assigned&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(assigned <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span><span class="st">&quot;assigned&quot;</span>),</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>  possible_profiles,</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>  <span class="at">att_levels =</span> <span class="dv">4</span>,</span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a>  <span class="at">num_pls =</span> <span class="dv">4</span>,</span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>  <span class="at">rating_id =</span> <span class="st">&quot;rating&quot;</span>,</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a>  <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a>)<span class="sc">$</span>model_ratings <span class="sc">|&gt;</span> </span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a>  <span class="fu">select</span>(dplyr<span class="sc">::</span><span class="fu">starts_with</span>(<span class="st">&quot;att_&quot;</span>), <span class="st">&quot;pred_pl&quot;</span>, dplyr<span class="sc">::</span><span class="fu">starts_with</span>(<span class="st">&quot;prob&quot;</span>),</span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a>         <span class="st">&quot;rating&quot;</span>)</span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a></span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a>validation_pl</span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2,100 × 14</span></span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a><span class="co">#&gt;    att_1 att_2 att_3 att_4 att_5 att_6 att_7 att_8 pred_pl prob_pl_1 prob_pl_2</span></span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;fct&gt;       &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="co">#&gt;  1     3     0     0     0     0     0     2     0 1           0.730     0.209</span></span>
+<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a><span class="co">#&gt;  2     2     0     1     2     0     0     0     0 1           0.705     0.252</span></span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a><span class="co">#&gt;  3     2     0     1     1     0     0     0     1 1           0.687     0.255</span></span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a><span class="co">#&gt;  4     2     0     0     2     0     0     0     1 1           0.647     0.294</span></span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a><span class="co">#&gt;  5     1     3     0     1     0     0     0     0 1           0.570     0.405</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a><span class="co">#&gt;  6     1     1     0     0     0     1     0     2 1           0.782     0.151</span></span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a><span class="co">#&gt;  7     1     0     1     2     0     0     1     0 1           0.712     0.257</span></span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a><span class="co">#&gt;  8     1     0     0     4     0     0     0     0 1           0.698     0.258</span></span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a><span class="co">#&gt;  9     1     0     0     1     1     0     1     1 1           0.755     0.218</span></span>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a><span class="co">#&gt; 10     0     2     0     0     0     0     3     0 1           0.617     0.356</span></span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a><span class="co">#&gt; # ℹ 2,090 more rows</span></span>
+<span id="cb15-35"><a href="#cb15-35" tabindex="-1"></a><span class="co">#&gt; # ℹ 3 more variables: prob_pl_3 &lt;dbl&gt;, prob_pl_4 &lt;dbl&gt;, rating &lt;lgl&gt;</span></span></code></pre></div>
+<p>After collecting panelists’ ratings during the validation exercise
+and merging them with the profiles and their model-assigned performance
+levels, the validation ratings will need to be loaded. The user will
+input the validation ratings, the label for the panelists’ ratings in
+the validation exercise, the desired evaluation metrics, and the number
+of performance levels into <code>eval_agreement()</code>. The resulting
+metrics are used to evaluate whether there is sufficient agreement
+between the panelists and the model. If the prespecified acceptance
+criteria are met, the validation exercise ends. If not, the panelist
+ratings from the validation exercise can be added to the ratings from
+the rangefinding and pinpointing rounds to retrain the model, and the
+validation exercise can be repeated.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>validation_ratings <span class="ot">&lt;-</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  <span class="fu">readRDS</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes/validation_ratings.rds&quot;</span>))</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>validation_agreement <span class="ot">&lt;-</span> <span class="fu">eval_agreement</span>(</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>    <span class="at">model_ratings =</span> validation_ratings,</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>    <span class="at">metrics =</span> <span class="fu">c</span>(<span class="st">&quot;accuracy&quot;</span>, <span class="st">&quot;auc&quot;</span>, <span class="st">&quot;kappa&quot;</span>),</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>    observed,</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>    <span class="at">num_pls =</span> <span class="dv">4</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>    <span class="at">rating_id =</span> <span class="st">&quot;rating&quot;</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>    <span class="at">observed_count_label =</span> <span class="st">&quot;n&quot;</span>,</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>    <span class="at">observed_proportion_label =</span> <span class="st">&quot;prop&quot;</span>,</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a>    <span class="at">output_dir =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">&quot;vignettes&quot;</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a>  )</span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>validation_agreement</span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; # A tibble: 3 × 3</span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co">#&gt;   .metric      .estimator .estimate</span></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;          &lt;dbl&gt;</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="co">#&gt; 1 accuracy     multiclass     0.870</span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="co">#&gt; 2 roc_auc      hand_till      0.931</span></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="co">#&gt; 3 cohens_kappa multiclass     0.821</span></span></code></pre></div>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2 class="unnumbered">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0" line-spacing="2">
+<div id="ref-cmp" class="csl-entry">
+Clark, A. K., Nash, B., Karvonen, M., &amp; Kingston, N. (2017).
+Condensed mastery profile method for setting standards for diagnostic
+assessment systems. <em><span>Educational Measurement: Issues and
+Practice</span></em>, <em>36</em>(4), 5–15. <a href="https://doi.org/10.1111/emip.12162">https://doi.org/10.1111/emip.12162</a>
+</div>
+<div id="ref-tidymodels_package" class="csl-entry">
+Kuhn, M., &amp; Wickham, H. (2020). <em>Tidymodels: A collection of
+packages for modeling and machine learning using tidyverse
+principles.</em> <a href="https://www.tidymodels.org">https://www.tidymodels.org</a>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
