@@ -7,11 +7,13 @@
 assign_profiles(
   num_assignment_groups,
   table_configuration = NULL,
-  possible_profiles,
   observed,
   observed_count_label = "n",
-  range_of_profiles,
+  observed_proportion_label = "prop",
+  shared_profiles = 1L,
+  included_totals,
   profiles_per_level,
+  assigned_profiles = NULL,
   output_dir
 )
 }
@@ -27,21 +29,29 @@ the number of panelists at each table and \code{proportion_of_shared_profiles}
 indicating the proportion of profiles that are common to all of the panelists
 at each table.}
 
-\item{possible_profiles}{A tibble with one row for each attribute mastery
-profiles that is possible to be assigned to raters.}
-
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
 
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in \code{observed} (default is 'n').}
 
-\item{range_of_profiles}{The increment of the total skills mastered, based on
+\item{observed_proportion_label}{A character string for the field name of the
+observed proportions in \code{observed} (default is 'prop').}
+
+\item{shared_profiles}{The number of profiles that are shared by all
+panelists (default is 1). With a table-based design, this is the number of
+profiles that are seen by all tables. With a panelist-based design, this is
+the number of profiles seen by all panelists.}
+
+\item{included_totals}{The increment of the total skills mastered, based on
 the attribute mastery profiles, that should be retained during profile
 assignment.}
 
 \item{profiles_per_level}{An integer specifying the number of profiles to
 assign to each rater at each level of the total skills mastered.}
+
+\item{assigned_profiles}{A tibble with the profiles that have already been
+assigned to panelists, where there is one row for each assigned profile.}
 
 \item{output_dir}{The output directory for the profile assignments.}
 }

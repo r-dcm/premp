@@ -9,7 +9,6 @@ License: MIT + file LICENSE
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 URL: https://github.com/r-dcm/premp
 BugReports: https://github.com/r-dcm/premp/issues
 Depends:
@@ -30,10 +29,13 @@ Imports:
     recipes,
     rlang,
     rsample,
+    S7,
+    stringr,
     tibble,
     tidyr,
     tune,
-    workflows
+    workflows,
+    yardstick
 Suggests:
     here,
     knitr,
@@ -42,3 +44,4 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

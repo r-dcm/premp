@@ -19,5 +19,10 @@ Useful links:
 \author{
 \strong{Maintainer}: W. Jake Thompson \email{wjakethompson@gmail.com} (\href{https://orcid.org/0000-0001-7339-0300}{ORCID})
 
+Authors:
+\itemize{
+  \item W. Jake Thompson \email{wjakethompson@gmail.com} (\href{https://orcid.org/0000-0001-7339-0300}{ORCID})
+}
+
 }
 \keyword{internal}

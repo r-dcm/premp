@@ -7,10 +7,14 @@
 fit_ml(
   user_workflow,
   ratings_data,
-  possible_profiles,
   observed,
+  possible_profiles,
   att_levels,
   num_pls,
+  rating_id = "rating",
+  observed_count_label = "n",
+  observed_proportion_label = "prop",
+  metrics,
   output_dir
 )
 }
@@ -21,10 +25,10 @@ profiles that is eligible for assignment to raters.}
 \item{ratings_data}{A tibble with the profiles rated by the panelists and
 the panelists' ratings in long format.}
 
-\item{possible_profiles}{A tibble with all of the possible profiles.}
-
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
+
+\item{possible_profiles}{A tibble with all of the possible profiles.}
 
 \item{att_levels}{A numeric value for the number of levels where mastery can
 be demonstrated. For example, \code{att_level} is 1 for a dichotomous attribute
@@ -33,6 +37,26 @@ possible scores are 0, 1, and 2.}
 
 \item{num_pls}{The number of performance levels that can be assigned to any
 profile.}
+
+\item{rating_id}{A character string for the field name of the panelists'
+ratings (default is 'rating').}
+
+\item{observed_count_label}{A character string for the field name of the
+observed sample sizes in \code{observed} (default is 'n').}
+
+\item{observed_proportion_label}{A character string for the field name of the
+observed proportions in \code{observed} (default is 'prop').}
+
+\item{metrics}{A character vector containing the evaluation metrics that
+should be included in the output. Can include any of \code{"accuracy"},
+\code{"adjacent"}, \code{"kappa"}, \code{"auc"}, or \code{"assignment"}. Including \code{"accuracy"}
+calculates classification accuracy. Including \code{"adjacent"} calculates
+adjacent classification accuracy. Including \code{"kappa"} calculates Cohen's
+kappa. Including \code{"auc"} calculates the area under the receiver operating
+characteristic curve. Including \code{"assignment"} calculates assignment
+statistics from the standard setting procedure -- the number of profiles
+assigned, the number of students with the assigned profiles, and the
+proportion of students with the assigned profiles.}
 
 \item{output_dir}{The directory path for saving the output.}
 }

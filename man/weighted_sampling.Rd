@@ -8,6 +8,8 @@ weighted_sampling(
   possible_profiles,
   observed,
   observed_count_label,
+  observed_proportion_label,
+  shared_profiles,
   profiles_per_level,
   raters,
   table_configuration = NULL
@@ -21,7 +23,15 @@ profiles that is eligible for assignment to raters.}
 was observed along with the number of times it was observed.}
 
 \item{observed_count_label}{A character string for the field name of the
-observed sample sizes in the observed parameter (default is 'n').}
+observed sample sizes in the observed parameter.}
+
+\item{observed_proportion_label}{A character string for the field name of the
+observed proportions in the observed parameter.}
+
+\item{shared_profiles}{The number of profiles that are shared by all
+panelists. With a table-based design, this is the number of profiles that are
+seen by all tables. With a panelist-based design, this is the number of
+profiles seen by all panelists.}
 
 \item{profiles_per_level}{An integer specifying the number of profiles to
 assign to each rater at each level of the total skills mastered.}
