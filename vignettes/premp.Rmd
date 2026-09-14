@@ -271,7 +271,7 @@ fitted_model <- fit_ml(
   rating_id = "rating",
   observed_count_label = "n",
   observed_proportion_label = "prop",
-  metrics = c("accuracy", "auc", "kappa", "assignment"),
+  metrics = c("accuracy", "auc", "kappa", "gwet", "assignment"),
   output_dir = here::here("vignettes")
 )
 ```
@@ -282,11 +282,11 @@ The `fitted_model` object includes information to evaluate model performance.
 The model agreement output includes a data frame with the requested evaluation metrics for in-sample and out-of-sample agreement, with one row per metric.
 The in-sample agreement can be accessed using `fitted_model@in_sample_agreement`, and the out-of-sample agreement can be accessed using `fitted_model_out_of_sample_agreement`.
 
-The supported evaluation metrics are `accuracy` (i.e., classification accuracy), `adjacent` (i.e., adjacent classification accuracy), `kappa` (i.e., Cohen's kappa), `auc` (i.e., area under the receiver operating characteristic curve [ROC AUC]), and `assignment` (i.e., the number of profiles assigned, the number of students with the assigned profiles, and the proportion of students with the assigned profiles).
+The supported evaluation metrics are `accuracy` (i.e., classification accuracy), `adjacent` (i.e., adjacent classification accuracy), `kappa` (i.e., Cohen's kappa), `auc` (i.e., area under the receiver operating characteristic curve [ROC AUC]), `gwet` (i.e., Gwet's $AC_2$) and `assignment` (i.e., the number of profiles assigned, the number of students with the assigned profiles, and the proportion of students with the assigned profiles).
 Other than `assignment`, the evaluation metrics are intended to quantify how well the fitted model recovered the panelists' ratings.
 The `assignment` metrics are only included in `@in_sample_agreement` as these are only intended to reflect whether the profiles used to train the model generally reflect the distribution of observed profiles.
 
-For this example, focusing first on the in-sample agreement (i.e., `fitted_model@in_sample_agreement`), the classification accuracy (i.e., the percentage of panelist ratings that were accurately predicted) was approximately 77%, with a ROC AUC of .93 and a Cohen's kappa of .70.
+For this example, focusing first on the in-sample agreement (i.e., `fitted_model@in_sample_agreement`), the classification accuracy (i.e., the percentage of panelist ratings that were accurately predicted) was approximately 77%, with a ROC AUC of .93, a Cohen's kappa of .70, and Gwet's $AC_2$ of .90.
 These performance metrics indicate acceptable agreement between the model predictions and panelist ratings, indicating a successful application of the method.
 However, the in-sample agreement is based on how well the model fits the data used to fit the model, and these metrics may not be the best reflection of how well the model generalizes.
 The `assignment` metrics in `@in_sample_agreement` allow for a comprehensive evaluation of model generalizability as it pertains to model training.
@@ -300,7 +300,7 @@ Users will have to define their own evaluation thresholds to determine whether t
 fitted_model@in_sample_agreement
 ```
 
-Focusing now on out-of-sample agreement (i.e., `fitted_model@out_of_sample_agreement`), the classification accuracy (i.e., the percentage of panelist ratings that were accurately predicted) was approximately 73%, with a ROC AUC of .89 and a Cohen's kappa of .63.
+Focusing now on out-of-sample agreement (i.e., `fitted_model@out_of_sample_agreement`), the classification accuracy (i.e., the percentage of panelist ratings that were accurately predicted) was approximately 73%, with a ROC AUC of .89, a Cohen's kappa of .63, and Gwet's $AC_2$ of .91.
 Of note, it is expected that the evaluation metrics will reflect poorer performance for out-of-sample agreement as these reflect performance with profiles that the model has not seen before.
 Consequently, out-of-sample agreement is a better reflection of model generalizability.
 Estimates approaching the in-sample agreement rates indicate increasing model generalizability.
@@ -384,7 +384,7 @@ validation_ratings <-
 
 validation_agreement <- eval_agreement(
     model_ratings = validation_ratings,
-    metrics = c("accuracy", "auc", "kappa"),
+    metrics = c("accuracy", "auc", "kappa", "gwet"),
     observed,
     num_pls = 4,
     rating_id = "rating",
