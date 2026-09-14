@@ -8,14 +8,15 @@
 #' is the output of `predict_ml()` and is one row per panelist rating.
 #' @param metrics A character vector containing the evaluation metrics that
 #' should be included in the output. Can include any of `"accuracy"`,
-#' `"adjacent"`, `"kappa"`, `"auc"`, or `"assignment"`. Including `"accuracy"`
-#' calculates classification accuracy. Including `"adjacent"` calculates
-#' adjacent classification accuracy. Including `"kappa"` calculates Cohen's
-#' kappa. Including `"auc"` calculates the area under the receiver operating
-#' characteristic curve. Including `"assignment"` calculates assignment
-#' statistics from the standard setting procedure -- the number of profiles
-#' assigned, the number of students with the assigned profiles, and the
-#' proportion of students with the assigned profiles.
+#' `"adjacent"`, `"kappa"`, `"auc"`, `"gwet"`, or `"assignment"`. Including
+#' `"accuracy"` calculates classification accuracy. Including `"adjacent"`
+#' calculates adjacent classification accuracy. Including `"kappa"` calculates
+#' Cohen's kappa. Including `"auc"` calculates the area under the receiver
+#' operating characteristic curve. Including `"gwet"` calculates Gwet's $AC_2$.
+#' Including `"assignment"` calculates assignment statistics from the standard
+#' setting procedure -- the number of profiles assigned, the number of students
+#' with the assigned profiles, and the proportion of students with the assigned
+#' profiles.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
 #' @param num_pls The number of performance levels that can be assigned to any
@@ -52,13 +53,14 @@ eval_agreement <- function(
   }
 
   if (
-    any(!(metrics %in% c("accuracy", "adjacent", "kappa", "auc", "assignment")))
+    any(!(metrics %in% c("accuracy", "adjacent", "kappa", "auc", "gwet",
+                         "assignment")))
   ) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(metrics),
       must = cli::format_message(paste0(
         paste0(
-          "must be one of: 'accuracy', 'adjacent', 'kappa', 'auc', or",
+          "must be one of: 'accuracy', 'adjacent', 'kappa', 'auc', 'gwet', or",
           "'assignment'."
         )
       ))
@@ -130,6 +132,19 @@ eval_agreement <- function(
       dplyr::mutate(.metric = "cohens_kappa")
 
     res <- dplyr::bind_rows(res, cohens_kappa)
+  }
+
+  if ("gwet" %in% metrics) {
+    gwets_ac <- model_ratings |>
+      dplyr::select("pred_pl", !!rlang::sym(rating_id)) |>
+      irrCAC::gwet.ac1.raw(weights = "quadratic") |>
+      magrittr::use_series(est) |>
+      dplyr::select(".estimate" = "coeff.val") |>
+      dplyr::mutate(.metric = "gwets_ac2",
+                    .estimator = NA) |>
+      dplyr::select(".metric", ".estimator", ".estimate")
+
+    res <- dplyr::bind_rows(res, gwets_ac)
   }
 
   if ("assignment" %in% metrics) {

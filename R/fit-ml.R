@@ -160,7 +160,7 @@ fit_ml <- function(
 
   in_sample_agreement <- eval_agreement(
     model_ratings = in_sample_preds$model_ratings,
-    metrics = c("accuracy", "auc", "kappa", "assignment"),
+    metrics,
     observed,
     num_pls = 4,
     rating_id = "rating",
@@ -192,7 +192,7 @@ fit_ml <- function(
 
   oos_agreement <- eval_agreement(
     model_ratings = oos_preds$model_ratings,
-    metrics = c("accuracy", "auc", "kappa", "assignment"),
+    metrics = metrics,
     observed,
     num_pls = 4,
     rating_id = "rating",

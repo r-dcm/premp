@@ -79,7 +79,7 @@ test_that("fitting the machine learning model without hyperparamters works", {
                        att_levels = 4, num_pls = 4,
                        observed_proportion_label = "pct",
                        metrics = c("accuracy", "adjacent", "kappa", "auc",
-                                   "assignment"),
+                                   "gwet", "assignment"),
                        output_dir = testthat::test_path("data"))
 
   # check output type

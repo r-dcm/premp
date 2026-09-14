@@ -21,6 +21,8 @@ Imports:
     dplyr,
     glue,
     hardhat,
+    irrCAC,
+    magrittr,
     posterior,
     purrr,
     ratlas,
