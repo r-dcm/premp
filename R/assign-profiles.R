@@ -6,19 +6,19 @@
 #' assignment groups is the number of groups of panelists.
 #' @param group_configuration A list containing parameters for configuring a
 #' group design. The allowable parameters are `panelists_per_group` indicating
-#' the number of panelists in each group and `proportion_of_shared_profiles`
-#' indicating the proportion of profiles that are common to all of the panelists
-#' in each group.
+#' the number of panelists in each group and
+#' `proportion_of_shared_profiles_within_group` indicating the proportion of
+#' profiles that are common to all of the panelists within each group.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in `observed` (default is 'n').
 #' @param observed_proportion_label A character string for the field name of the
 #' observed proportions in `observed` (default is 'prop').
-#' @param shared_profiles The number of profiles that are shared by all
-#' panelists (default is 1). With a groups-based design, this is the number of
-#' profiles that are seen by all groups. With a panelist-based design, this is
-#' the number of profiles seen by all panelists.
+#' @param shared_profiles_across_groups The number of profiles that are shared
+#' by panelists across groups (default is 1). With a groups-based design, this
+#' is the number of profiles that are seen by all groups. With a panelist-based
+#' design, this is the number of profiles seen by all panelists.
 #' @param included_totals The increment of the total skills mastered, based on
 #' the attribute mastery profiles, that should be retained during profile
 #' assignment.
@@ -37,7 +37,7 @@ assign_profiles <- function(
   observed,
   observed_count_label = "n",
   observed_proportion_label = "prop",
-  shared_profiles = 1L,
+  shared_profiles_across_groups = 1L,
   included_totals,
   profiles_per_level,
   assigned_profiles = NULL,
@@ -66,14 +66,15 @@ assign_profiles <- function(
     if (
       any(
         !(names(group_configuration) %in%
-          c("panelists_per_group", "proportion_of_shared_profiles"))
+          c("panelists_per_group",
+            "proportion_of_shared_profiles_within_group"))
       )
     ) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste0(
           "must be a list containing `panelists_per_group` and ",
-          "`proportion_of_shared_profiles`."
+          "`proportion_of_shared_profiles_within_group`."
         ))
       )
     }
@@ -98,16 +99,16 @@ assign_profiles <- function(
       )
     }
 
-    proportion_of_shared_profiles <-
-      group_configuration$proportion_of_shared_profiles
+    proportion_of_shared_profiles_within_group <-
+      group_configuration$proportion_of_shared_profiles_within_group
 
     if (
-      !is.double(proportion_of_shared_profiles) ||
-        proportion_of_shared_profiles < 0 ||
-        proportion_of_shared_profiles > 1
+      !is.double(proportion_of_shared_profiles_within_group) ||
+        proportion_of_shared_profiles_within_group < 0 ||
+        proportion_of_shared_profiles_within_group > 1
     ) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(proportion_of_shared_profiles),
+        arg = rlang::caller_arg(proportion_of_shared_profiles_within_group),
         must = cli::format_message(paste(
           "must be a double value between 0 and 1."
         ))
@@ -159,9 +160,9 @@ assign_profiles <- function(
     )
   }
 
-  if (!is.integer(shared_profiles)) {
+  if (!is.integer(shared_profiles_across_groups)) {
     rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(shared_profiles),
+      arg = rlang::caller_arg(shared_profiles_across_groups),
       must = cli::format_message(paste(
         "must be an integer."
       ))
@@ -216,7 +217,7 @@ assign_profiles <- function(
     observed,
     observed_count_label,
     observed_proportion_label,
-    shared_profiles,
+    shared_profiles_across_groups,
     profiles_per_level,
     raters,
     group_configuration

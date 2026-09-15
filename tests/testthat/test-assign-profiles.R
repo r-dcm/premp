@@ -22,7 +22,7 @@ test_that("assigning profiles (group design) in Round 1 works", {
     num_assignment_groups = 5L,
     group_configuration = list(
       panelists_per_group = 4L,
-      proportion_of_shared_profiles = .67
+      proportion_of_shared_profiles_within_group = .67
     ),
     observed = observed,
     observed_proportion_label = "pct",
@@ -402,7 +402,7 @@ test_that("assign profiles -- error messages work", {
     num_assignment_groups = 5,
     group_configuration = list(
       panelists_per_group = 4L,
-      proportion_of_shared_profiles = .67
+      proportion_of_shared_profiles_within_group = .67
     ),
     observed = observed,
     observed_proportion_label = "pct",
@@ -421,7 +421,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = c(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -441,7 +441,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelits_per_group = 4L,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed,
       included_totals = c(5L, 10L, 15L, 20L, 25L),
@@ -454,7 +454,7 @@ test_that("assign profiles -- error messages work", {
     err$message,
     paste0(
       "must be a list containing `panelists_per_group` and ",
-      "`proportion_of_shared_profiles`."
+      "`proportion_of_shared_profiles_within_group`."
     )
   )
 
@@ -463,7 +463,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = .67,
+        proportion_of_shared_profiles_within_group = .67,
         panelists_per_group = 3L
       ),
       observed = observed,
@@ -484,7 +484,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -504,7 +504,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = 1.1
+        proportion_of_shared_profiles_within_group = 1.1
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -524,7 +524,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = -0.1
+        proportion_of_shared_profiles_within_group = -0.1
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -544,7 +544,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = "a"
+        proportion_of_shared_profiles_within_group = "a"
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -564,7 +564,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed,
       observed_count_label = 5,
@@ -585,7 +585,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -605,7 +605,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -625,7 +625,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -645,7 +645,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -666,7 +666,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles = .67
+        proportion_of_shared_profiles_within_group = .67
       ),
       observed = observed |>
         dplyr::mutate(pct = dplyr::case_when(n < 2500 ~ NA,
@@ -707,7 +707,7 @@ test_that("assign profiles -- few attributes work (group design)", {
     num_assignment_groups = 5L,
     group_configuration = list(
       panelists_per_group = 4L,
-      proportion_of_shared_profiles = .67
+      proportion_of_shared_profiles_within_group = .67
     ),
     observed = observed,
     observed_proportion_label = "pct",

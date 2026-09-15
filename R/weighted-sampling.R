@@ -11,18 +11,18 @@
 #' observed sample sizes in the observed parameter.
 #' @param observed_proportion_label A character string for the field name of the
 #' observed proportions in the observed parameter.
-#' @param shared_profiles The number of profiles that are shared by all
-#' panelists. With a group-based design, this is the number of profiles that are
-#' seen by all groups. With a panelist-based design, this is the number of
-#' profiles seen by all panelists.
+#' @param shared_profiles_across_groups The number of profiles that are shared
+#' by panelists across groups. With a group-based design, this is the number of
+#' profiles that are seen by all groups. With a panelist-based design, this is
+#' the number of profiles seen by all panelists.
 #' @param profiles_per_level An integer specifying the number of profiles to
 #' assign to each rater at each level of the total skills mastered.
 #' @param raters A character vector containing the raters' ids.
 #' @param group_configuration A list containing parameters for configuring a
 #' group design. The allowable parameters are `panelists_per_group` indicating
-#' the number of panelists in each group and `proportion_of_shared_profiles`
-#' indicating the proportion of profiles that are common to all of the panelists
-#' in each group.
+#' the number of panelists in each group and
+#' `proportion_of_shared_profiles_within_group` indicating the proportion of
+#' profiles that are common to all of the panelists within each group.
 #'
 #' @return [tibble][tibble::tibble-package] A tibble containing the profiles to
 #' be assigned to raters during a standard setting event.
@@ -31,7 +31,7 @@ weighted_sampling <- function(
   observed,
   observed_count_label,
   observed_proportion_label,
-  shared_profiles,
+  shared_profiles_across_groups,
   profiles_per_level,
   raters,
   group_configuration = NULL
@@ -45,7 +45,7 @@ weighted_sampling <- function(
     dplyr::filter(.data$total != 0) |>
     dplyr::left_join(observed, by = att_vec) |>
     dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
-    dplyr::mutate(size = shared_profiles) |>
+    dplyr::mutate(size = shared_profiles_across_groups) |>
     slice_stratified(
       by = "total",
       size = "size",
@@ -69,18 +69,20 @@ weighted_sampling <- function(
     profiles_per_level = profiles_per_level
   )
 
-  remaining_to_sample <- profiles_per_level - shared_profiles
+  remaining_to_sample <- profiles_per_level - shared_profiles_across_groups
 
   if (!is.null(group_configuration)) {
     panelists_per_group <- group_configuration$panelists_per_group
-    proportion_of_shared_profiles <-
-      group_configuration$proportion_of_shared_profiles
+    proportion_of_shared_profiles_within_group <-
+      group_configuration$proportion_of_shared_profiles_within_group
     group_shared_assignments <-
-      floor(round(profiles_per_level * proportion_of_shared_profiles, 0)) -
-      shared_profiles
+      floor(round(profiles_per_level *
+                    proportion_of_shared_profiles_within_group, 0)) -
+      shared_profiles_across_groups
   } else {
     panelists_per_group <- NA_integer_
-    proportion_of_shared_profiles <- shared_profiles / profiles_per_level
+    proportion_of_shared_profiles_within_group <-
+      shared_profiles_across_groups / profiles_per_level
     group_shared_assignments <- 0L
   }
 

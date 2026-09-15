@@ -7,7 +7,7 @@ test_that("weighted profile sampling works", {
   raters <- glue::glue("group{1:5}")
   group_configuration <- list(
     panelists_per_group = 4L,
-    proportion_of_shared_profiles = .67
+    proportion_of_shared_profiles_within_group = .67
   )
 
   possible_profiles <- tibble::tibble(tidyr::crossing(
@@ -57,7 +57,7 @@ test_that("weighted profile sampling works", {
     observed,
     observed_count_label,
     observed_proportion_label = "pct",
-    shared_profiles = 1L,
+    shared_profiles_across_groups = 1L,
     profiles_per_level,
     raters,
     group_configuration
