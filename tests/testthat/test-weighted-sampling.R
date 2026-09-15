@@ -5,7 +5,7 @@ test_that("weighted profile sampling works", {
   included_totals <- c(5L, 10L, 15L, 20L, 25L)
   profiles_per_level <- 2L
   raters <- glue::glue("group{1:5}")
-  group_configuration = list(
+  group_configuration <- list(
     panelists_per_group = 4L,
     proportion_of_shared_profiles = .67
   )
