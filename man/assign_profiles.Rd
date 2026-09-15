@@ -6,7 +6,7 @@
 \usage{
 assign_profiles(
   num_assignment_groups,
-  table_configuration = NULL,
+  group_configuration = NULL,
   observed,
   observed_count_label = "n",
   observed_proportion_label = "prop",
@@ -19,15 +19,15 @@ assign_profiles(
 }
 \arguments{
 \item{num_assignment_groups}{The number of "assignment groups" for the
-profile assignments. When \code{table_design} is FALSE, the number of assignment
-groups is the number of panelists. When \code{table_design} is TRUE, the number of
-assignment groups is the number of tables of panelists.}
+profile assignments. When \code{group_design} is FALSE, the number of assignment
+groups is the number of panelists. When \code{group_design} is TRUE, the number of
+assignment groups is the number of groups of panelists.}
 
-\item{table_configuration}{A list containing parameters for configuring a
-table design. The allowable parameters are \code{panelists_per_table} indicating
-the number of panelists at each table and \code{proportion_of_shared_profiles}
+\item{group_configuration}{A list containing parameters for configuring a
+group design. The allowable parameters are \code{panelists_per_group} indicating
+the number of panelists in each group and \code{proportion_of_shared_profiles}
 indicating the proportion of profiles that are common to all of the panelists
-at each table.}
+in each group.}
 
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
@@ -39,8 +39,8 @@ observed sample sizes in \code{observed} (default is 'n').}
 observed proportions in \code{observed} (default is 'prop').}
 
 \item{shared_profiles}{The number of profiles that are shared by all
-panelists (default is 1). With a table-based design, this is the number of
-profiles that are seen by all tables. With a panelist-based design, this is
+panelists (default is 1). With a groups-based design, this is the number of
+profiles that are seen by all groups. With a panelist-based design, this is
 the number of profiles seen by all panelists.}
 
 \item{included_totals}{The increment of the total skills mastered, based on

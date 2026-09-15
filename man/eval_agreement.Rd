@@ -23,14 +23,15 @@ is the output of \code{predict_ml()} and is one row per panelist rating.}
 
 \item{metrics}{A character vector containing the evaluation metrics that
 should be included in the output. Can include any of \code{"accuracy"},
-\code{"adjacent"}, \code{"kappa"}, \code{"auc"}, or \code{"assignment"}. Including \code{"accuracy"}
-calculates classification accuracy. Including \code{"adjacent"} calculates
-adjacent classification accuracy. Including \code{"kappa"} calculates Cohen's
-kappa. Including \code{"auc"} calculates the area under the receiver operating
-characteristic curve. Including \code{"assignment"} calculates assignment
-statistics from the standard setting procedure -- the number of profiles
-assigned, the number of students with the assigned profiles, and the
-proportion of students with the assigned profiles.}
+\code{"adjacent"}, \code{"kappa"}, \code{"auc"}, \code{"gwet"}, or \code{"assignment"}. Including
+\code{"accuracy"} calculates classification accuracy. Including \code{"adjacent"}
+calculates adjacent classification accuracy. Including \code{"kappa"} calculates
+Cohen's kappa. Including \code{"auc"} calculates the area under the receiver
+operating characteristic curve. Including \code{"gwet"} calculates Gwet's $AC_2$.
+Including \code{"assignment"} calculates assignment statistics from the standard
+setting procedure -- the number of profiles assigned, the number of students
+with the assigned profiles, and the proportion of students with the assigned
+profiles.}
 
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
