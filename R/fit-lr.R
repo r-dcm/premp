@@ -46,7 +46,7 @@ fit_lr <- function(
       -"profile_num",
       -dplyr::starts_with("rater"),
       -"rating",
-      -dplyr::starts_with("table")
+      -dplyr::starts_with("group")
     ) |>
     names()
 
@@ -55,7 +55,7 @@ fit_lr <- function(
       -"profile_num",
       -dplyr::starts_with("rater"),
       -"rating",
-      -dplyr::starts_with("table")
+      -dplyr::starts_with("group")
     ) |>
     dplyr::rowwise() |>
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>

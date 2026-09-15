@@ -136,7 +136,7 @@ test_that("Hamming distance calculations work", {
 })
 
 test_that("refining based on Hamming distance work", {
-  raters <- c("table1", "table2")
+  raters <- c("group1", "group2")
   filter_function = "median"
   filter_percentile = NULL
 
@@ -162,7 +162,7 @@ test_that("refining based on Hamming distance work", {
 
   testthat::expect_equal(refined_output, exp_output)
 
-  raters <- c("table1", "table2")
+  raters <- c("group1", "group2")
   filter_function = "median"
   filter_percentile = NULL
 
@@ -193,7 +193,7 @@ test_that("refining based on Hamming distance work", {
 
   testthat::expect_equal(refined_output, exp_output)
 
-  raters <- c("table1", "table2")
+  raters <- c("group1", "group2")
   filter_function = "mean"
   filter_percentile = NULL
 
@@ -224,7 +224,7 @@ test_that("refining based on Hamming distance work", {
 
   testthat::expect_equal(refined_output, exp_output)
 
-  raters <- c("table1", "table2")
+  raters <- c("group1", "group2")
   filter_function = NULL
   filter_percentile = .6
 
@@ -258,7 +258,7 @@ test_that("refining based on Hamming distance work", {
 
   testthat::expect_equal(refined_output, exp_output)
 
-  raters <- c("table1", "table2")
+  raters <- c("group1", "group2")
   filter_function = NULL
   filter_percentile = .6
 
@@ -287,7 +287,7 @@ test_that("refining based on Hamming distance work", {
 })
 
 test_that("refining based on Hamming distance -- error messages work", {
-  raters <- c("table1", "table2")
+  raters <- c("group1", "group2")
   filter_function = "median"
   filter_percentile = .6
   profiles <- tibble::tibble()
@@ -306,7 +306,7 @@ test_that("refining based on Hamming distance -- error messages work", {
     "must not be provided in addition to `filter_function`."
   )
 
-  raters <- c("table1", "table2")
+  raters <- c("group1", "group2")
   filter_function = NULL
   filter_percentile = -.01
   profiles <- tibble::tibble()

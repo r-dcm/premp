@@ -4,9 +4,9 @@ test_that("weighted profile sampling works", {
   observed_count_label <- "n"
   included_totals <- c(5L, 10L, 15L, 20L, 25L)
   profiles_per_level <- 2L
-  raters <- glue::glue("table{1:5}")
-  table_configuration = list(
-    panelists_per_table = 4L,
+  raters <- glue::glue("group{1:5}")
+  group_configuration = list(
+    panelists_per_group = 4L,
     proportion_of_shared_profiles = .67
   )
 
@@ -60,14 +60,14 @@ test_that("weighted profile sampling works", {
     shared_profiles = 1L,
     profiles_per_level,
     raters,
-    table_configuration
+    group_configuration
   )
 
   # output format is correct
   testthat::expect_contains(class(profile_sampling), "tbl_df")
   testthat::expect_equal(
     names(profile_sampling),
-    c(glue::glue("att{1:7}"), "total", "table", glue::glue("rater{1:4}"))
+    c(glue::glue("att{1:7}"), "total", "group", glue::glue("rater{1:4}"))
   )
   # number sampled is correct
   testthat::expect_equal(nrow(profile_sampling), 125)

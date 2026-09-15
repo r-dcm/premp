@@ -1,14 +1,14 @@
 #' Title
 #'
 #' @param num_assignment_groups The number of "assignment groups" for the
-#' profile assignments. When `table_design` is FALSE, the number of assignment
-#' groups is the number of panelists. When `table_design` is TRUE, the number of
-#' assignment groups is the number of tables of panelists.
-#' @param table_configuration A list containing parameters for configuring a
-#' table design. The allowable parameters are `panelists_per_table` indicating
-#' the number of panelists at each table and `proportion_of_shared_profiles`
+#' profile assignments. When `group_design` is FALSE, the number of assignment
+#' groups is the number of panelists. When `group_design` is TRUE, the number of
+#' assignment groups is the number of groups of panelists.
+#' @param group_configuration A list containing parameters for configuring a
+#' group design. The allowable parameters are `panelists_per_group` indicating
+#' the number of panelists in each group and `proportion_of_shared_profiles`
 #' indicating the proportion of profiles that are common to all of the panelists
-#' at each table.
+#' in each group.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
 #' @param observed_count_label A character string for the field name of the
@@ -16,8 +16,8 @@
 #' @param observed_proportion_label A character string for the field name of the
 #' observed proportions in `observed` (default is 'prop').
 #' @param shared_profiles The number of profiles that are shared by all
-#' panelists (default is 1). With a table-based design, this is the number of
-#' profiles that are seen by all tables. With a panelist-based design, this is
+#' panelists (default is 1). With a groups-based design, this is the number of
+#' profiles that are seen by all groups. With a panelist-based design, this is
 #' the number of profiles seen by all panelists.
 #' @param included_totals The increment of the total skills mastered, based on
 #' the attribute mastery profiles, that should be retained during profile
@@ -33,7 +33,7 @@
 #' @export
 assign_profiles <- function(
   num_assignment_groups,
-  table_configuration = NULL,
+  group_configuration = NULL,
   observed,
   observed_count_label = "n",
   observed_proportion_label = "prop",
@@ -53,10 +53,10 @@ assign_profiles <- function(
     )
   }
 
-  if (!is.null(table_configuration)) {
-    if (typeof(table_configuration) != "list") {
+  if (!is.null(group_configuration)) {
+    if (typeof(group_configuration) != "list") {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(table_configuration),
+        arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste(
           "must be a list."
         ))
@@ -65,33 +65,33 @@ assign_profiles <- function(
 
     if (
       any(
-        !(names(table_configuration) %in%
-          c("panelists_per_table", "proportion_of_shared_profiles"))
+        !(names(group_configuration) %in%
+          c("panelists_per_group", "proportion_of_shared_profiles"))
       )
     ) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(table_configuration),
+        arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste0(
-          "must be a list containing `panelists_per_table` and ",
+          "must be a list containing `panelists_per_group` and ",
           "`proportion_of_shared_profiles`."
         ))
       )
     }
 
-    if (length(table_configuration) != 2) {
+    if (length(group_configuration) != 2) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(table_configuration),
+        arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste(
           "must be a list of length 2."
         ))
       )
     }
 
-    panelists_per_table <- table_configuration$panelists_per_table
+    panelists_per_group <- group_configuration$panelists_per_group
 
-    if (!is.integer(panelists_per_table)) {
+    if (!is.integer(panelists_per_group)) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(panelists_per_table),
+        arg = rlang::caller_arg(panelists_per_group),
         must = cli::format_message(paste(
           "must be an integer."
         ))
@@ -99,7 +99,7 @@ assign_profiles <- function(
     }
 
     proportion_of_shared_profiles <-
-      table_configuration$proportion_of_shared_profiles
+      group_configuration$proportion_of_shared_profiles
 
     if (
       !is.double(proportion_of_shared_profiles) ||
@@ -168,10 +168,10 @@ assign_profiles <- function(
     )
   }
 
-  table_design <- ifelse(is.null(table_configuration), FALSE, TRUE)
+  group_design <- ifelse(is.null(group_configuration), FALSE, TRUE)
 
-  if (table_design) {
-    raters <- glue::glue("table{1:num_assignment_groups}")
+  if (group_design) {
+    raters <- glue::glue("group{1:num_assignment_groups}")
   } else {
     raters <- glue::glue("rater{1:num_assignment_groups}")
   }
@@ -219,7 +219,7 @@ assign_profiles <- function(
     shared_profiles,
     profiles_per_level,
     raters,
-    table_configuration
+    group_configuration
   )
 
   # save output

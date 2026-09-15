@@ -17,8 +17,8 @@ test_that("condensed mastery method works", {
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
-    table_configuration = list(
-      panelists_per_table = 4L,
+    group_configuration = list(
+      panelists_per_group = 4L,
       proportion_of_shared_profiles = .67
     ),
     observed = observed,
@@ -29,7 +29,7 @@ test_that("condensed mastery method works", {
   )
 
   profiles <- final_assignments |>
-    dplyr::select(-"total", -"table", -dplyr::starts_with("rater"))
+    dplyr::select(-"total", -"group", -dplyr::starts_with("rater"))
 
   ratings <- final_assignments |>
     tibble::rowid_to_column("profile_num") |>

@@ -1,4 +1,4 @@
-test_that("assigning profiles (table design) in Round 1 works", {
+test_that("assigning profiles (group design) in Round 1 works", {
   set.seed(123)
 
   possible_profiles <- tibble::tibble(tidyr::crossing(
@@ -20,8 +20,8 @@ test_that("assigning profiles (table design) in Round 1 works", {
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
-    table_configuration = list(
-      panelists_per_table = 4L,
+    group_configuration = list(
+      panelists_per_group = 4L,
       proportion_of_shared_profiles = .67
     ),
     observed = observed,
@@ -61,7 +61,7 @@ test_that("assigning profiles (table design) in Round 1 works", {
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c(glue::glue("att{1:7}"), "total", "table", glue::glue("rater{1:4}"))
+    c(glue::glue("att{1:7}"), "total", "group", glue::glue("rater{1:4}"))
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
@@ -134,7 +134,7 @@ test_that("assigning profiles (rater design) in Round 1 works", {
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
-    table_configuration = NULL,
+    group_configuration = NULL,
     observed = observed,
     observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
@@ -261,7 +261,7 @@ test_that("assigning profiles (rater design) in Round 2 works", {
 
   round_1_assignments <- assign_profiles(
     num_assignment_groups = 5L,
-    table_configuration = NULL,
+    group_configuration = NULL,
     observed = observed,
     observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
@@ -271,7 +271,7 @@ test_that("assigning profiles (rater design) in Round 2 works", {
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
-    table_configuration = NULL,
+    group_configuration = NULL,
     observed = observed,
     observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
@@ -400,8 +400,8 @@ test_that("assign profiles -- error messages work", {
   # test incorrect arguments
   err <- rlang::catch_cnd(assign_profiles(
     num_assignment_groups = 5,
-    table_configuration = list(
-      panelists_per_table = 4L,
+    group_configuration = list(
+      panelists_per_group = 4L,
       proportion_of_shared_profiles = .67
     ),
     observed = observed,
@@ -419,8 +419,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = c(
-        panelists_per_table = 4L,
+      group_configuration = c(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = .67
       ),
       observed = observed,
@@ -439,8 +439,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelits_per_table = 4L,
+      group_configuration = list(
+        panelits_per_group = 4L,
         proportion_of_shared_profiles = .67
       ),
       observed = observed,
@@ -453,7 +453,7 @@ test_that("assign profiles -- error messages work", {
   testthat::expect_match(
     err$message,
     paste0(
-      "must be a list containing `panelists_per_table` and ",
+      "must be a list containing `panelists_per_group` and ",
       "`proportion_of_shared_profiles`."
     )
   )
@@ -461,10 +461,10 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = .67,
-        panelists_per_table = 3L
+        panelists_per_group = 3L
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -482,8 +482,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4,
+      group_configuration = list(
+        panelists_per_group = 4,
         proportion_of_shared_profiles = .67
       ),
       observed = observed,
@@ -502,8 +502,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = 1.1
       ),
       observed = observed,
@@ -522,8 +522,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = -0.1
       ),
       observed = observed,
@@ -542,8 +542,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = "a"
       ),
       observed = observed,
@@ -562,8 +562,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = .67
       ),
       observed = observed,
@@ -583,8 +583,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = .67
       ),
       observed = observed,
@@ -603,8 +603,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = .67
       ),
       observed = observed,
@@ -623,8 +623,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = .67
       ),
       observed = observed,
@@ -643,8 +643,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = .67
       ),
       observed = observed,
@@ -664,8 +664,8 @@ test_that("assign profiles -- error messages work", {
   err <- rlang::catch_cnd(
     assign_profiles(
       num_assignment_groups = 5L,
-      table_configuration = list(
-        panelists_per_table = 4L,
+      group_configuration = list(
+        panelists_per_group = 4L,
         proportion_of_shared_profiles = .67
       ),
       observed = observed |>
@@ -686,7 +686,7 @@ test_that("assign profiles -- error messages work", {
   )
 })
 
-test_that("assign profiles -- few attributes work (table design)", {
+test_that("assign profiles -- few attributes work (group design)", {
   set.seed(1234)
 
   possible_profiles <- tibble::tibble(tidyr::crossing(
@@ -705,8 +705,8 @@ test_that("assign profiles -- few attributes work (table design)", {
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
-    table_configuration = list(
-      panelists_per_table = 4L,
+    group_configuration = list(
+      panelists_per_group = 4L,
       proportion_of_shared_profiles = .67
     ),
     observed = observed,
@@ -746,7 +746,7 @@ test_that("assign profiles -- few attributes work (table design)", {
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c(glue::glue("att{1:4}"), "total", "table", glue::glue("rater{1:4}"))
+    c(glue::glue("att{1:4}"), "total", "group", glue::glue("rater{1:4}"))
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
@@ -816,7 +816,7 @@ test_that("assign profiles -- few attributes work (rater design)", {
 
   final_assignments <- assign_profiles(
     num_assignment_groups = 5L,
-    table_configuration = NULL,
+    group_configuration = NULL,
     observed = observed,
     observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
