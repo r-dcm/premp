@@ -167,7 +167,7 @@ weighted_sampling <- function(
         assignments <- dplyr::bind_rows(
           assignments,
           tmp_assignments |>
-            dplyr::mutate(table = tmp_group, panelist = tmp_panelist)
+            dplyr::mutate(group = tmp_group, panelist = tmp_panelist)
         )
 
         possible_profiles <- possible_profiles |>

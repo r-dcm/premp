@@ -34,7 +34,7 @@ assign_pl <- function(
     dplyr::select(
       -!!rlang::sym(rating_id),
       -dplyr::starts_with("rater"),
-      -dplyr::starts_with("table")
+      -dplyr::starts_with("group")
     ) |>
     names()
 
