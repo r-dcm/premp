@@ -195,24 +195,6 @@ final_assignments <- assign_profiles(
 final_assignments
 ```
 
-As with profile assignment for the rangefinding round, we could also use a panelist-based design for the pinpointing round.
-Like the rangefinding round, this example assigns profiles to 10 panelists and the remaining settings are consistent with the group-based design.
-
-```{r}
-#| label: panelist-pinpointing-assignment
-#| eval: FALSE
-final_assignments <- assign_profiles(
-  num_assignment_groups = 10L,
-  observed = observed,
-  observed_count_label = "n",
-  shared_profiles_across_groups = 1L,
-  included_totals = retain_totals,
-  profiles_per_level = 2L,
-  assigned_profiles = ratings,
-  output_dir = here::here("vignettes")
-)
-```
-
 ## Preparing the Ratings for Modeling
 
 Once the panelists have rated profiles during the pinpointing round, the ratings from the rangefinding and pinpointing rounds need to be compiled into a single dataset.
