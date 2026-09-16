@@ -9,8 +9,6 @@
 #' was observed along with the number of times it was observed.
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in the observed parameter.
-#' @param observed_proportion_label A character string for the field name of the
-#' observed proportions in the observed parameter.
 #' @param shared_profiles_across_groups The number of profiles that are shared
 #' by panelists across groups. With a group-based design, this is the number of
 #' profiles that are seen by all groups. With a panelist-based design, this is
@@ -30,7 +28,6 @@ weighted_sampling <- function(
   possible_profiles,
   observed,
   observed_count_label,
-  observed_proportion_label,
   shared_profiles_across_groups,
   profiles_per_level,
   raters,
@@ -49,7 +46,7 @@ weighted_sampling <- function(
     slice_stratified(
       by = "total",
       size = "size",
-      weight_by = observed_proportion_label
+      weight_by = "prop"
     ) |>
     dplyr::select(-dplyr::all_of(observed_count_label))
 
@@ -99,7 +96,7 @@ weighted_sampling <- function(
           slice_stratified(
             by = "total",
             size = "size",
-            weight_by = observed_proportion_label
+            weight_by = "prop"
           ) |>
           dplyr::select(-dplyr::all_of(observed_count_label))
 
@@ -155,7 +152,7 @@ weighted_sampling <- function(
           slice_stratified(
             by = "total",
             size = "size",
-            weight_by = observed_proportion_label
+            weight_by = "prop"
           ) |>
           dplyr::select(-dplyr::all_of(observed_count_label))
 

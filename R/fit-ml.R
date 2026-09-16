@@ -21,8 +21,6 @@ utils::globalVariables(c("case_wts"))
 #' ratings (default is 'rating').
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in `observed` (default is 'n').
-#' @param observed_proportion_label A character string for the field name of the
-#' observed proportions in `observed` (default is 'prop').
 #' @param metrics A character vector containing the evaluation metrics that
 #' should be included in the output. Can include any of `"accuracy"`,
 #' `"adjacent"`, `"kappa"`, `"auc"`, or `"assignment"`. Including `"accuracy"`
@@ -48,14 +46,13 @@ fit_ml <- function(
   num_pls,
   rating_id = "rating",
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   metrics,
   output_dir
 ) {
   att_vec <- observed |>
     dplyr::select(
       -!!rlang::sym(observed_count_label),
-      -!!rlang::sym(observed_proportion_label)
+      -"prop"
     ) |>
     names()
 
@@ -74,13 +71,13 @@ fit_ml <- function(
     )) |>
     dplyr::mutate(rating = factor(.data$rating, levels = 1:num_pls)) |>
     dplyr::mutate(
-      !!rlang::sym(observed_proportion_label) := dplyr::case_when(
-        is.na(!!rlang::sym(observed_proportion_label)) ~ .000000001,
-        TRUE ~ !!rlang::sym(observed_proportion_label)
+      prop := dplyr::case_when(
+        is.na(.data$prop) ~ .000000001,
+        TRUE ~ .data$prop
       )
     ) |>
     dplyr::select(-!!rlang::sym(observed_count_label)) |>
-    dplyr::rename(case_wts = !!rlang::sym(observed_proportion_label)) |>
+    dplyr::rename(case_wts = prop) |>
     dplyr::mutate(case_wts = hardhat::importance_weights(.data$case_wts))
 
   mod_recipe <-
@@ -165,7 +162,6 @@ fit_ml <- function(
     num_pls = 4,
     rating_id = "rating",
     observed_count_label = observed_count_label,
-    observed_proportion_label = observed_proportion_label,
     output_dir = output_dir
   )
 
@@ -197,7 +193,6 @@ fit_ml <- function(
     num_pls = 4,
     rating_id = "rating",
     observed_count_label = observed_count_label,
-    observed_proportion_label = observed_proportion_label,
     output_dir = output_dir
   ) |>
     dplyr::filter(!stringr::str_detect(.data$.metric, "_assigned"))

@@ -78,7 +78,7 @@ The total number of skills mastered is based on the total number of levels maste
 For instance, with eight assessed attributes with four levels each (e.g., scores of 0, 1, 2, 3, or 4 are possible for each attribute), the possible levels mastered ranges from 0 (i.e., no mastery of any level for any attribute) to 32 (i.e., mastery of all levels for all attributes).
 `included_totals` specifies the profiles to retain for assignment based on the sum of levels mastered across all attributes.
 In this example, we specified that profiles with 5, 10, 15, 20, 25, and 30 levels mastered should be retained and that each panelist should be assigned three profiles at each of these levels.
-The `observed_count_label` parameter specifies the field name for the observed profiles' sample sizes (e.g., "n"), and the `observed_proportion_label` parameter specifies the field name for the observed profiles' proportions (e.g., "prop").
+The `observed_count_label` parameter specifies the field name for the observed profiles' sample sizes (e.g., "n").
 
 ```{r}
 #| label: group-rangefinding-assignment
@@ -90,7 +90,6 @@ final_assignments <- assign_profiles(
   ),
   observed = observed,
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   shared_profiles_across_groups = 1L,
   included_totals = c(5L, 10L, 15L, 20L, 25L, 30L),
   profiles_per_level = 3L,
@@ -118,7 +117,6 @@ final_assignments <- assign_profiles(
   num_assignment_groups = 10L,
   observed = observed,
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   shared_profiles_across_groups = 1L,
   included_totals = c(5L, 10L, 15L, 20L, 25L, 30L),
   profiles_per_level = 3L,
@@ -187,7 +185,6 @@ final_assignments <- assign_profiles(
   ),
   observed = observed,
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   shared_profiles_across_groups = 1L,
   included_totals = retain_totals,
   profiles_per_level = 2L,
@@ -208,7 +205,6 @@ final_assignments <- assign_profiles(
   num_assignment_groups = 10L,
   observed = observed,
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   shared_profiles_across_groups = 1L,
   included_totals = retain_totals,
   profiles_per_level = 2L,
@@ -241,7 +237,7 @@ We fit the machine learning model to the panelist rating data using `fit_ml()`.
 Users define the machine learning workflow, using models with functionality supported by tidymodels [@tidymodels_package].
 When the model involves hyperparameters, the workflow can specify that the hyperparameters need to be tuned or the hyperparameters can be prespecified.
 The workflow, panelist rating data, observed profiles, and possible profiles are included as input to `fit_ml()`.
-Users also specify the number of levels per attribute (i.e., `att_levels`), the number of performance levels (i.e., `num_pls`), the label for the panelist ratings column in the panelist rating data (i.e., `rating_id = "rating"`), the label for the counts in the observed profiles (i.e., `observed_count_label = "n"`), the label for the proportions in the observed profiles (i.e., `observed_proportion_label = "prop"`), the desired agreement metrics (i.e., `metrics = c("accuracy")`), and the output directory.
+Users also specify the number of levels per attribute (i.e., `att_levels`), the number of performance levels (i.e., `num_pls`), the label for the panelist ratings column in the panelist rating data (i.e., `rating_id = "rating"`), the label for the counts in the observed profiles (i.e., `observed_count_label = "n"`), the desired agreement metrics (i.e., `metrics = c("accuracy")`), and the output directory.
 Output from `fit_ml()` is an S7 class that includes the fitted model, the in-sample agreement metrics, and the out-of-sample agreement metrics.
 
 ```{r}
@@ -271,7 +267,6 @@ fitted_model <- fit_ml(
   num_pls = 4,
   rating_id = "rating",
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   metrics = c("accuracy", "auc", "kappa", "gwet", "assignment"),
   output_dir = here::here("vignettes")
 )
@@ -332,7 +327,6 @@ validation_assignments <- assign_profiles(
     ),
     observed = observed,
     observed_count_label = "n",
-    observed_proportion_label = "prop",
     shared_profiles_across_groups = 1L,
     included_totals = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 2L,
@@ -390,7 +384,6 @@ validation_agreement <- eval_agreement(
     num_pls = 4,
     rating_id = "rating",
     observed_count_label = "n",
-    observed_proportion_label = "prop",
     output_dir = here::here("vignettes")
   )
 

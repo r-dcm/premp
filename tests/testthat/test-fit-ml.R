@@ -20,7 +20,6 @@ test_that("fitting the machine learning model with hyperparameters works", {
 
   mod_output <- fit_ml(workflow, ratings_data, observed, possible_profiles,
                        att_levels = 4, num_pls = 4,
-                       observed_proportion_label = "pct",
                        metrics = c("accuracy", "adjacent", "auc", "kappa",
                                    "assignment"),
                        output_dir = testthat::test_path("data"))
@@ -77,7 +76,6 @@ test_that("fitting the machine learning model without hyperparamters works", {
 
   mod_output <- fit_ml(workflow, ratings_data, observed, possible_profiles,
                        att_levels = 4, num_pls = 4,
-                       observed_proportion_label = "pct",
                        metrics = c("accuracy", "adjacent", "kappa", "auc",
                                    "gwet", "assignment"),
                        output_dir = testthat::test_path("data"))

@@ -25,7 +25,6 @@ test_that("assigning profiles (group design) in Round 1 works", {
       shared_profiles_within_groups = 2L
     ),
     observed = observed,
-    observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
     output_dir = testthat::test_path("data")
@@ -136,7 +135,6 @@ test_that("assigning profiles (rater design) in Round 1 works", {
     num_assignment_groups = 5L,
     group_configuration = NULL,
     observed = observed,
-    observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
     output_dir = testthat::test_path("data")
@@ -263,7 +261,6 @@ test_that("assigning profiles (rater design) in Round 2 works", {
     num_assignment_groups = 5L,
     group_configuration = NULL,
     observed = observed,
-    observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
     output_dir = testthat::test_path("data")
@@ -273,7 +270,6 @@ test_that("assigning profiles (rater design) in Round 2 works", {
     num_assignment_groups = 5L,
     group_configuration = NULL,
     observed = observed,
-    observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
     assigned_profiles = round_1_assignments,
@@ -405,7 +401,6 @@ test_that("assign profiles -- error messages work", {
       shared_profiles_within_groups = 2L
     ),
     observed = observed,
-    observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
     output_dir = testthat::test_path("data")
@@ -424,7 +419,6 @@ test_that("assign profiles -- error messages work", {
         shared_profiles_within_groups = 2L
       ),
       observed = observed,
-      observed_proportion_label = "pct",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -467,7 +461,6 @@ test_that("assign profiles -- error messages work", {
         panelists_per_group = 3L
       ),
       observed = observed,
-      observed_proportion_label = "pct",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -487,7 +480,6 @@ test_that("assign profiles -- error messages work", {
         shared_profiles_within_groups = 2L
       ),
       observed = observed,
-      observed_proportion_label = "pct",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -507,7 +499,6 @@ test_that("assign profiles -- error messages work", {
         shared_profiles_within_groups = 1.1
       ),
       observed = observed,
-      observed_proportion_label = "pct",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -528,7 +519,6 @@ test_that("assign profiles -- error messages work", {
       ),
       observed = observed,
       observed_count_label = 5,
-      observed_proportion_label = "pct",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -548,7 +538,6 @@ test_that("assign profiles -- error messages work", {
         shared_profiles_within_groups = 2L
       ),
       observed = observed,
-      observed_proportion_label = "pct",
       included_totals = c(5, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -568,7 +557,6 @@ test_that("assign profiles -- error messages work", {
         shared_profiles_within_groups = 2L
       ),
       observed = observed,
-      observed_proportion_label = "pct",
       included_totals = list(5L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -588,7 +576,6 @@ test_that("assign profiles -- error messages work", {
         shared_profiles_within_groups = 2L
       ),
       observed = observed,
-      observed_proportion_label = "pct",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3,
       output_dir = testthat::test_path("data")
@@ -608,7 +595,6 @@ test_that("assign profiles -- error messages work", {
         shared_profiles_within_groups = 2L
       ),
       observed = observed,
-      observed_proportion_label = "pct",
       shared_profiles_across_groups = "a",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
@@ -633,7 +619,6 @@ test_that("assign profiles -- error messages work", {
                                              TRUE ~ pct),
                       n = dplyr::case_when(n < 2500 ~ NA,
                                            TRUE ~ n)),
-      observed_proportion_label = "pct",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -670,7 +655,6 @@ test_that("assign profiles -- few attributes work (group design)", {
       shared_profiles_within_groups = 2L
     ),
     observed = observed,
-    observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
     output_dir = testthat::test_path("data")
@@ -778,7 +762,6 @@ test_that("assign profiles -- few attributes work (rater design)", {
     num_assignment_groups = 5L,
     group_configuration = NULL,
     observed = observed,
-    observed_proportion_label = "pct",
     included_totals = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_level = 3L,
     output_dir = testthat::test_path("data")

@@ -25,8 +25,6 @@
 #' ratings (default is 'rating').
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in `observed` (default is 'n').
-#' @param observed_proportion_label A character string for the field name of the
-#' observed proportions in `observed` (default is 'prop').
 #' @param output_dir The directory path for saving the output.
 #'
 #' @return A list containing the fitted model, the model predictions to the
@@ -40,7 +38,6 @@ eval_agreement <- function(
   num_pls,
   rating_id = "rating",
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   output_dir
 ) {
   if (any(!is.character(metrics))) {
@@ -79,7 +76,7 @@ eval_agreement <- function(
   att_vec <- observed |>
     dplyr::select(
       -!!rlang::sym(observed_count_label),
-      -!!rlang::sym(observed_proportion_label)
+      -"prop"
     ) |>
     names()
 
@@ -154,7 +151,7 @@ eval_agreement <- function(
       dplyr::left_join(observed, by = att_vec) |>
       dplyr::summarize(
         n = sum(!!rlang::sym(observed_count_label)),
-        prop = sum(!!rlang::sym(observed_proportion_label))
+        prop = sum(.data$prop)
       )
 
     output_stats <- tibble::tibble(

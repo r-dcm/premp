@@ -13,8 +13,6 @@
 #' was observed along with the number of times it was observed.
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in `observed` (default is 'n').
-#' @param observed_proportion_label A character string for the field name of the
-#' observed proportions in `observed` (default is 'prop').
 #' @param shared_profiles_across_groups The number of profiles that are shared
 #' by panelists across groups (default is 1). With a groups-based design, this
 #' is the number of profiles that are seen by all groups. With a panelist-based
@@ -36,7 +34,6 @@ assign_profiles <- function(
   group_configuration = NULL,
   observed,
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   shared_profiles_across_groups = 1L,
   included_totals,
   profiles_per_level,
@@ -165,6 +162,9 @@ assign_profiles <- function(
     )
   }
 
+  observed <- observed |>
+    dplyr::mutate(prop = .data$n / sum(.data$n))
+
   group_design <- ifelse(is.null(group_configuration), FALSE, TRUE)
 
   if (group_design) {
@@ -177,21 +177,21 @@ assign_profiles <- function(
     att_vec <- observed |>
       dplyr::select(
         -!!rlang::sym(observed_count_label),
-        -!!rlang::sym(observed_proportion_label)
+        -"prop"
       ) |>
       names()
 
     possible_profiles <- observed |>
       dplyr::select(
         -!!rlang::sym(observed_count_label),
-        -!!rlang::sym(observed_proportion_label)
+        -"prop"
       ) |>
       dplyr::anti_join(assigned_profiles, by = att_vec)
   } else {
     possible_profiles <- observed |>
       dplyr::select(
         -!!rlang::sym(observed_count_label),
-        -!!rlang::sym(observed_proportion_label)
+        -"prop"
       )
   }
 
@@ -212,7 +212,6 @@ assign_profiles <- function(
     possible_profiles,
     observed,
     observed_count_label,
-    observed_proportion_label,
     shared_profiles_across_groups,
     profiles_per_level,
     raters,

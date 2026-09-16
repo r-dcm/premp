@@ -56,7 +56,6 @@ test_that("weighted profile sampling works", {
     possible_profiles,
     observed,
     observed_count_label,
-    observed_proportion_label = "pct",
     shared_profiles_across_groups = 1L,
     profiles_per_level,
     raters,
