@@ -210,6 +210,33 @@ fit_lr <- function(
       pinpoint_max = ".upper"
     )
 
+  # Order the output
+  pl_labels <- factor(pl_labels, levels = unique(pl_labels))
+  pl_combos <- tibble::tibble(pl = pl_labels) |>
+    dplyr::mutate(pl_num = dplyr::row_number())
+
+  pl_combos <- tidyr::crossing(lower_pl = pl_combos$pl,
+                  upper_pl = pl_combos$pl) |>
+    dplyr::left_join(pl_combos, by = c("lower_pl" = "pl")) |>
+    dplyr::rename(lower_pl_num = pl_num) |>
+    dplyr::left_join(pl_combos, by = c("upper_pl" = "pl")) |>
+    dplyr::rename(upper_pl_num = pl_num) |>
+    dplyr::filter(.data$lower_pl_num == (.data$upper_pl_num - 1)) |>
+    dplyr::arrange(.data$lower_pl_num) |>
+    dplyr::select(-"lower_pl_num", -"upper_pl_num") |>
+    dplyr::mutate(pl_combo = stringr::str_c(.data$lower_pl, "/",
+                                            .data$upper_pl)) |>
+    dplyr::rename(cut_point = upper_pl) |>
+    dplyr::select(-"lower_pl")
+
+  pinpoint_ranges <- pinpoint_ranges |>
+    dplyr::mutate(cut_point = factor(.data$cut_point,
+                                     levels = levels(pl_labels))) |>
+    dplyr::arrange(.data$cut_point) |>
+    dplyr::left_join(pl_combos, by = "cut_point") |>
+    dplyr::select("cut_point" = "pl_combo", "predicted", "pinpoint_min",
+                  "pinpoint_max")
+
   pinpoint_ranges |>
     readr::write_csv(glue::glue("{output_dir}/pp-range.csv"))
 
