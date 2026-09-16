@@ -9,8 +9,7 @@ assign_profiles(
   group_configuration = NULL,
   observed,
   observed_count_label = "n",
-  observed_proportion_label = "prop",
-  shared_profiles = 1L,
+  shared_profiles_across_groups = 1L,
   included_totals,
   profiles_per_level,
   assigned_profiles = NULL,
@@ -25,9 +24,9 @@ assignment groups is the number of groups of panelists.}
 
 \item{group_configuration}{A list containing parameters for configuring a
 group design. The allowable parameters are \code{panelists_per_group} indicating
-the number of panelists in each group and \code{proportion_of_shared_profiles}
-indicating the proportion of profiles that are common to all of the panelists
-in each group.}
+the number of panelists in each group and
+\code{shared_profiles_within_groups} indicating the number of
+profiles that are common to all of the panelists within each group.}
 
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
@@ -35,13 +34,10 @@ was observed along with the number of times it was observed.}
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in \code{observed} (default is 'n').}
 
-\item{observed_proportion_label}{A character string for the field name of the
-observed proportions in \code{observed} (default is 'prop').}
-
-\item{shared_profiles}{The number of profiles that are shared by all
-panelists (default is 1). With a groups-based design, this is the number of
-profiles that are seen by all groups. With a panelist-based design, this is
-the number of profiles seen by all panelists.}
+\item{shared_profiles_across_groups}{The number of profiles that are shared
+by panelists across groups (default is 1). With a groups-based design, this
+is the number of profiles that are seen by all groups. With a panelist-based
+design, this is the number of profiles seen by all panelists.}
 
 \item{included_totals}{The increment of the total skills mastered, based on
 the attribute mastery profiles, that should be retained during profile

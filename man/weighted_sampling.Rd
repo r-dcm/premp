@@ -8,8 +8,7 @@ weighted_sampling(
   possible_profiles,
   observed,
   observed_count_label,
-  observed_proportion_label,
-  shared_profiles,
+  shared_profiles_across_groups,
   profiles_per_level,
   raters,
   group_configuration = NULL
@@ -25,13 +24,10 @@ was observed along with the number of times it was observed.}
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in the observed parameter.}
 
-\item{observed_proportion_label}{A character string for the field name of the
-observed proportions in the observed parameter.}
-
-\item{shared_profiles}{The number of profiles that are shared by all
-panelists. With a group-based design, this is the number of profiles that are
-seen by all groups. With a panelist-based design, this is the number of
-profiles seen by all panelists.}
+\item{shared_profiles_across_groups}{The number of profiles that are shared
+by panelists across groups. With a group-based design, this is the number of
+profiles that are seen by all groups. With a panelist-based design, this is
+the number of profiles seen by all panelists.}
 
 \item{profiles_per_level}{An integer specifying the number of profiles to
 assign to each rater at each level of the total skills mastered.}
@@ -40,9 +36,9 @@ assign to each rater at each level of the total skills mastered.}
 
 \item{group_configuration}{A list containing parameters for configuring a
 group design. The allowable parameters are \code{panelists_per_group} indicating
-the number of panelists in each group and \code{proportion_of_shared_profiles}
-indicating the proportion of profiles that are common to all of the panelists
-in each group.}
+the number of panelists in each group and \code{shared_profiles_within_groups}
+indicating the number of profiles that are common to all of the panelists
+within each group.}
 }
 \value{
 \link[tibble:tibble-package]{tibble} A tibble containing the profiles to

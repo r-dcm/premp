@@ -11,7 +11,6 @@ eval_agreement(
   num_pls,
   rating_id = "rating",
   observed_count_label = "n",
-  observed_proportion_label = "prop",
   output_dir
 )
 }
@@ -44,9 +43,6 @@ ratings (default is 'rating').}
 
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in \code{observed} (default is 'n').}
-
-\item{observed_proportion_label}{A character string for the field name of the
-observed proportions in \code{observed} (default is 'prop').}
 
 \item{output_dir}{The directory path for saving the output.}
 }
