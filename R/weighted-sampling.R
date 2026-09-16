@@ -20,9 +20,9 @@
 #' @param raters A character vector containing the raters' ids.
 #' @param group_configuration A list containing parameters for configuring a
 #' group design. The allowable parameters are `panelists_per_group` indicating
-#' the number of panelists in each group and
-#' `proportion_of_shared_profiles_within_group` indicating the proportion of
-#' profiles that are common to all of the panelists within each group.
+#' the number of panelists in each group and `shared_profiles_within_groups`
+#' indicating the number of profiles that are common to all of the panelists
+#' within each group.
 #'
 #' @return [tibble][tibble::tibble-package] A tibble containing the profiles to
 #' be assigned to raters during a standard setting event.
@@ -73,15 +73,15 @@ weighted_sampling <- function(
 
   if (!is.null(group_configuration)) {
     panelists_per_group <- group_configuration$panelists_per_group
-    proportion_of_shared_profiles_within_group <-
-      group_configuration$proportion_of_shared_profiles_within_group
+    shared_profiles_within_groups <-
+      group_configuration$shared_profiles_within_groups
     group_shared_assignments <-
       floor(round(profiles_per_level *
-                    proportion_of_shared_profiles_within_group, 0)) -
+                    shared_profiles_within_groups, 0)) -
       shared_profiles_across_groups
   } else {
     panelists_per_group <- NA_integer_
-    proportion_of_shared_profiles_within_group <-
+    shared_profiles_within_groups <-
       shared_profiles_across_groups / profiles_per_level
     group_shared_assignments <- 0L
   }

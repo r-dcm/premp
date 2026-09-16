@@ -22,7 +22,7 @@ test_that("assigning profiles (group design) in Round 1 works", {
     num_assignment_groups = 5L,
     group_configuration = list(
       panelists_per_group = 4L,
-      proportion_of_shared_profiles_within_group = .67
+      shared_profiles_within_groups = 2L
     ),
     observed = observed,
     observed_proportion_label = "pct",
@@ -402,7 +402,7 @@ test_that("assign profiles -- error messages work", {
     num_assignment_groups = 5,
     group_configuration = list(
       panelists_per_group = 4L,
-      proportion_of_shared_profiles_within_group = .67
+      shared_profiles_within_groups = 2L
     ),
     observed = observed,
     observed_proportion_label = "pct",
@@ -421,7 +421,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = c(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -441,7 +441,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelits_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed,
       included_totals = c(5L, 10L, 15L, 20L, 25L),
@@ -454,7 +454,7 @@ test_that("assign profiles -- error messages work", {
     err$message,
     paste0(
       "must be a list containing `panelists_per_group` and ",
-      "`proportion_of_shared_profiles_within_group`."
+      "`shared_profiles_within_groups`."
     )
   )
 
@@ -463,7 +463,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67,
+        shared_profiles_within_groups = 2L,
         panelists_per_group = 3L
       ),
       observed = observed,
@@ -484,7 +484,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -504,7 +504,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = 1.1
+        shared_profiles_within_groups = 1.1
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -516,7 +516,7 @@ test_that("assign profiles -- error messages work", {
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
-    "must be a double value between 0 and 1."
+    "must be an integer."
   )
 
   err <- rlang::catch_cnd(
@@ -524,47 +524,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = -0.1
-      ),
-      observed = observed,
-      observed_proportion_label = "pct",
-      included_totals = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_level = 3L,
-      output_dir = testthat::test_path("data")
-    )
-  )
-  testthat::expect_s3_class(err, "rlang_error")
-  testthat::expect_match(
-    err$message,
-    "must be a double value between 0 and 1."
-  )
-
-  err <- rlang::catch_cnd(
-    assign_profiles(
-      num_assignment_groups = 5L,
-      group_configuration = list(
-        panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = "a"
-      ),
-      observed = observed,
-      observed_proportion_label = "pct",
-      included_totals = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_level = 3L,
-      output_dir = testthat::test_path("data")
-    )
-  )
-  testthat::expect_s3_class(err, "rlang_error")
-  testthat::expect_match(
-    err$message,
-    "must be a double value between 0 and 1."
-  )
-
-  err <- rlang::catch_cnd(
-    assign_profiles(
-      num_assignment_groups = 5L,
-      group_configuration = list(
-        panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed,
       observed_count_label = 5,
@@ -585,7 +545,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -605,7 +565,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -625,7 +585,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed,
       observed_proportion_label = "pct",
@@ -645,11 +605,11 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed,
       observed_proportion_label = "pct",
-      shared_profiles = "a",
+      shared_profiles_across_groups = "a",
       included_totals = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_level = 3L,
       output_dir = testthat::test_path("data")
@@ -666,7 +626,7 @@ test_that("assign profiles -- error messages work", {
       num_assignment_groups = 5L,
       group_configuration = list(
         panelists_per_group = 4L,
-        proportion_of_shared_profiles_within_group = .67
+        shared_profiles_within_groups = 2L
       ),
       observed = observed |>
         dplyr::mutate(pct = dplyr::case_when(n < 2500 ~ NA,
@@ -707,7 +667,7 @@ test_that("assign profiles -- few attributes work (group design)", {
     num_assignment_groups = 5L,
     group_configuration = list(
       panelists_per_group = 4L,
-      proportion_of_shared_profiles_within_group = .67
+      shared_profiles_within_groups = 2L
     ),
     observed = observed,
     observed_proportion_label = "pct",

@@ -7,7 +7,7 @@
 #' @param group_configuration A list containing parameters for configuring a
 #' group design. The allowable parameters are `panelists_per_group` indicating
 #' the number of panelists in each group and
-#' `proportion_of_shared_profiles_within_group` indicating the proportion of
+#' `shared_profiles_within_groups` indicating the number of
 #' profiles that are common to all of the panelists within each group.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
@@ -67,14 +67,14 @@ assign_profiles <- function(
       any(
         !(names(group_configuration) %in%
           c("panelists_per_group",
-            "proportion_of_shared_profiles_within_group"))
+            "shared_profiles_within_groups"))
       )
     ) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste0(
           "must be a list containing `panelists_per_group` and ",
-          "`proportion_of_shared_profiles_within_group`."
+          "`shared_profiles_within_groups`."
         ))
       )
     }
@@ -99,18 +99,14 @@ assign_profiles <- function(
       )
     }
 
-    proportion_of_shared_profiles_within_group <-
-      group_configuration$proportion_of_shared_profiles_within_group
+    shared_profiles_within_groups <-
+      group_configuration$shared_profiles_within_groups
 
-    if (
-      !is.double(proportion_of_shared_profiles_within_group) ||
-        proportion_of_shared_profiles_within_group < 0 ||
-        proportion_of_shared_profiles_within_group > 1
-    ) {
+    if (!is.integer(shared_profiles_within_groups)) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(proportion_of_shared_profiles_within_group),
+        arg = rlang::caller_arg(shared_profiles_within_groups),
         must = cli::format_message(paste(
-          "must be a double value between 0 and 1."
+          "must be an integer."
         ))
       )
     }
