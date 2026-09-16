@@ -258,7 +258,7 @@ fitted_model <- fit_ml(
 
 The `fitted_model` object includes information to evaluate model performance.
 The model agreement output includes a data frame with the requested evaluation metrics for in-sample and out-of-sample agreement, with one row per metric.
-The in-sample agreement can be accessed using `fitted_model@in_sample_agreement`, and the out-of-sample agreement can be accessed using `fitted_model_out_of_sample_agreement`.
+The in-sample agreement can be accessed using `fitted_model@in_sample_agreement`, and the out-of-sample agreement can be accessed using `fitted_model@out_of_sample_agreement`.
 
 The supported evaluation metrics are `accuracy` (i.e., classification accuracy), `adjacent` (i.e., adjacent classification accuracy), `kappa` (i.e., Cohen's kappa), `auc` (i.e., area under the receiver operating characteristic curve [ROC AUC]), `gwet` (i.e., Gwet's $AC_2$) and `assignment` (i.e., the number of profiles assigned, the number of students with the assigned profiles, and the proportion of students with the assigned profiles).
 Other than `assignment`, the evaluation metrics are intended to quantify how well the fitted model recovered the panelists' ratings.
