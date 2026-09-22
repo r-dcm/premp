@@ -22,8 +22,8 @@ test_that("condensed mastery method works", {
       proportion_of_shared_profiles_within_group = .67
     ),
     observed = observed,
-    included_totals = c(5L, 10L, 15L),
-    profiles_per_level = 3L,
+    included_total_levels_mastered = c(5L, 10L, 15L),
+    profiles_per_total_levels_mastered = 3L,
     output_dir = testthat::test_path("data")
   )
 

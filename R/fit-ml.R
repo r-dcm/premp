@@ -10,7 +10,6 @@ utils::globalVariables(c("case_wts"))
 #' the panelists' ratings in long format.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
-#' @param possible_profiles A tibble with all of the possible profiles.
 #' @param att_levels A numeric value for the number of levels where mastery can
 #' be demonstrated. For example, `att_level` is 1 for a dichotomous attribute
 #' (i.e., nonmastery or mastery), and `att_level` is 2 for attributes where the
@@ -41,7 +40,6 @@ fit_ml <- function(
   user_workflow,
   ratings_data,
   observed,
-  possible_profiles,
   att_levels,
   num_pls,
   rating_id = "rating",
@@ -49,6 +47,10 @@ fit_ml <- function(
   metrics,
   output_dir
 ) {
+  observed <- observed |>
+    dplyr::mutate(prop = !!rlang::sym(observed_count_label) /
+                    sum(!!rlang::sym(observed_count_label)))
+
   att_vec <- observed |>
     dplyr::select(
       -!!rlang::sym(observed_count_label),
@@ -71,7 +73,7 @@ fit_ml <- function(
     )) |>
     dplyr::mutate(rating = factor(.data$rating, levels = 1:num_pls)) |>
     dplyr::mutate(
-      prop := dplyr::case_when(
+      prop = dplyr::case_when(
         is.na(.data$prop) ~ .000000001,
         TRUE ~ .data$prop
       )
@@ -142,14 +144,15 @@ fit_ml <- function(
     mod_fit,
     train_data |>
       dplyr::select(-"case_wts"),
-    possible_profiles,
     att_levels = 4,
     num_pls = 4,
     rating_id = "rating",
     output_dir = output_dir
   )
 
-  in_sample_preds$model_ratings <- in_sample_preds$model_ratings |>
+  saveRDS(in_sample_preds, glue::glue("{output_dir}/in_sample_predictions.rds"))
+
+  in_sample_preds <- in_sample_preds |>
     dplyr::mutate(dplyr::across(
       dplyr::where(is.factor),
       ~ as.numeric(as.character(.x))
@@ -160,7 +163,7 @@ fit_ml <- function(
     )
 
   in_sample_agreement <- eval_agreement(
-    model_ratings = in_sample_preds$model_ratings,
+    model_ratings = in_sample_preds,
     metrics,
     observed,
     num_pls = 4,
@@ -177,14 +180,15 @@ fit_ml <- function(
   oos_preds <- assign_pl(
     mod_fit,
     test_data,
-    possible_profiles,
     att_levels = 4,
     num_pls = 4,
     rating_id = "rating",
     output_dir = output_dir
   )
 
-  oos_preds$model_ratings <- oos_preds$model_ratings |>
+  saveRDS(oos_preds, glue::glue("{output_dir}/oos_predictions.rds"))
+
+  oos_preds <- oos_preds |>
     dplyr::mutate(dplyr::across(
       dplyr::where(is.factor),
       ~ as.numeric(as.character(.x))
@@ -195,7 +199,7 @@ fit_ml <- function(
     )
 
   oos_agreement <- eval_agreement(
-    model_ratings = oos_preds$model_ratings,
+    model_ratings = oos_preds,
     metrics = metrics,
     observed,
     num_pls = 4,

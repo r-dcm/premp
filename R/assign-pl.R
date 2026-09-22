@@ -6,7 +6,6 @@
 #' profiles that is eligible for assignment to raters.
 #' @param ratings_data A tibble with the profiles rated by the panelists and
 #' the panelists' ratings in long format.
-#' @param possible_profiles A tibble with all of the possible profiles.
 #' @param att_levels A numeric value for the number of levels where mastery can
 #' be demonstrated. For example, `att_level` is 1 for a dichotomous attribute
 #' (i.e., nonmastery or mastery), and `att_level` is 2 for attributes where the
@@ -24,7 +23,6 @@
 assign_pl <- function(
   fitted_model,
   ratings_data,
-  possible_profiles,
   att_levels,
   num_pls,
   rating_id = "rating",
@@ -78,46 +76,5 @@ assign_pl <- function(
   mod_ratings <- mod_ratings |>
     dplyr::left_join(ratings_data, by = att_vec, relationship = "many-to-many")
 
-  all_poss_pred <- stats::predict(
-    fitted_model,
-    possible_profiles |>
-      dplyr::mutate(
-        dplyr::across(
-          dplyr::any_of(att_vec),
-          ~ factor(., levels = 0:att_levels)
-        )
-      ),
-    type = "class"
-  ) |>
-    dplyr::rename(pred_pl = ".pred_class") |>
-    dplyr::bind_cols(possible_profiles) |>
-    dplyr::select(dplyr::any_of(att_vec), "pred_pl")
-
-  all_poss_probs <- stats::predict(
-    fitted_model,
-    possible_profiles |>
-      dplyr::mutate(
-        dplyr::across(
-          dplyr::any_of(att_vec),
-          ~ factor(., levels = 0:att_levels)
-        )
-      ),
-    type = "prob"
-  )
-
-  prob_labels <- glue::glue("prob_pl_{1:num_pls}")
-
-  all_poss_ratings <- dplyr::bind_cols(all_poss_pred, all_poss_probs)
-  names(all_poss_ratings) <- c(att_vec, "pred_pl", prob_labels)
-
-  # Save model predictions of ratings
-  saveRDS(mod_ratings, glue::glue("{output_dir}/rated_profile_predictions.rds"))
-
-  # Save model predictions for all possible profiles
-  saveRDS(
-    all_poss_ratings,
-    glue::glue("{output_dir}/all_possible_profile_predictions.rds")
-  )
-
-  list(model_ratings = mod_ratings, all_possible_ratings = all_poss_ratings)
+  mod_ratings
 }

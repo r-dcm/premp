@@ -1,28 +1,28 @@
 #' Title
 #'
-#' @param num_assignment_groups The number of "assignment groups" for the
-#' profile assignments. When `group_design` is FALSE, the number of assignment
-#' groups is the number of panelists. When `group_design` is TRUE, the number of
-#' assignment groups is the number of groups of panelists.
+#' @param panelist_configuration A list containing the parameters for
+#' configuring a panelist design. The allowable parameters are `num_panelists`
+#' indicating the number of panelists and `shared_profiles_across_panelists`
+#' indicating the number of profiles that are common to all panelists. Only one
+#' of `panelist_configuration` or `group_configuration` should be specified.
 #' @param group_configuration A list containing parameters for configuring a
-#' group design. The allowable parameters are `panelists_per_group` indicating
-#' the number of panelists in each group and
-#' `shared_profiles_within_groups` indicating the number of
-#' profiles that are common to all of the panelists within each group.
+#' group design. The allowable parameters are `num_assignment_groups` indicating
+#' the number of groups of panelists, `panelists_per_group` indicating
+#' the number of panelists in each group, `shared_profiles_within_groups`
+#' indicating the number of profiles that are common to all of the panelists
+#' within each group, and `shared_profiles_across_groups` indicating the number
+#' of profiles that are shared by panelists across groups. Only one of
+#' `panelist_configuration` or `group_configuration` should be specified.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in `observed` (default is 'n').
-#' @param shared_profiles_across_groups The number of profiles that are shared
-#' by panelists across groups (default is 1). With a groups-based design, this
-#' is the number of profiles that are seen by all groups. With a panelist-based
-#' design, this is the number of profiles seen by all panelists.
-#' @param included_totals The increment of the total skills mastered, based on
-#' the attribute mastery profiles, that should be retained during profile
-#' assignment.
-#' @param profiles_per_level An integer specifying the number of profiles to
-#' assign to each rater at each level of the total skills mastered.
-#' @param assigned_profiles A tibble with the profiles that have already been
+#' @param included_total_levels_mastered The increment of the total levels
+#' mastered, based on the attribute mastery profiles, that should be retained
+#' during profile assignment.
+#' @param profiles_per_total_levels_mastered An integer specifying the number of
+#' profiles to assign to each rater at each total number of levels mastered.
+#' @param previously_rated A tibble with the profiles that have already been
 #' assigned to panelists, where there is one row for each assigned profile.
 #' @param output_dir The output directory for the profile assignments.
 #'
@@ -30,17 +30,23 @@
 #'
 #' @export
 assign_profiles <- function(
-  num_assignment_groups,
+  panelist_configuration = NULL,
   group_configuration = NULL,
   observed,
   observed_count_label = "n",
   shared_profiles_across_groups = 1L,
-  included_totals,
-  profiles_per_level,
-  assigned_profiles = NULL,
+  included_total_levels_mastered,
+  profiles_per_total_levels_mastered,
+  previously_rated = NULL,
   output_dir
 ) {
   # error checks
+  if (!is.null(panelist_configuration)) {
+    num_assignment_groups <- panelist_configuration$num_panelists
+  } else {
+    num_assignment_groups <- group_configuration$num_assignment_groups
+  }
+
   if (!is.integer(num_assignment_groups)) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(num_assignment_groups),
@@ -63,24 +69,28 @@ assign_profiles <- function(
     if (
       any(
         !(names(group_configuration) %in%
-          c("panelists_per_group",
-            "shared_profiles_within_groups"))
+          c("num_assignment_groups",
+            "panelists_per_group",
+            "shared_profiles_within_groups",
+            "shared_profiles_across_groups"))
       )
     ) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste0(
-          "must be a list containing `panelists_per_group` and ",
-          "`shared_profiles_within_groups`."
+          "must be a list containing `num_assignment_groups`, ",
+          "`panelists_per_group`, ",
+          "`shared_profiles_within_groups`, and ",
+          "`shared_profiles_across_groups`."
         ))
       )
     }
 
-    if (length(group_configuration) != 2) {
+    if (length(group_configuration) != 4) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste(
-          "must be a list of length 2."
+          "must be a list of length 4."
         ))
       )
     }
@@ -107,6 +117,68 @@ assign_profiles <- function(
         ))
       )
     }
+
+    shared_profiles_across_groups <-
+      group_configuration$shared_profiles_across_groups
+
+    if (!is.integer(shared_profiles_across_groups)) {
+      rdcmchecks::abort_bad_argument(
+        arg = rlang::caller_arg(shared_profiles_across_groups),
+        must = cli::format_message(paste(
+          "must be an integer."
+        ))
+      )
+    }
+  }
+
+  if (!is.null(panelist_configuration)) {
+    if (typeof(panelist_configuration) != "list") {
+      rdcmchecks::abort_bad_argument(
+        arg = rlang::caller_arg(panelist_configuration),
+        must = cli::format_message(paste(
+          "must be a list."
+        ))
+      )
+    }
+
+    if (
+      any(
+        !(names(panelist_configuration) %in%
+          c("num_panelists",
+            "shared_profiles_across_panelists"))
+      )
+    ) {
+      rdcmchecks::abort_bad_argument(
+        arg = rlang::caller_arg(group_configuration),
+        must = cli::format_message(paste0(
+          "must be a list containing `num_panelists` and ",
+          "`shared_profiles_across_panelists`."
+        ))
+      )
+    }
+
+    if (length(panelist_configuration) != 2) {
+      rdcmchecks::abort_bad_argument(
+        arg = rlang::caller_arg(panelist_configuration),
+        must = cli::format_message(paste(
+          "must be a list of length 2."
+        ))
+      )
+    }
+
+    shared_profiles_across_panelists <-
+      panelist_configuration$shared_profiles_across_panelists
+
+    if (!is.integer(shared_profiles_across_panelists)) {
+      rdcmchecks::abort_bad_argument(
+        arg = rlang::caller_arg(shared_profiles_across_panelists),
+        must = cli::format_message(paste(
+          "must be an integer."
+        ))
+      )
+    }
+
+    shared_profiles_across_groups <- shared_profiles_across_panelists
   }
 
   if (!is.character(observed_count_label)) {
@@ -118,18 +190,19 @@ assign_profiles <- function(
     )
   }
 
-  if (typeof(included_totals) != "integer" || !is.vector(included_totals)) {
+  if (typeof(included_total_levels_mastered) != "integer" ||
+      !is.vector(included_total_levels_mastered)) {
     rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(included_totals),
+      arg = rlang::caller_arg(included_total_levels_mastered),
       must = cli::format_message(paste(
         "must be a vector of integer values."
       ))
     )
   }
 
-  if (!is.integer(profiles_per_level)) {
+  if (!is.integer(profiles_per_total_levels_mastered)) {
     rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(profiles_per_level),
+      arg = rlang::caller_arg(profiles_per_total_levels_mastered),
       must = cli::format_message(paste(
         "must be an integer."
       ))
@@ -146,18 +219,9 @@ assign_profiles <- function(
 
   if (unobserved_in_observed) {
     rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(profiles_per_level),
+      arg = rlang::caller_arg(observed),
       must = cli::format_message(paste(
         "should only include profiles that were observed."
-      ))
-    )
-  }
-
-  if (!is.integer(shared_profiles_across_groups)) {
-    rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(shared_profiles_across_groups),
-      must = cli::format_message(paste(
-        "must be an integer."
       ))
     )
   }
@@ -173,7 +237,7 @@ assign_profiles <- function(
     raters <- glue::glue("rater{1:num_assignment_groups}")
   }
 
-  if (!is.null(assigned_profiles)) {
+  if (!is.null(previously_rated)) {
     att_vec <- observed |>
       dplyr::select(
         -!!rlang::sym(observed_count_label),
@@ -186,7 +250,7 @@ assign_profiles <- function(
         -!!rlang::sym(observed_count_label),
         -"prop"
       ) |>
-      dplyr::anti_join(assigned_profiles, by = att_vec)
+      dplyr::anti_join(previously_rated, by = att_vec)
   } else {
     possible_profiles <- observed |>
       dplyr::select(
@@ -205,7 +269,7 @@ assign_profiles <- function(
       dplyr::across(dplyr::everything(), dplyr::desc)
     ) |>
     # filter down to the total number in increments of the range of profiles
-    dplyr::filter(.data$total %in% included_totals)
+    dplyr::filter(.data$total %in% included_total_levels_mastered)
 
   # apply weighted sampling design
   profile_sampling <- weighted_sampling(
@@ -213,8 +277,9 @@ assign_profiles <- function(
     observed,
     observed_count_label,
     shared_profiles_across_groups,
-    profiles_per_level,
+    profiles_per_total_levels_mastered,
     raters,
+    panelist_configuration,
     group_configuration
   )
 

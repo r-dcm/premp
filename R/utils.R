@@ -148,14 +148,14 @@ max_value <- function(
 #' assigned to panelists. This tibble should have fields for each of the
 #' attributes and one field (`total`) for the total number of attributes
 #' mastered.
-#' @param assigned_profiles A tibble containing the assigned profiles. This
+#' @param previously_rated A tibble containing the assigned profiles. This
 #' tibble should only contain fields for each of the attribute.
 #' @param att_vec A character vector containing the attribute names.
 #'
 #' @return A tibble with the eligible profiles and the Hamming distance.
 calculate_hamming <- function(
   profiles,
-  assigned_profiles,
+  previously_rated,
   att_vec
 ) {
   att_levels <- profiles |>
@@ -166,7 +166,7 @@ calculate_hamming <- function(
   hamming_dist <- tibble::tibble()
 
   for (aa in att_levels) {
-    ham_prof <- assigned_profiles |>
+    ham_prof <- previously_rated |>
       dplyr::mutate(total = rowSums(dplyr::across(dplyr::where(is.numeric)))) |>
       dplyr::filter(.data$total == aa) |>
       dplyr::select(-"total")
@@ -225,8 +225,9 @@ calculate_hamming <- function(
 #' example, a value of .60 indicates profiles with a Hamming distance below the
 #' 60th percentile will be filtered out of the set of eligible profiles.
 #' @param raters A character vector containing the rater names.
-#' @param profiles_per_level An integer value indicating the number of profiles
-#' to sample from each level of the number of attributes mastered.
+#' @param profiles_per_total_levels_mastered An integer value indicating the
+#' number of profiles to sample from each level of the number of attributes
+#' mastered.
 #'
 #' @return A tibble with the eligible profiles and the Hamming distance.
 refine_possible_profiles <- function(
@@ -234,7 +235,7 @@ refine_possible_profiles <- function(
   filter_function = "median",
   filter_percentile = NULL,
   raters,
-  profiles_per_level
+  profiles_per_total_levels_mastered
 ) {
   if (!is.null(filter_function) && !is.null(filter_percentile)) {
     rdcmchecks::abort_bad_argument(
@@ -259,7 +260,7 @@ refine_possible_profiles <- function(
 
   # don't refine eligible profiles if the refinement pushes the number eligible
   # below the number that needs to be sampled
-  sx_threshold <- length(raters) * profiles_per_level * 3 # nolint
+  sx_threshold <- length(raters) * profiles_per_total_levels_mastered * 3 # nolint
 
   if (!is.null(filter_percentile)) {
     profiles <- profiles |>

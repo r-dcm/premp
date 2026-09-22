@@ -9,18 +9,22 @@
 #' was observed along with the number of times it was observed.
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in the observed parameter.
-#' @param shared_profiles_across_groups The number of profiles that are shared
-#' by panelists across groups. With a group-based design, this is the number of
-#' profiles that are seen by all groups. With a panelist-based design, this is
-#' the number of profiles seen by all panelists.
-#' @param profiles_per_level An integer specifying the number of profiles to
-#' assign to each rater at each level of the total skills mastered.
+#' @param profiles_per_total_levels_mastered An integer specifying the number of
+#' profiles to assign to each rater at each total number of levels mastered.
 #' @param raters A character vector containing the raters' ids.
+#' @param panelist_configuration A list containing the parameters for
+#' configuring a panelist design. The allowable parameters are `num_panelists`
+#' indicating the number of panelists and `shared_profiles_across_panelists`
+#' indicating the number of profiles that are common to all panelists. Only one
+#' of `panelist_configuration` or `group_configuration` should be specified.
 #' @param group_configuration A list containing parameters for configuring a
-#' group design. The allowable parameters are `panelists_per_group` indicating
-#' the number of panelists in each group and `shared_profiles_within_groups`
+#' group design. The allowable parameters are `num_assignment_groups` indicating
+#' the number of groups of panelists, `panelists_per_group` indicating
+#' the number of panelists in each group, `shared_profiles_within_groups`
 #' indicating the number of profiles that are common to all of the panelists
-#' within each group.
+#' within each group, and `shared_profiles_across_groups` indicating the number
+#' of profiles that are shared by panelists across groups. Only one of
+#' `panelist_configuration` or `group_configuration` should be specified.
 #'
 #' @return [tibble][tibble::tibble-package] A tibble containing the profiles to
 #' be assigned to raters during a standard setting event.
@@ -28,15 +32,23 @@ weighted_sampling <- function(
   possible_profiles,
   observed,
   observed_count_label,
-  shared_profiles_across_groups,
-  profiles_per_level,
+  profiles_per_total_levels_mastered,
   raters,
+  panelist_configuration = NULL,
   group_configuration = NULL
 ) {
   # identify attributes
   att_vec <- possible_profiles |>
     dplyr::select(-"total") |>
     names()
+
+  if (!is.null(group_configuration)) {
+    shared_profiles_across_groups <-
+      group_configuration$shared_profiles_across_groups
+  } else {
+    shared_profiles_across_groups <-
+      panelist_configuration$shared_profiles_across_panelists
+  }
 
   seen_by_all <- possible_profiles |>
     dplyr::filter(.data$total != 0) |>
@@ -63,23 +75,20 @@ weighted_sampling <- function(
     possible_profiles,
     filter_function = "median",
     raters = raters,
-    profiles_per_level = profiles_per_level
+    profiles_per_total_levels_mastered = profiles_per_total_levels_mastered
   )
 
-  remaining_to_sample <- profiles_per_level - shared_profiles_across_groups
+  remaining_to_sample <- profiles_per_total_levels_mastered -
+    shared_profiles_across_groups
 
   if (!is.null(group_configuration)) {
     panelists_per_group <- group_configuration$panelists_per_group
     shared_profiles_within_groups <-
       group_configuration$shared_profiles_within_groups
     group_shared_assignments <-
-      floor(round(profiles_per_level *
-                    shared_profiles_within_groups, 0)) -
-      shared_profiles_across_groups
+      shared_profiles_within_groups - shared_profiles_across_groups
   } else {
     panelists_per_group <- NA_integer_
-    shared_profiles_within_groups <-
-      shared_profiles_across_groups / profiles_per_level
     group_shared_assignments <- 0L
   }
 
@@ -119,7 +128,8 @@ weighted_sampling <- function(
           possible_profiles,
           filter_function = "median",
           raters = raters,
-          profiles_per_level = profiles_per_level
+          profiles_per_total_levels_mastered =
+            profiles_per_total_levels_mastered
         )
       }
     }
@@ -182,7 +192,8 @@ weighted_sampling <- function(
           possible_profiles,
           filter_function = "median",
           raters = raters,
-          profiles_per_level = profiles_per_level
+          profiles_per_total_levels_mastered =
+            profiles_per_total_levels_mastered
         )
       }
     }

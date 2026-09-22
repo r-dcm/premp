@@ -1,6 +1,6 @@
 test_that("slice stratified works", {
   observed_id <- "n"
-  included_totals <- 5
+  included_total_levels_mastered <- 5
 
   possible_profiles <- tibble::tibble(tidyr::crossing(
     att1 = c(0:4),
@@ -40,7 +40,7 @@ test_that("slice stratified works", {
       dplyr::across(dplyr::everything(), dplyr::desc)
     ) |>
     # filter down to the total number in increments of the range of profiles
-    dplyr::mutate(keep = .data$total %% included_totals == 0) |>
+    dplyr::mutate(keep = .data$total %% included_total_levels_mastered == 0) |>
     dplyr::filter(.data$keep) |>
     dplyr::select(-"keep")
 
@@ -117,14 +117,14 @@ test_that("Hamming distance calculations work", {
     att4 = c(0, 1, 1),
     total = c(3, 3, 3)
   )
-  assigned_profiles <- tibble::tibble(
+  previously_rated <- tibble::tibble(
     att1 = c(1),
     att2 = c(1),
     att3 = c(1),
     att4 = c(0)
   )
 
-  hamming_dist <- calculate_hamming(profiles, assigned_profiles, att_vec)
+  hamming_dist <- calculate_hamming(profiles, previously_rated, att_vec)
 
   testthat::expect_contains(class(hamming_dist), "tbl_df")
   testthat::expect_equal(nrow(hamming_dist), 3)
@@ -154,7 +154,7 @@ test_that("refining based on Hamming distance work", {
     filter_function,
     filter_percentile,
     raters,
-    profiles_per_level = 2
+    profiles_per_total_levels_mastered = 2
   )
 
   exp_output <- profiles |>
@@ -180,7 +180,7 @@ test_that("refining based on Hamming distance work", {
     filter_function,
     filter_percentile,
     raters,
-    profiles_per_level = 2
+    profiles_per_total_levels_mastered = 2
   )
 
   exp_output <- tibble::tibble(
@@ -211,7 +211,7 @@ test_that("refining based on Hamming distance work", {
     filter_function,
     filter_percentile,
     raters,
-    profiles_per_level = 2
+    profiles_per_total_levels_mastered = 2
   )
 
   exp_output <- tibble::tibble(
@@ -242,7 +242,7 @@ test_that("refining based on Hamming distance work", {
     filter_function,
     filter_percentile,
     raters,
-    profiles_per_level = 2
+    profiles_per_total_levels_mastered = 2
   )
 
   exp_output <- tibble::tibble(
@@ -276,7 +276,7 @@ test_that("refining based on Hamming distance work", {
     filter_function,
     filter_percentile,
     raters,
-    profiles_per_level = 2
+    profiles_per_total_levels_mastered = 2
   )
 
   exp_output <- profiles |>
@@ -291,14 +291,14 @@ test_that("refining based on Hamming distance -- error messages work", {
   filter_function <- "median"
   filter_percentile <- .6
   profiles <- tibble::tibble()
-  profiles_per_level <- 2L
+  profiles_per_total_levels_mastered <- 2L
 
   err <- rlang::catch_cnd(refine_possible_profiles(
     profiles,
     filter_function,
     filter_percentile,
     raters,
-    profiles_per_level
+    profiles_per_total_levels_mastered
   ))
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
@@ -310,14 +310,14 @@ test_that("refining based on Hamming distance -- error messages work", {
   filter_function <- NULL
   filter_percentile <- -.01
   profiles <- tibble::tibble()
-  profiles_per_level <- 2L
+  profiles_per_total_levels_mastered <- 2L
 
   err <- rlang::catch_cnd(refine_possible_profiles(
     profiles,
     filter_function,
     filter_percentile,
     raters,
-    profiles_per_level
+    profiles_per_total_levels_mastered
   ))
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
@@ -332,7 +332,7 @@ test_that("refining based on Hamming distance -- error messages work", {
     filter_function,
     filter_percentile,
     raters,
-    profiles_per_level
+    profiles_per_total_levels_mastered
   ))
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
