@@ -137,8 +137,8 @@ test_that("Hamming distance calculations work", {
 
 test_that("refining based on Hamming distance work", {
   raters <- c("group1", "group2")
-  filter_function = "median"
-  filter_percentile = NULL
+  filter_function <- "median"
+  filter_percentile <- NULL
 
   profiles <- tibble::tibble(
     att1 = c(1, 0, 1),
@@ -163,8 +163,8 @@ test_that("refining based on Hamming distance work", {
   testthat::expect_equal(refined_output, exp_output)
 
   raters <- c("group1", "group2")
-  filter_function = "median"
-  filter_percentile = NULL
+  filter_function <- "median"
+  filter_percentile <- NULL
 
   profiles <- tibble::tibble(
     att1 = rep(c(1, 0, 1), times = 5),
@@ -194,8 +194,8 @@ test_that("refining based on Hamming distance work", {
   testthat::expect_equal(refined_output, exp_output)
 
   raters <- c("group1", "group2")
-  filter_function = "mean"
-  filter_percentile = NULL
+  filter_function <- "mean"
+  filter_percentile <- NULL
 
   profiles <- tibble::tibble(
     att1 = rep(c(1, 0, 1), times = 5),
@@ -225,8 +225,8 @@ test_that("refining based on Hamming distance work", {
   testthat::expect_equal(refined_output, exp_output)
 
   raters <- c("group1", "group2")
-  filter_function = NULL
-  filter_percentile = .6
+  filter_function <- NULL
+  filter_percentile <- .6
 
   profiles <- tibble::tibble(
     att1 = rep(c(1, 0, 1), times = 5),
@@ -259,8 +259,8 @@ test_that("refining based on Hamming distance work", {
   testthat::expect_equal(refined_output, exp_output)
 
   raters <- c("group1", "group2")
-  filter_function = NULL
-  filter_percentile = .6
+  filter_function <- NULL
+  filter_percentile <- .6
 
   profiles <- tibble::tibble(
     att1 = rep(c(1, 0, 1), times = 5),
@@ -288,8 +288,8 @@ test_that("refining based on Hamming distance work", {
 
 test_that("refining based on Hamming distance -- error messages work", {
   raters <- c("group1", "group2")
-  filter_function = "median"
-  filter_percentile = .6
+  filter_function <- "median"
+  filter_percentile <- .6
   profiles <- tibble::tibble()
   profiles_per_level <- 2L
 
@@ -307,8 +307,8 @@ test_that("refining based on Hamming distance -- error messages work", {
   )
 
   raters <- c("group1", "group2")
-  filter_function = NULL
-  filter_percentile = -.01
+  filter_function <- NULL
+  filter_percentile <- -.01
   profiles <- tibble::tibble()
   profiles_per_level <- 2L
 
@@ -325,7 +325,7 @@ test_that("refining based on Hamming distance -- error messages work", {
     "must be between 0 and 1."
   )
 
-  filter_percentile = 1.01
+  filter_percentile <- 1.01
 
   err <- rlang::catch_cnd(refine_possible_profiles(
     profiles,

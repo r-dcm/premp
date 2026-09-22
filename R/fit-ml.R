@@ -150,10 +150,14 @@ fit_ml <- function(
   )
 
   in_sample_preds$model_ratings <- in_sample_preds$model_ratings |>
-    dplyr::mutate(dplyr::across(dplyr::where(is.factor),
-                                ~ as.numeric(as.character(.x)))) |>
-    dplyr::mutate(pred_pl = factor(.data$pred_pl, levels = 1:num_pls),
-                  rating = factor(.data$rating, levels = 1:num_pls))
+    dplyr::mutate(dplyr::across(
+      dplyr::where(is.factor),
+      ~ as.numeric(as.character(.x))
+    )) |>
+    dplyr::mutate(
+      pred_pl = factor(.data$pred_pl, levels = 1:num_pls),
+      rating = factor(.data$rating, levels = 1:num_pls)
+    )
 
   in_sample_agreement <- eval_agreement(
     model_ratings = in_sample_preds$model_ratings,
@@ -181,10 +185,14 @@ fit_ml <- function(
   )
 
   oos_preds$model_ratings <- oos_preds$model_ratings |>
-    dplyr::mutate(dplyr::across(dplyr::where(is.factor),
-                                ~ as.numeric(as.character(.x)))) |>
-    dplyr::mutate(pred_pl = factor(.data$pred_pl, levels = 1:num_pls),
-                  rating = factor(.data$rating, levels = 1:num_pls))
+    dplyr::mutate(dplyr::across(
+      dplyr::where(is.factor),
+      ~ as.numeric(as.character(.x))
+    )) |>
+    dplyr::mutate(
+      pred_pl = factor(.data$pred_pl, levels = 1:num_pls),
+      rating = factor(.data$rating, levels = 1:num_pls)
+    )
 
   oos_agreement <- eval_agreement(
     model_ratings = oos_preds$model_ratings,

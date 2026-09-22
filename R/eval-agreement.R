@@ -50,8 +50,10 @@ eval_agreement <- function(
   }
 
   if (
-    any(!(metrics %in% c("accuracy", "adjacent", "kappa", "auc", "gwet",
-                         "assignment")))
+    any(
+      !(metrics %in%
+        c("accuracy", "adjacent", "kappa", "auc", "gwet", "assignment"))
+    )
   ) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(metrics),
@@ -137,8 +139,7 @@ eval_agreement <- function(
       irrCAC::gwet.ac1.raw(weights = "quadratic") |>
       magrittr::use_series(est) |>
       dplyr::select(".estimate" = "coeff.val") |>
-      dplyr::mutate(.metric = "gwets_ac2",
-                    .estimator = NA) |>
+      dplyr::mutate(.metric = "gwets_ac2", .estimator = NA) |>
       dplyr::select(".metric", ".estimator", ".estimate")
 
     res <- dplyr::bind_rows(res, gwets_ac)
