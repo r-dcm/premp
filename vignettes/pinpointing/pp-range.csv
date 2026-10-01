@@ -1,0 +1,4 @@
+cut_point,predicted,pinpoint_min,pinpoint_max
+Emerging/Approaching the Target,10,6,14
+Approaching the Target/At Target,19,17,21
+At Target/Advanced,25,21,29

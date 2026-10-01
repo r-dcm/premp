@@ -56,11 +56,7 @@ Profile assignment will rely on the profile id numbers, which will be used to su
 
 ```{r}
 #| label: create-meta-data
-meta_data <- readRDS(here::here("vignettes/meta-data.rds")) # |> 
-  # dplyr::rowwise() |>
-  # dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
-  # dplyr::ungroup() |> 
-  # tibble::rowid_to_column("profile_id")
+meta_data <- readRDS(here::here("vignettes/meta-data.rds"))
 ```
 
 ## Observed Profiles
@@ -100,27 +96,27 @@ final_assignments <- assign_profiles(
   group_configuration = list(
     num_assignment_groups = 5L,
     panelists_per_group = 4L,
-    shared_profiles_within_groups = 2L,
+    shared_profiles_within_groups = 3L,
     shared_profiles_across_groups = 1L
   ),
   observed = observed,
   observed_count_label = "n",
   included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L),
   profiles_per_total_levels_mastered = 3L,
-  output_dir = here::here("vignettes")
+  output_dir = here::here("vignettes/rangefinding")
 )
 
 final_assignments
 ```
 
-The output of `assign_profiles()` includes a column for each measured attribute, the total number of skills mastered, group number (when applicable), and a column for each rater.
+The output of `assign_profiles()` includes a column for profile id, group number (when applicable), and a column for each rater.
 In the column for each rater, values of 1 indicate the panelist is assigned the profile, and values of 0 indicate the panelist is not assigned the profile. 
 In a group-based design, there is one column for each rater in each group.
-In other words, `rater1` at `group1` is different than `rater1` at `group2`.
+In other words, `rater1` in `group1` is different than `rater1` in `group2`.
 
 Instead of a group-based design, we could assign profiles directly to panelists.
 The following example uses `panelist_configuration` to provide a list of parameters describing the panelist-based design.
-More specifically, it assigns profiles to 10 panelists, where one of profile is common to all panelists (i.e., `shared_profiles_across_panelists = 1L`).
+More specifically, it assigns profiles to 10 panelists (i.e., `num_panelists = 10`), where one of profile is common to all panelists (i.e., `shared_profiles_across_panelists = 1L`).
 The panelist-based design uses the same settings for `included_total_levels_mastered` and `profiles_per_total_levels_mastered`.
 
 ```{r}
@@ -135,18 +131,18 @@ final_panelist_assignments <- assign_profiles(
   observed_count_label = "n",
   included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L),
   profiles_per_total_levels_mastered = 3L,
-  output_dir = here::here("vignettes")
+  output_dir = here::here("vignettes/rangefinding")
 )
 ```
 
 ## Panelist Ratings
 
 At this point in the standard setting process, the assigned profiles are presented to panelists at the standard setting event, where panelists provide performance level ratings to each assigned profiles.
-The dataset with fields for the profile number, attribute names/labels, group id (when applicable), rater id, and rating will need to be loaded.
+The dataset with fields for the profile id, group id (when applicable), rater id, and rating will need to be loaded.
 
 ```{r}
 #| label: panelist-ratings
-ratings <- readRDS(here::here("vignettes/ratings_r1.rds"))
+ratings <- readRDS(here::here("vignettes/rangefinding/ratings_r1.rds"))
 
 ratings
 ```
@@ -165,9 +161,10 @@ pl_labels <- c("Emerging", "Approaching the Target", "At Target", "Advanced")
 
 pinpoint_ranges <- fit_lr(
   ratings,
+  meta_data,
   pl_labels,
   att_levels = 4,
-  output_dir = here::here("vignettes")
+  output_dir = here::here("vignettes/pinpointing")
 )
 
 pinpoint_ranges
@@ -188,23 +185,22 @@ The format of the output remains the same.
 #| label: group-pinpointing-assignment
 retain_totals <- profiles_to_retain(
   pinpoint_ranges,
-  num_attributes = 8,
-  attribute_levels = 4
+  max_levels_mastered = 32
 )
 
 final_assignments <- assign_profiles(
-  num_assignment_groups = 5L,
   group_configuration = list(
+    num_assignment_groups = 5L,
     panelists_per_group = 4L,
-    shared_profiles_within_groups = 2L
+    shared_profiles_within_groups = 2L,
+    shared_profiles_across_groups = 1L
   ),
   observed = observed,
   observed_count_label = "n",
-  shared_profiles_across_groups = 1L,
   included_total_levels_mastered = retain_totals,
   profiles_per_total_levels_mastered = 2L,
   previously_rated = ratings,
-  output_dir = here::here("vignettes")
+  output_dir = here::here("vignettes/pinpointing")
 )
 
 final_assignments
@@ -214,16 +210,21 @@ final_assignments
 
 Once the panelists have rated profiles during the pinpointing round, the ratings from the rangefinding and pinpointing rounds need to be compiled into a single dataset.
 The panelists' ratings from each round will need to be loaded.
-The compiled data set will need columns for each of the measured attributes, group id (when applicable), rater id, and rating.
+The compiled data set will need columns for the rating and each of the measured attributes.
+The columns for each of the measured attributes can be joined in from the meta-data.
+The columns for each of the measured attributes will be the predictors in the machine learning model, and the panelists' ratings will be the outcome variable.
+The panelists' ratings from each round will include columns for the group id (when applicable) and rater id.
+These variables are useful for the standard setting event (e.g., evaluating classification accuracy within a table; linking ratings to a panelist); however, these variables are not necessary for estimating the machine learning model, meaning they need to be removed from the compiled data.
 Of note, the compiled data should be in long format (i.e., one row per profile and panelist rating).
 
 ```{r}
 #| label: ml-data-prep
-ratings_r1 <- readRDS(here::here("vignettes/ratings_r1.rds"))
-ratings_r2 <- readRDS(here::here("vignettes/ratings_r2.rds"))
+ratings_r1 <- readRDS(here::here("vignettes/rangefinding/ratings_r1.rds"))
+ratings_r2 <- readRDS(here::here("vignettes/pinpointing/ratings_r2.rds"))
 
 ratings_data <- dplyr::bind_rows(ratings_r1, ratings_r2) |>
-  dplyr::select(-"profile_num")
+  dplyr::left_join(meta_data) |> 
+  dplyr::select(-"profile_id", -"rater_id", -dplyr::any_of(c("group"))) 
 
 ratings_data
 ```
@@ -259,13 +260,12 @@ fitted_model <- fit_ml(
   user_workflow = workflow,
   ratings_data,
   observed,
-  possible_profiles,
   att_levels = 4,
   num_pls = 4,
   rating_id = "rating",
   observed_count_label = "n",
   metrics = c("accuracy", "auc", "kappa", "gwet", "assignment"),
-  output_dir = here::here("vignettes")
+  output_dir = here::here("vignettes/machine_learning")
 )
 ```
 
@@ -311,79 +311,55 @@ In the validation exercise, previously unseen profiles are shown to panelists al
 The panelists are then asked whether they agree with the model-predicted performance level.
 
 First, a new set of unseen profiles must be assigned to the panelists.
-This set of profiles is assigned similar to assignment for the range finding and pinpointing rounds, with the exception that all previous assignments are input into `assign_profiles()` so that only new profiles are assigned during the validation exercise.
-Notably, the standard setting design (e.g., number of panelists) should not change from range finding and pinpointing to the validation exercise, but there may be design choices pertaining to which profiles to assign (e.g., the number of profiles to assign at each level).
+This set of profiles is assigned similar to assignment for the range finding and pinpointing rounds but with a few key differences.
+Rather than assigning a pre-defined number of profiles at each level of the total skills mastered, profiles will be assigned to reflect a range of model certainty for each of the assigned performance levels within the ranges of the total skills mastered used to assign profiles during the pinpointing round.
+Certainty will be quantified with the ratio between the most likely performance level and the second most likely performance level, where the probability of the second mostly likely performance level is divided by the probability of the most likely performance level.
+Each profile will be classified as a very certain, fairly certain, or fairly uncertain based on user-specified thresholds.
+Users also specify the number of profiles assigned within each certainty classification for each performance level and the number of profiles per category that are shared across groups (group design) or panelists (panelist design).
+For groups-based designs, the profiles assigned for the validation exercise will be shared within the group.
+
+`assign_validation_profiles()` takes the user-specified information about the design of the validation exercise and outputs the assigned profiles for each group or panelist.
+The output from `assign_validation_profiles()` is designed to be consistent with the output from `assign_profiles()`.
+Specifically, the output includes the profile id, performance level, group id (when applicable), and one column for each panelist with a binary indicator reflecting assignment.
+The performance level contains the performance level classification generated from the machine learning model, and this will be the focus of the validation exercise.
+Namely, panelists will reference the full profile using the profile id, and the panelists will make a judgment regarding whether they agree that the model-produced performance level classification best describes the pattern of mastery or whether they find the model-produced performance level classification to be reasonable for this pattern of mastery.
+Panelist responses can then be compared to pre-defined acceptance standards to evaluate whether there is support for the machine-learning-based standards.
+If either acceptance criteria is met, the validation exercise ends.
+If neither is met, the panelists within each group (group design) or panelists (panelist design) will discuss the profiles from the validation exercise and then provide another round of agreement ratings.
 
 ```{r}
 #| label: validation-assignment
-validation_assignments <- assign_profiles(
+previously_rated <- ratings_data |> 
+  dplyr::left_join(meta_data) |> 
+  dplyr::select("profile_id") |> 
+  dplyr::distinct()
+
+validation_assignments <- assign_validation_profiles(
+  fitted_model = fitted_model@model,
+  group_configuration = list(
     num_assignment_groups = 5L,
-    group_configuration = list(
-      panelists_per_group = 4L,
-      shared_profiles_within_groups = 2L
-    ),
-    observed = observed,
-    observed_count_label = "n",
-    shared_profiles_across_groups = 1L,
-    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 2L,
-    previously_rated = ratings,
-    output_dir = here::here("vignettes")
-  )
-
-validation_assignments
-```
-
-Once the set of profiles for the validation exercise have been identified, performance levels can be assigned to each of the profiles in the validation exercise using `assign_pl()`.
-Prior to inputting `validation_assignments` into `assign_pl()`, we need to insert a dummy column for rating (i.e., `mutate(rating = NA)`).
-Further, we need to remove `total` from `validation_assignments` (i.e., `select(-"total")`), pivot the data into long-form (i.e., `pivot_longer(cols = dplyr::starts_with("rater"), names_to = "rater_id", values_to = "assigned")`), filter down to only the assigned profiles (i.e., `filter(assigned == 1)`, and remove `assigned` (i.e., `select(-"assigned")`).
-Because this is the validation exercise, we are only interesting in the model ratings, so we limit the output of `assign_pl()` using `$model_ratings`.
-
-```{r}
-#| label: validation-pl
-validation_pl <- assign_pl(
-  fitted_model@model,
-  validation_assignments |> 
-    dplyr::mutate(rating = NA) |> 
-    dplyr::select(-"total") |> 
-    tidyr::pivot_longer(cols = dplyr::starts_with("rater"),
-                        names_to = "rater_id",
-                        values_to = "assigned") |> 
-    dplyr::filter(assigned == 1) |> 
-    dplyr::select(-"assigned"),
+    panelists_per_group = 4L,
+    shared_profiles_within_certainty_across_groups = 1L
+  ),
+  certainty_assignments = list(
+    very_certain = 1L,
+    fairly_certain = 2L,
+    fairly_uncertain = 3L
+  ),
+  certainty_thresholds = list(
+    very_certain = .20,
+    fairly_uncertain = .80
+  ),
+  observed = observed,
+  observed_count_label = "n",
+  included_total_levels_mastered = retain_totals,
   att_levels = 4,
   num_pls = 4,
-  rating_id = "rating",
-  output_dir = here::here("vignettes")
-)$model_ratings |> 
-  select(dplyr::starts_with("att_"), "pred_pl", dplyr::starts_with("prob"),
-         "rating")
+  previously_rated = ratings,
+  output_dir = here::here("vignettes/validation")
+)
 
-validation_pl
-```
-
-After collecting panelists' ratings during the validation exercise and merging them with the profiles and their model-assigned performance levels, the validation ratings will need to be loaded.
-The user will input the validation ratings, the label for the panelists' ratings in the validation exercise, the desired evaluation metrics, and the number of performance levels into `eval_agreement()`.
-The resulting metrics are used to evaluate whether there is sufficient agreement between the panelists and the model.
-If the prespecified acceptance criteria are met, the validation exercise ends.
-If not, the panelist ratings from the validation exercise can be added to the ratings from the rangefinding and pinpointing rounds to retrain the model, and the validation exercise can be repeated.
-
-```{r}
-#| label: validation-evaluation
-validation_ratings <-
-  readRDS(here::here("vignettes/validation_ratings.rds"))
-
-validation_agreement <- eval_agreement(
-    model_ratings = validation_ratings,
-    metrics = c("accuracy", "auc", "kappa", "gwet"),
-    observed,
-    num_pls = 4,
-    rating_id = "rating",
-    observed_count_label = "n",
-    output_dir = here::here("vignettes")
-  )
-
-validation_agreement
+validation_assignments
 ```
 
 ## References
