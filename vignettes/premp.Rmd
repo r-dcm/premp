@@ -254,8 +254,6 @@ workflow <-
   parsnip::set_mode("classification") |>
   parsnip::set_engine("ranger")
 
-possible_profiles <- readRDS(here::here("vignettes/possible_profiles.rds"))
-
 fitted_model <- fit_ml(
   user_workflow = workflow,
   ratings_data,
