@@ -55,6 +55,7 @@
 #' @export
 #'
 assign_validation_profiles <- function(
+    fitted_model,
     panelist_configuration = NULL,
     group_configuration = NULL,
     certainty_assignments = list(very_certain = 1L, fairly_certain = 2L, fairly_uncertain = 3L),
