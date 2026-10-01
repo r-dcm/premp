@@ -4,16 +4,13 @@
 \alias{profiles_to_retain}
 \title{Retaining Profiles From Rangefinding}
 \usage{
-profiles_to_retain(pinpoint_ranges, num_attributes, attribute_levels)
+profiles_to_retain(pinpoint_ranges, max_levels_mastered)
 }
 \arguments{
 \item{pinpoint_ranges}{A tibble containing the output of \code{fit_lr()}.}
 
-\item{num_attributes}{An integer specifying the number of measured
-attributes.}
-
-\item{attribute_levels}{An integer specifying the number of levels per
-attribute.}
+\item{max_levels_mastered}{An integer specifying the maximum number of levels
+that can be mastered across all attributes.}
 }
 \value{
 A vector containing the levels of the number of skills mastered to

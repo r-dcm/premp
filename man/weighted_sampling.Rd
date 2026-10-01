@@ -8,9 +8,9 @@ weighted_sampling(
   possible_profiles,
   observed,
   observed_count_label,
-  shared_profiles_across_groups,
-  profiles_per_level,
+  profiles_per_total_levels_mastered,
   raters,
+  panelist_configuration = NULL,
   group_configuration = NULL
 )
 }
@@ -24,21 +24,25 @@ was observed along with the number of times it was observed.}
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in the observed parameter.}
 
-\item{shared_profiles_across_groups}{The number of profiles that are shared
-by panelists across groups. With a group-based design, this is the number of
-profiles that are seen by all groups. With a panelist-based design, this is
-the number of profiles seen by all panelists.}
-
-\item{profiles_per_level}{An integer specifying the number of profiles to
-assign to each rater at each level of the total skills mastered.}
+\item{profiles_per_total_levels_mastered}{An integer specifying the number of
+profiles to assign to each rater at each total number of levels mastered.}
 
 \item{raters}{A character vector containing the raters' ids.}
 
+\item{panelist_configuration}{A list containing the parameters for
+configuring a panelist design. The allowable parameters are \code{num_panelists}
+indicating the number of panelists and \code{shared_profiles_across_panelists}
+indicating the number of profiles that are common to all panelists. Only one
+of \code{panelist_configuration} or \code{group_configuration} should be specified.}
+
 \item{group_configuration}{A list containing parameters for configuring a
-group design. The allowable parameters are \code{panelists_per_group} indicating
-the number of panelists in each group and \code{shared_profiles_within_groups}
+group design. The allowable parameters are \code{num_assignment_groups} indicating
+the number of groups of panelists, \code{panelists_per_group} indicating
+the number of panelists in each group, \code{shared_profiles_within_groups}
 indicating the number of profiles that are common to all of the panelists
-within each group.}
+within each group, and \code{shared_profiles_across_groups} indicating the number
+of profiles that are shared by panelists across groups. Only one of
+\code{panelist_configuration} or \code{group_configuration} should be specified.}
 }
 \value{
 \link[tibble:tibble-package]{tibble} A tibble containing the profiles to

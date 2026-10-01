@@ -8,7 +8,6 @@ fit_ml(
   user_workflow,
   ratings_data,
   observed,
-  possible_profiles,
   att_levels,
   num_pls,
   rating_id = "rating",
@@ -26,8 +25,6 @@ the panelists' ratings in long format.}
 
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
-
-\item{possible_profiles}{A tibble with all of the possible profiles.}
 
 \item{att_levels}{A numeric value for the number of levels where mastery can
 be demonstrated. For example, \code{att_level} is 1 for a dichotomous attribute

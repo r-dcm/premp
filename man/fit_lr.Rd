@@ -4,12 +4,24 @@
 \alias{fit_lr}
 \title{Range Finding Procedure from the Condensed Mastery Standard Setting Method}
 \usage{
-fit_lr(ratings, pl_labels, att_levels, cores = 4, chains = 4, output_dir)
+fit_lr(
+  ratings,
+  meta_data,
+  pl_labels,
+  att_levels,
+  cores = 4,
+  chains = 4,
+  output_dir
+)
 }
 \arguments{
 \item{ratings}{A tibble with one row for each rater's rating of an assigned
 profile, including columns for the profile number, the mastery status for
 each attribute, and the raters' ratings.}
+
+\item{meta_data}{A tibble with the profile meta-data, including the profile
+id and columns for each attribute and the number of levels mastered for
+each attribute.}
 
 \item{pl_labels}{A character vector containing the ordered performance
 levels.}

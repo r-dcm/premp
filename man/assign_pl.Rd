@@ -7,7 +7,6 @@
 assign_pl(
   fitted_model,
   ratings_data,
-  possible_profiles,
   att_levels,
   num_pls,
   rating_id = "rating",
@@ -15,13 +14,10 @@ assign_pl(
 )
 }
 \arguments{
-\item{fitted_model}{A tibble with one row for each attribute mastery
-profiles that is eligible for assignment to raters.}
+\item{fitted_model}{An object with the fitted machine learning model.}
 
 \item{ratings_data}{A tibble with the profiles rated by the panelists and
 the panelists' ratings in long format.}
-
-\item{possible_profiles}{A tibble with all of the possible profiles.}
 
 \item{att_levels}{A numeric value for the number of levels where mastery can
 be demonstrated. For example, \code{att_level} is 1 for a dichotomous attribute

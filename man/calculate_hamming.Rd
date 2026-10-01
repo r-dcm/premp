@@ -4,7 +4,7 @@
 \alias{calculate_hamming}
 \title{Calculate Hamming distance}
 \usage{
-calculate_hamming(profiles, assigned_profiles, att_vec)
+calculate_hamming(profiles, previously_rated, att_vec)
 }
 \arguments{
 \item{profiles}{A tibble containing the profiles that are eligible to be
@@ -12,7 +12,7 @@ assigned to panelists. This tibble should have fields for each of the
 attributes and one field (\code{total}) for the total number of attributes
 mastered.}
 
-\item{assigned_profiles}{A tibble containing the assigned profiles. This
+\item{previously_rated}{A tibble containing the assigned profiles. This
 tibble should only contain fields for each of the attribute.}
 
 \item{att_vec}{A character vector containing the attribute names.}

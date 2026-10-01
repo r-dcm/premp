@@ -5,28 +5,31 @@
 \title{Title}
 \usage{
 assign_profiles(
-  num_assignment_groups,
+  panelist_configuration = NULL,
   group_configuration = NULL,
   observed,
   observed_count_label = "n",
-  shared_profiles_across_groups = 1L,
-  included_totals,
-  profiles_per_level,
-  assigned_profiles = NULL,
+  included_total_levels_mastered,
+  profiles_per_total_levels_mastered,
+  previously_rated = NULL,
   output_dir
 )
 }
 \arguments{
-\item{num_assignment_groups}{The number of "assignment groups" for the
-profile assignments. When \code{group_design} is FALSE, the number of assignment
-groups is the number of panelists. When \code{group_design} is TRUE, the number of
-assignment groups is the number of groups of panelists.}
+\item{panelist_configuration}{A list containing the parameters for
+configuring a panelist design. The allowable parameters are \code{num_panelists}
+indicating the number of panelists and \code{shared_profiles_across_panelists}
+indicating the number of profiles that are common to all panelists. Only one
+of \code{panelist_configuration} or \code{group_configuration} should be specified.}
 
 \item{group_configuration}{A list containing parameters for configuring a
-group design. The allowable parameters are \code{panelists_per_group} indicating
-the number of panelists in each group and
-\code{shared_profiles_within_groups} indicating the number of
-profiles that are common to all of the panelists within each group.}
+group design. The allowable parameters are \code{num_assignment_groups} indicating
+the number of groups of panelists, \code{panelists_per_group} indicating
+the number of panelists in each group, \code{shared_profiles_within_groups}
+indicating the number of profiles that are common to all of the panelists
+within each group, and \code{shared_profiles_across_groups} indicating the number
+of profiles that are shared by panelists across groups. Only one of
+\code{panelist_configuration} or \code{group_configuration} should be specified.}
 
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
@@ -34,19 +37,14 @@ was observed along with the number of times it was observed.}
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in \code{observed} (default is 'n').}
 
-\item{shared_profiles_across_groups}{The number of profiles that are shared
-by panelists across groups (default is 1). With a groups-based design, this
-is the number of profiles that are seen by all groups. With a panelist-based
-design, this is the number of profiles seen by all panelists.}
+\item{included_total_levels_mastered}{The increment of the total levels
+mastered, based on the attribute mastery profiles, that should be retained
+during profile assignment.}
 
-\item{included_totals}{The increment of the total skills mastered, based on
-the attribute mastery profiles, that should be retained during profile
-assignment.}
+\item{profiles_per_total_levels_mastered}{An integer specifying the number of
+profiles to assign to each rater at each total number of levels mastered.}
 
-\item{profiles_per_level}{An integer specifying the number of profiles to
-assign to each rater at each level of the total skills mastered.}
-
-\item{assigned_profiles}{A tibble with the profiles that have already been
+\item{previously_rated}{A tibble with the profiles that have already been
 assigned to panelists, where there is one row for each assigned profile.}
 
 \item{output_dir}{The output directory for the profile assignments.}
