@@ -54,7 +54,8 @@ fit_ml <- function(
   att_vec <- observed |>
     dplyr::select(
       -!!rlang::sym(observed_count_label),
-      -"prop"
+      -"prop",
+      -"profile_id"
     ) |>
     names()
 
@@ -80,7 +81,8 @@ fit_ml <- function(
     ) |>
     dplyr::select(-!!rlang::sym(observed_count_label)) |>
     dplyr::rename(case_wts = prop) |>
-    dplyr::mutate(case_wts = hardhat::importance_weights(.data$case_wts))
+    dplyr::mutate(case_wts = hardhat::importance_weights(.data$case_wts)) |>
+    dplyr::select(-"profile_id")
 
   mod_recipe <-
     recipes::recipe(rating ~ ., data = train_data)

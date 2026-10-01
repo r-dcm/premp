@@ -6,6 +6,9 @@
 #' @param ratings A tibble with one row for each rater's rating of an assigned
 #'   profile, including columns for the profile number, the mastery status for
 #'   each attribute, and the raters' ratings.
+#' @param meta_data A tibble with the profile meta-data, including the profile
+#'   id and columns for each attribute and the number of levels mastered for
+#'   each attribute.
 #' @param pl_labels A character vector containing the ordered performance
 #'   levels.
 #' @param att_levels An integer describing the number of categorical mastery
@@ -20,6 +23,7 @@
 #' @export
 fit_lr <- function(
   ratings,
+  meta_data,
   pl_labels,
   att_levels,
   cores = 4,
@@ -41,9 +45,14 @@ fit_lr <- function(
   cmdstan_v <- cmdstanr::cmdstan_version(error_on_NA = FALSE)
   options(brms.backend = ifelse(is.null(cmdstan_v), "rstan", "cmdstanr"))
 
+  suppressMessages(
+    ratings <- ratings |>
+      left_join(meta_data)
+  )
+
   att_vec <- ratings |>
     dplyr::select(
-      -"profile_num",
+      -"profile_id",
       -dplyr::starts_with("rater"),
       -"rating",
       -dplyr::starts_with("group")
@@ -52,7 +61,7 @@ fit_lr <- function(
 
   profiles <- ratings |>
     dplyr::select(
-      -"profile_num",
+      -"profile_id",
       -dplyr::starts_with("rater"),
       -"rating",
       -dplyr::starts_with("group")
@@ -67,7 +76,7 @@ fit_lr <- function(
 
   # prep data
   rf_dat <- ratings |>
-    dplyr::count(.data$profile_num, !!!rlang::syms(att_vec), .data$rating) |>
+    dplyr::count(.data$profile_id, !!!rlang::syms(att_vec), .data$rating) |>
     dplyr::left_join(pl_dict, by = c("rating" = "pl_num")) |>
     dplyr::mutate(rating = .data$pl) |>
     dplyr::select(-"pl") |>
@@ -78,7 +87,6 @@ fit_lr <- function(
       values_fill = 0L,
       names_expand = TRUE
     ) |>
-    dplyr::rename(profile_id = "profile_num") |>
     dplyr::rowwise() |>
     dplyr::mutate(
       atts_mastered = sum(dplyr::c_across(dplyr::any_of(att_vec)))

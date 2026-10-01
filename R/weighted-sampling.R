@@ -39,7 +39,7 @@ weighted_sampling <- function(
 ) {
   # identify attributes
   att_vec <- possible_profiles |>
-    dplyr::select(-"total") |>
+    dplyr::select(-dplyr::any_of(c("total", "profile_id"))) |>
     names()
 
   if (!is.null(group_configuration)) {
@@ -52,7 +52,7 @@ weighted_sampling <- function(
 
   seen_by_all <- possible_profiles |>
     dplyr::filter(.data$total != 0) |>
-    dplyr::left_join(observed, by = att_vec) |>
+    dplyr::left_join(observed, by = c(att_vec, "profile_id")) |>
     dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
     dplyr::mutate(size = shared_profiles_across_groups) |>
     slice_stratified(
@@ -66,9 +66,10 @@ weighted_sampling <- function(
     dplyr::anti_join(seen_by_all, att_vec)
 
   possible_profiles <- calculate_hamming(
-    possible_profiles,
+    possible_profiles |>
+      dplyr::select(-"profile_id"),
     seen_by_all |>
-      dplyr::select(-"total"),
+      dplyr::select(-"total", -"profile_id"),
     att_vec
   )
   possible_profiles <- refine_possible_profiles(
@@ -121,7 +122,7 @@ weighted_sampling <- function(
         possible_profiles <- calculate_hamming(
           possible_profiles,
           tmp_assignments |>
-            dplyr::select(-"total"),
+            dplyr::select(-"total", -"profile_id"),
           att_vec
         )
         possible_profiles <- refine_possible_profiles(
@@ -185,7 +186,7 @@ weighted_sampling <- function(
         possible_profiles <- calculate_hamming(
           possible_profiles,
           tmp_assignments |>
-            dplyr::select(-"total"),
+            dplyr::select(-"total", -"profile_id"),
           att_vec
         )
         possible_profiles <- refine_possible_profiles(

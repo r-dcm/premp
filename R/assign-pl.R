@@ -2,8 +2,7 @@
 #'
 #' Predicting panelists' profile ratings with a machine learning model.
 #'
-#' @param fitted_model A tibble with one row for each attribute mastery
-#' profiles that is eligible for assignment to raters.
+#' @param fitted_model An object with the fitted machine learning model.
 #' @param ratings_data A tibble with the profiles rated by the panelists and
 #' the panelists' ratings in long format.
 #' @param att_levels A numeric value for the number of levels where mastery can
@@ -30,7 +29,7 @@ assign_pl <- function(
 ) {
   att_vec <- ratings_data |>
     dplyr::select(
-      -!!rlang::sym(rating_id),
+      -dplyr::any_of(rating_id),
       -dplyr::starts_with("rater"),
       -dplyr::starts_with("group")
     ) |>
@@ -39,7 +38,7 @@ assign_pl <- function(
   mod_ratings <- stats::predict(
     fitted_model,
     ratings_data |>
-      dplyr::select(-!!rlang::sym(rating_id)) |>
+      dplyr::select(-dplyr::any_of(rating_id)) |>
       dplyr::mutate(
         dplyr::across(
           dplyr::any_of(att_vec),
@@ -51,14 +50,14 @@ assign_pl <- function(
     dplyr::rename(pred_pl = ".pred_class") |>
     dplyr::bind_cols(
       ratings_data |>
-        dplyr::select(-!!rlang::sym(rating_id))
+        dplyr::select(-dplyr::any_of(rating_id))
     ) |>
     dplyr::select(dplyr::any_of(att_vec), "pred_pl")
 
   mod_probs <- stats::predict(
     fitted_model,
     ratings_data |>
-      dplyr::select(-!!rlang::sym(rating_id)) |>
+      dplyr::select(-dplyr::any_of(rating_id)) |>
       dplyr::mutate(
         dplyr::across(
           dplyr::any_of(att_vec),

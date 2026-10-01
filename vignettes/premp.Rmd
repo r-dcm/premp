@@ -50,14 +50,29 @@ possible_profiles <- readRDS(here::here("vignettes/possible_profiles.rds"))
 possible_profiles
 ```
 
+Meta-data is created from the set of all possible profiles.
+Namely, this links the possible profiles to a profile id number.
+Profile assignment will rely on the profile id numbers, which will be used to supply the full skill mastery profiles to panelists.
+
+```{r}
+#| label: create-meta-data
+meta_data <- readRDS(here::here("vignettes/meta-data.rds")) # |> 
+  # dplyr::rowwise() |>
+  # dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
+  # dplyr::ungroup() |> 
+  # tibble::rowid_to_column("profile_id")
+```
+
 ## Observed Profiles
 
 Next, the profiles observed during the administration of the assessment are loaded.
 The observed profiles object should include a column for each of the assessed attributes (i.e., the attribute mastery statuses -- `att_1`, `att_2`, and so on), a column for the number of times each profile was observed (e.g., `n`), and a column for the proportion of students with the observed profile (e.g., `prop`).
+The profile id numbers are merged in from the meta-data.
 
 ```{r}
 #| label: observed-profiles
-observed <- readRDS(here::here("vignettes/observed.rds"))
+observed <- readRDS(here::here("vignettes/observed.rds")) |> 
+  dplyr::left_join(meta_data)
 
 observed
 ```
@@ -68,31 +83,30 @@ Given the observed profiles, profiles are assigned to panelists using `assign_pr
 This function takes user-specified information about the panel design as the input, and it outputs the panelists' profile assignments.
 
 For this example, we are using a group-based panel design.
-Specifically, there are five groups (i.e., `num_assignment_groups = 5L`) with four panelists per group (i.e., `panelists_per_group = 4L`).
-The `assign_profiles()` function allows you specify the number of common profiles within a group (`shared_profiles_within_groups`), as well as the number of profiles common across all groups/tables (`shared_profiles_across_groups`).
-The function balances profile assignment so that one profile is seen by all panelists in all of the groups (i.e., `shared_profiles_across_groups = 1`) and the panelists in each group have two-thirds of the assigned profiles in common (i.e., `shared_profiles_within_groups = 2L`).
-To demonstrate, with three profiles assigned to each panelist at each level of the total levels mastered, one profile will be seen by all of hte panelsits, and two of the three assigned profiles assigned to each panelist, which includes the profile seen by all panelists, will be common to all panelists in the group.
-If the user wants to assign the same set of profiles to all panelists in a group, this can be done with `shared_profiles_within_groups = profiles_per_level`.
-The user also specifies the values of the total number of skills mastered to be used for assignment (i.e., `included_totals = c(5L, 10L, 15L, 20L, 25L, 30L)`) and the number of profiles to assign per level (i.e., `profiles_per_level = 3L`).
-The total number of skills mastered is based on the total number of levels mastered across the attributes measured by the assessment.
+The `assign_profiles()` function receives a list of parameters specifying details of the group design (i.e., `group_configuration`) or panelist design (i.e., `panelist_configuration`). 
+Specifically, in the context of this group-based design example, this allows you specify that there are five groups (i.e., `num_assignment_groups = 5L`), four panelists per group (i.e., `panelists_per_group = 4L`), two profiles are shared within each group (`shared_profiles_within_groups = 2L`), and one profile is shared across all groups/tables (`shared_profiles_across_groups = 1L`).
+If the user wants to assign the same set of profiles to all panelists in a group, this can be done with `shared_profiles_within_groups = profiles_per_total_levels_mastered`.
+The user also specifies the total number of levels mastered to be used for assignment (i.e., `included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L)`) and the number of profiles to assign per level (i.e., `profiles_per_total_levels_mastered = 3L`).
+The total number of levels mastered is based on the total number of skills mastered for each measured attribute.
 For instance, with eight assessed attributes with four levels each (e.g., scores of 0, 1, 2, 3, or 4 are possible for each attribute), the possible levels mastered ranges from 0 (i.e., no mastery of any level for any attribute) to 32 (i.e., mastery of all levels for all attributes).
-`included_totals` specifies the profiles to retain for assignment based on the sum of levels mastered across all attributes.
+`included_total_levels_mastered` specifies the profiles to retain for assignment based on the sum of levels mastered across all attributes.
 In this example, we specified that profiles with 5, 10, 15, 20, 25, and 30 levels mastered should be retained and that each panelist should be assigned three profiles at each of these levels.
 The `observed_count_label` parameter specifies the field name for the observed profiles' sample sizes (e.g., "n").
+The object with the observed profiles is used so that profile assignment prioritizes profiles that are most dissimilar from the profiles that have already been assigned based on Hamming distance, while also weighting the profiles for assignment based on prevalence (i.e., more commonly observed are more likely to be assigned).
 
 ```{r}
 #| label: group-rangefinding-assignment
 final_assignments <- assign_profiles(
-  num_assignment_groups = 5L,
   group_configuration = list(
+    num_assignment_groups = 5L,
     panelists_per_group = 4L,
-    shared_profiles_within_groups = 2L
+    shared_profiles_within_groups = 2L,
+    shared_profiles_across_groups = 1L
   ),
   observed = observed,
   observed_count_label = "n",
-  shared_profiles_across_groups = 1L,
-  included_totals = c(5L, 10L, 15L, 20L, 25L, 30L),
-  profiles_per_level = 3L,
+  included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L),
+  profiles_per_total_levels_mastered = 3L,
   output_dir = here::here("vignettes")
 )
 
@@ -105,21 +119,22 @@ In a group-based design, there is one column for each rater in each group.
 In other words, `rater1` at `group1` is different than `rater1` at `group2`.
 
 Instead of a group-based design, we could assign profiles directly to panelists.
-The following example assigns profiles to 10 panelists, where one of profile is common to all panelists (i.e., `shared_profiles_across_groups = 1L`).
-The panelist-based design uses the same settings for `included_totals` and `profiles_per_level`.
-Note that the `group_configuration` is not provided to `assign_profiles()`, indicating a panelist-based design.
-Consequently, there is no `group` field in the output when using a panelist-based design.
+The following example uses `panelist_configuration` to provide a list of parameters describing the panelist-based design.
+More specifically, it assigns profiles to 10 panelists, where one of profile is common to all panelists (i.e., `shared_profiles_across_panelists = 1L`).
+The panelist-based design uses the same settings for `included_total_levels_mastered` and `profiles_per_total_levels_mastered`.
 
 ```{r}
 #| label: panelist-rangefinding-assignment
 #| eval: FALSE
-final_assignments <- assign_profiles(
-  num_assignment_groups = 10L,
+final_panelist_assignments <- assign_profiles(
+  panelist_configuration = list(
+    num_panelists = 10L,
+    shared_profiles_across_panelists = 1L
+  ),
   observed = observed,
   observed_count_label = "n",
-  shared_profiles_across_groups = 1L,
-  included_totals = c(5L, 10L, 15L, 20L, 25L, 30L),
-  profiles_per_level = 3L,
+  included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L),
+  profiles_per_total_levels_mastered = 3L,
   output_dir = here::here("vignettes")
 )
 ```
@@ -164,9 +179,9 @@ The range around the inflection points are used to retain observed profiles for 
 Then, the previously assigned profiles should be removed from the set of possible profiles.
 We retain the possible profiles where the total number of levels mastered is within the identified range around each inflection point with `profiles_to_retain()`.
 The profiles eligible for pinpointing assignment (i.e., the output of `profiles_to_retain()`) and the observed profiles are used to assigned to panelists using `assign_profiles()`.
-Of note, the profiles assigned in the rangefinding round (i.e., `assigned_profiles = ratings`) are input into `assign_profiles()` when assigning profiles for the pinpointing round to ensure these profiles are not assigned again.
+Of note, the profiles assigned in the rangefinding round (i.e., `previously_rated = ratings`) are input into `assign_profiles()` when assigning profiles for the pinpointing round to ensure these profiles are not assigned again.
 In the example, the design for the pinpointing round is largely similar to the design of the rangefinding round.
-The primary difference is that only two profiles are assigned at each level during pinpointing (i.e., `profiles_per_level = 2L`) whereas three profiles were assigned at each level during rangefinding.
+The primary difference is that only two profiles are assigned at each level during pinpointing (i.e., `profiles_per_total_levels_mastered = 2L`) whereas three profiles were assigned at each level during rangefinding.
 The format of the output remains the same.
 
 ```{r}
@@ -186,9 +201,9 @@ final_assignments <- assign_profiles(
   observed = observed,
   observed_count_label = "n",
   shared_profiles_across_groups = 1L,
-  included_totals = retain_totals,
-  profiles_per_level = 2L,
-  assigned_profiles = ratings,
+  included_total_levels_mastered = retain_totals,
+  profiles_per_total_levels_mastered = 2L,
+  previously_rated = ratings,
   output_dir = here::here("vignettes")
 )
 
@@ -264,7 +279,7 @@ The supported evaluation metrics are `accuracy` (i.e., classification accuracy),
 Other than `assignment`, the evaluation metrics are intended to quantify how well the fitted model recovered the panelists' ratings.
 The `assignment` metrics are only included in `@in_sample_agreement` as these are only intended to reflect whether the profiles used to train the model generally reflect the distribution of observed profiles.
 
-For this example, focusing first on the in-sample agreement (i.e., `fitted_model@in_sample_agreement`), the classification accuracy (i.e., the percentage of panelist ratings that were accurately predicted) was approximately 77%, with a ROC AUC of .93, a Cohen's kappa of .70, and Gwet's $AC_2$ of .90.
+For this example, focusing first on the in-sample agreement (i.e., `fitted_model@in_sample_agreement`), the classification accuracy (i.e., the percentage of panelist ratings that were accurately predicted) was `r fitted_model@in_sample_agreement |> dplyr::filter(.data$.metric == "accuracy") |> dplyr::mutate(.estimate = round(.data$.estimate * 100, 0)) |>  dplyr::pull(.data$.estimate)`%, with a ROC AUC of `r sprintf("%.2f", fitted_model@in_sample_agreement |> dplyr::filter(.data$.metric == "roc_auc") |> dplyr::mutate(.estimate = round(.data$.estimate, 2)) |>  dplyr::pull(.data$.estimate))`, a Cohen's kappa of `r sprintf("%.2f", fitted_model@in_sample_agreement |> dplyr::filter(.data$.metric == "cohens_kappa") |> dplyr::mutate(.estimate = round(.data$.estimate, 2)) |>  dplyr::pull(.data$.estimate))`, and Gwet's $AC_2$ of`r sprintf("%.2f", fitted_model@in_sample_agreement |> dplyr::filter(.data$.metric == "gwets_ac2") |> dplyr::mutate(.estimate = round(.data$.estimate, 2)) |>  dplyr::pull(.data$.estimate))`.
 These performance metrics indicate acceptable agreement between the model predictions and panelist ratings, indicating a successful application of the method.
 However, the in-sample agreement is based on how well the model fits the data used to fit the model, and these metrics may not be the best reflection of how well the model generalizes.
 The `assignment` metrics in `@in_sample_agreement` allow for a comprehensive evaluation of model generalizability as it pertains to model training.
@@ -278,7 +293,7 @@ Users will have to define their own evaluation thresholds to determine whether t
 fitted_model@in_sample_agreement
 ```
 
-Focusing now on out-of-sample agreement (i.e., `fitted_model@out_of_sample_agreement`), the classification accuracy (i.e., the percentage of panelist ratings that were accurately predicted) was approximately 73%, with a ROC AUC of .89, a Cohen's kappa of .63, and Gwet's $AC_2$ of .91.
+Focusing now on out-of-sample agreement (i.e., `fitted_model@out_of_sample_agreement`), the classification accuracy (i.e., the percentage of panelist ratings that were accurately predicted) was `r fitted_model@out_of_sample_agreement |> dplyr::filter(.data$.metric == "accuracy") |> dplyr::mutate(.estimate = round(.data$.estimate * 100, 0)) |>  dplyr::pull(.data$.estimate)`%, with a ROC AUC of `r sprintf("%.2f", fitted_model@out_of_sample_agreement |> dplyr::filter(.data$.metric == "roc_auc") |> dplyr::mutate(.estimate = round(.data$.estimate, 2)) |>  dplyr::pull(.data$.estimate))`, a Cohen's kappa of `r sprintf("%.2f", fitted_model@out_of_sample_agreement |> dplyr::filter(.data$.metric == "cohens_kappa") |> dplyr::mutate(.estimate = round(.data$.estimate, 2)) |>  dplyr::pull(.data$.estimate))`, and Gwet's $AC_2$ of`r sprintf("%.2f", fitted_model@out_of_sample_agreement |> dplyr::filter(.data$.metric == "gwets_ac2") |> dplyr::mutate(.estimate = round(.data$.estimate, 2)) |>  dplyr::pull(.data$.estimate))`.
 Of note, it is expected that the evaluation metrics will reflect poorer performance for out-of-sample agreement as these reflect performance with profiles that the model has not seen before.
 Consequently, out-of-sample agreement is a better reflection of model generalizability.
 Estimates approaching the in-sample agreement rates indicate increasing model generalizability.
@@ -310,9 +325,9 @@ validation_assignments <- assign_profiles(
     observed = observed,
     observed_count_label = "n",
     shared_profiles_across_groups = 1L,
-    included_totals = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_level = 2L,
-    assigned_profiles = ratings,
+    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_total_levels_mastered = 2L,
+    previously_rated = ratings,
     output_dir = here::here("vignettes")
   )
 
@@ -336,7 +351,6 @@ validation_pl <- assign_pl(
                         values_to = "assigned") |> 
     dplyr::filter(assigned == 1) |> 
     dplyr::select(-"assigned"),
-  possible_profiles,
   att_levels = 4,
   num_pls = 4,
   rating_id = "rating",

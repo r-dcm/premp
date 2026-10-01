@@ -318,10 +318,8 @@ refine_possible_profiles <- function(
 #' `fit_lr()`.
 #'
 #' @param pinpoint_ranges A tibble containing the output of `fit_lr()`.
-#' @param num_attributes An integer specifying the number of measured
-#' attributes.
-#' @param attribute_levels An integer specifying the number of levels per
-#' attribute.
+#' @param max_levels_mastered An integer specifying the maximum number of levels
+#' that can be mastered across all attributes.
 #'
 #' @return A vector containing the levels of the number of skills mastered to
 #' retain based on the output of `fit_lr()`.
@@ -329,11 +327,10 @@ refine_possible_profiles <- function(
 #' @export
 profiles_to_retain <- function(
   pinpoint_ranges,
-  num_attributes,
-  attribute_levels
+  max_levels_mastered
 ) {
   pinpoint_ranges |>
-    tidyr::crossing(atts_mastered = 1:(num_attributes * attribute_levels)) |>
+    tidyr::crossing(atts_mastered = 1:max_levels_mastered) |>
     dplyr::mutate(
       keep = as.numeric(
         .data$atts_mastered >= .data$pinpoint_min &

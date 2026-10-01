@@ -78,7 +78,8 @@ eval_agreement <- function(
   att_vec <- observed |>
     dplyr::select(
       -!!rlang::sym(observed_count_label),
-      -"prop"
+      -"prop",
+      -"profile_id"
     ) |>
     names()
 

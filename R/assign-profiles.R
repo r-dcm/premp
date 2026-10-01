@@ -34,7 +34,6 @@ assign_profiles <- function(
   group_configuration = NULL,
   observed,
   observed_count_label = "n",
-  shared_profiles_across_groups = 1L,
   included_total_levels_mastered,
   profiles_per_total_levels_mastered,
   previously_rated = NULL,
@@ -227,7 +226,8 @@ assign_profiles <- function(
   }
 
   observed <- observed |>
-    dplyr::mutate(prop = .data$n / sum(.data$n))
+    dplyr::mutate(prop = !!rlang::sym(observed_count_label) /
+                    sum(!!rlang::sym(observed_count_label)))
 
   group_design <- ifelse(is.null(group_configuration), FALSE, TRUE)
 
@@ -238,19 +238,12 @@ assign_profiles <- function(
   }
 
   if (!is.null(previously_rated)) {
-    att_vec <- observed |>
-      dplyr::select(
-        -!!rlang::sym(observed_count_label),
-        -"prop"
-      ) |>
-      names()
-
     possible_profiles <- observed |>
       dplyr::select(
         -!!rlang::sym(observed_count_label),
         -"prop"
       ) |>
-      dplyr::anti_join(previously_rated, by = att_vec)
+      dplyr::anti_join(previously_rated, by = "profile_id")
   } else {
     possible_profiles <- observed |>
       dplyr::select(
@@ -262,7 +255,7 @@ assign_profiles <- function(
   possible_profiles <- possible_profiles |>
     # calculate total number of mastered attributes/skills
     dplyr::rowwise() |>
-    dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
+    dplyr::mutate(total = sum(dplyr::c_across(-c("profile_id")))) |>
     dplyr::ungroup() |>
     dplyr::arrange(
       .data$total,
@@ -276,12 +269,20 @@ assign_profiles <- function(
     possible_profiles,
     observed,
     observed_count_label,
-    shared_profiles_across_groups,
     profiles_per_total_levels_mastered,
     raters,
     panelist_configuration,
     group_configuration
   )
+
+  # filter down to assignments -- profile id, group (when applicable), panelists
+  # identify attributes
+  att_vec <- possible_profiles |>
+    dplyr::select(-"total", -"profile_id") |>
+    names()
+
+  profile_sampling <- profile_sampling |>
+    dplyr::select(-dplyr::any_of(att_vec), -"total")
 
   # save output
   readr::write_csv(
