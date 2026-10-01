@@ -138,7 +138,7 @@ eval_agreement <- function(
     gwets_ac <- model_ratings |>
       dplyr::select("pred_pl", !!rlang::sym(rating_id)) |>
       irrCAC::gwet.ac1.raw(weights = "quadratic") |>
-      magrittr::use_series(est) |>
+      magrittr::use_series("est") |>
       dplyr::select(".estimate" = "coeff.val") |>
       dplyr::mutate(.metric = "gwets_ac2", .estimator = NA) |>
       dplyr::select(".metric", ".estimator", ".estimate")

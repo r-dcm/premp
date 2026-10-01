@@ -80,7 +80,7 @@ fit_ml <- function(
       )
     ) |>
     dplyr::select(-!!rlang::sym(observed_count_label)) |>
-    dplyr::rename(case_wts = prop) |>
+    dplyr::rename(case_wts = .data$prop) |>
     dplyr::mutate(case_wts = hardhat::importance_weights(.data$case_wts)) |>
     dplyr::select(-"profile_id")
 

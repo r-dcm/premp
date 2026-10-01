@@ -185,8 +185,7 @@ assign_validation_profiles <- function(
 
     if (!is.integer(shared_profiles_within_certainty_across_groups)) {
       rdcmchecks::abort_bad_argument(
-        arg =
-          rlang::caller_arg(shared_profiles_within_certainty_across_panelists),
+        arg = "shared_profiles_within_certainty_across_panelists",
         must = cli::format_message(paste(
           "must be an integer."
         ))
@@ -326,7 +325,7 @@ assign_validation_profiles <- function(
 
   if (fairly_uncertain_threshold < very_certain_threshold) {
     rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(fairly_uncertain),
+      arg = "fairly_uncertain",
       must = cli::format_message(paste(
         "must be greater than `very_certain`"
       ))

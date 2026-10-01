@@ -47,7 +47,7 @@ fit_lr <- function(
 
   suppressMessages(
     ratings <- ratings |>
-      left_join(meta_data)
+      dplyr::left_join(meta_data)
   )
 
   att_vec <- ratings |>
@@ -226,15 +226,15 @@ fit_lr <- function(
   pl_combos <- tidyr::crossing(lower_pl = pl_combos$pl,
                   upper_pl = pl_combos$pl) |>
     dplyr::left_join(pl_combos, by = c("lower_pl" = "pl")) |>
-    dplyr::rename(lower_pl_num = pl_num) |>
+    dplyr::rename(lower_pl_num = .data$pl_num) |>
     dplyr::left_join(pl_combos, by = c("upper_pl" = "pl")) |>
-    dplyr::rename(upper_pl_num = pl_num) |>
+    dplyr::rename(upper_pl_num = .data$pl_num) |>
     dplyr::filter(.data$lower_pl_num == (.data$upper_pl_num - 1)) |>
     dplyr::arrange(.data$lower_pl_num) |>
     dplyr::select(-"lower_pl_num", -"upper_pl_num") |>
     dplyr::mutate(pl_combo = stringr::str_c(.data$lower_pl, "/",
                                             .data$upper_pl)) |>
-    dplyr::rename(cut_point = upper_pl) |>
+    dplyr::rename(cut_point = .data$upper_pl) |>
     dplyr::select(-"lower_pl")
 
   pinpoint_ranges <- pinpoint_ranges |>
