@@ -6,9 +6,12 @@ test_that("weighted profile sampling works", {
   profiles_per_total_levels_mastered <- 2L
   raters <- glue::glue("group{1:5}")
   group_configuration <- list(
+    num_assignment_groups = 5L,
     panelists_per_group = 4L,
-    shared_profiles_within_groups = 2L
+    shared_profiles_within_groups = 2L,
+    shared_profiles_across_groups = 1L
   )
+  panelist_configuration <- NULL
 
   possible_profiles <- tibble::tibble(tidyr::crossing(
     att1 = c(0:4),
@@ -18,7 +21,8 @@ test_that("weighted profile sampling works", {
     att5 = c(0:4),
     att6 = c(0:4),
     att7 = c(0:4)
-  ))
+  )) |>
+    tibble::rowid_to_column("profile_id")
 
   obs <- runif(nrow(possible_profiles), 1, 10000)
 
@@ -34,15 +38,16 @@ test_that("weighted profile sampling works", {
           0,
         TRUE ~ n
       ),
-      pct = !!rlang::sym(observed_count_label) /
+      prop = !!rlang::sym(observed_count_label) /
         sum(!!rlang::sym(observed_count_label))
     ) |>
-    dplyr::filter(!!rlang::sym(observed_count_label) != 0)
+    dplyr::filter(!!rlang::sym(observed_count_label) != 0) |>
+    dplyr::left_join(possible_profiles)
 
   possible_profiles <- possible_profiles |>
     # calculate total number of mastered attributes/skills
     dplyr::rowwise() |>
-    dplyr::mutate(total = sum(dplyr::c_across(dplyr::everything()))) |>
+    dplyr::mutate(total = sum(dplyr::c_across(-c("profile_id")))) |>
     dplyr::ungroup() |>
     dplyr::arrange(
       .data$total,
@@ -56,20 +61,20 @@ test_that("weighted profile sampling works", {
     possible_profiles,
     observed,
     observed_count_label,
-    shared_profiles_across_groups = 1L,
     profiles_per_total_levels_mastered,
     raters,
-    group_configuration
+    group_configuration = group_configuration
   )
 
   # output format is correct
   testthat::expect_contains(class(profile_sampling), "tbl_df")
   testthat::expect_equal(
     names(profile_sampling),
-    c(glue::glue("att{1:7}"), "total", "group", glue::glue("rater{1:4}"))
+    c("profile_id", glue::glue("att{1:7}"), "total", "group",
+      glue::glue("rater{1:4}"))
   )
   # number sampled is correct
-  testthat::expect_equal(nrow(profile_sampling), 125)
+  testthat::expect_equal(nrow(profile_sampling), 50)
   # profiles assigned at range of profiles increment
   testthat::expect_equal(
     profile_sampling |>
@@ -82,7 +87,7 @@ test_that("weighted profile sampling works", {
     profile_sampling |>
       dplyr::count(.data$total) |>
       dplyr::pull(.data$n),
-    rep(25, 5)
+    rep(10, 5)
   )
 })
 

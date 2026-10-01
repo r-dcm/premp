@@ -25,7 +25,7 @@ test_that("slice stratified works", {
         is.na(!!rlang::sym(observed_id)) ~ 0,
         TRUE ~ n
       ),
-      pct = !!rlang::sym(observed_id) /
+      prop = !!rlang::sym(observed_id) /
         sum(!!rlang::sym(observed_id))
     ) |>
     dplyr::filter(!!rlang::sym(observed_id) != 0)
@@ -59,7 +59,7 @@ test_that("slice stratified works", {
     seen_by_all,
     by = "total",
     size = "size",
-    weight_by = "pct"
+    weight_by = "prop"
   )
 
   # output format is correct

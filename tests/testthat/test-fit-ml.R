@@ -7,7 +7,8 @@ test_that("fitting the machine learning model with hyperparameters works", {
     parsnip::set_engine("ranger")
 
   ratings_data <- readRDS(testthat::test_path("data/ratings_data_ml.rds"))
-  observed <- readRDS(testthat::test_path("data/observed_ml.rds"))
+  observed <- readRDS(testthat::test_path("data/observed_ml.rds")) |>
+    dplyr::rename(prop = pct)
 
   possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
@@ -16,12 +17,16 @@ test_that("fitting the machine learning model with hyperparameters works", {
                                                       att5 = c(0:4),
                                                       att6 = c(0:4),
                                                       att7 = c(0:4),
-                                                      att8 = c(0:4)))
+                                                      att8 = c(0:4))) |>
+    tibble::rowid_to_column("profile_id")
 
-  mod_output <- fit_ml(workflow, ratings_data, observed, possible_profiles,
+  observed <- observed |>
+    dplyr::left_join(possible_profiles)
+
+  mod_output <- fit_ml(workflow, ratings_data, observed,
                        att_levels = 4, num_pls = 4,
                        metrics = c("accuracy", "adjacent", "auc", "kappa",
-                                   "assignment"),
+                                   "gwet", "assignment"),
                        output_dir = testthat::test_path("data"))
 
   # check output type
@@ -63,7 +68,8 @@ test_that("fitting the machine learning model without hyperparamters works", {
     parsnip::set_engine("ranger")
 
   ratings_data <- readRDS(testthat::test_path("data/ratings_data_ml.rds"))
-  observed <- readRDS(testthat::test_path("data/observed_ml.rds"))
+  observed <- readRDS(testthat::test_path("data/observed_ml.rds")) |>
+    dplyr::rename(prop = pct)
 
   possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
                                                       att2 = c(0:4),
@@ -72,9 +78,13 @@ test_that("fitting the machine learning model without hyperparamters works", {
                                                       att5 = c(0:4),
                                                       att6 = c(0:4),
                                                       att7 = c(0:4),
-                                                      att8 = c(0:4)))
+                                                      att8 = c(0:4))) |>
+    tibble::rowid_to_column("profile_id")
 
-  mod_output <- fit_ml(workflow, ratings_data, observed, possible_profiles,
+  observed <- observed |>
+    dplyr::left_join(possible_profiles)
+
+  mod_output <- fit_ml(workflow, ratings_data, observed,
                        att_levels = 4, num_pls = 4,
                        metrics = c("accuracy", "adjacent", "kappa", "auc",
                                    "gwet", "assignment"),

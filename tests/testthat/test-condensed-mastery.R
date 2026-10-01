@@ -6,20 +6,21 @@ test_that("condensed mastery method works", {
     att2 = c(0:4),
     att3 = c(0:4),
     att4 = c(0:4)
-  ))
+  )) |>
+    tibble::rowid_to_column("profile_id")
 
   obs <- runif(nrow(possible_profiles), 1, 10000)
 
   observed <- possible_profiles |>
     dplyr::mutate(n = obs, n = dplyr::case_when(n < 1000 ~ NA, TRUE ~ n)) |>
-    dplyr::filter(!is.na(n)) |>
-    dplyr::mutate(pct = n / sum(n))
+    dplyr::filter(!is.na(n))
 
   final_assignments <- assign_profiles(
-    num_assignment_groups = 5L,
     group_configuration = list(
+      num_assignment_groups = 5L,
       panelists_per_group = 4L,
-      proportion_of_shared_profiles_within_group = .67
+      shared_profiles_within_groups = 2L,
+      shared_profiles_across_groups = 1L
     ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L),
@@ -27,12 +28,8 @@ test_that("condensed mastery method works", {
     output_dir = testthat::test_path("data")
   )
 
-  profiles <- final_assignments |>
-    dplyr::select(-"total", -"group", -dplyr::starts_with("rater"))
-
   ratings <- final_assignments |>
-    tibble::rowid_to_column("profile_num") |>
-    dplyr::select(-"total") |>
+    dplyr::left_join(possible_profiles) |>
     tidyr::pivot_longer(
       cols = dplyr::starts_with("rater"),
       names_to = "rater_id",
@@ -43,7 +40,7 @@ test_that("condensed mastery method works", {
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("att")))) |>
     dplyr::ungroup() |>
     dplyr::mutate(
-      bump = runif(144, -.75, .75),
+      bump = runif(152, -.75, .75),
       bump = dplyr::case_when(
         .data$bump <= -.5 ~ -1,
         .data$bump >= .5 ~ 1,
@@ -69,6 +66,7 @@ test_that("condensed mastery method works", {
 
   fit_lr(
     ratings,
+    meta_data = possible_profiles,
     pl_labels,
     att_levels = 4,
     cores = 1,
