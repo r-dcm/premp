@@ -101,9 +101,11 @@ assign_validation_profiles <- function(
     if (
       any(
         !(names(group_configuration) %in%
-          c("num_assignment_groups",
+          c(
+            "num_assignment_groups",
             "panelists_per_group",
-            "shared_profiles_within_certainty_across_groups"))
+            "shared_profiles_within_certainty_across_groups"
+          ))
       )
     ) {
       rdcmchecks::abort_bad_argument(
@@ -162,8 +164,10 @@ assign_validation_profiles <- function(
     if (
       any(
         !(names(panelist_configuration) %in%
-          c("num_panelists",
-            "shared_profiles_within_certainty_across_panelists"))
+          c(
+            "num_panelists",
+            "shared_profiles_within_certainty_across_panelists"
+          ))
       )
     ) {
       rdcmchecks::abort_bad_argument(
@@ -305,9 +309,11 @@ assign_validation_profiles <- function(
   very_certain_threshold <- certainty_thresholds$very_certain
   fairly_uncertain_threshold <- certainty_thresholds$fairly_uncertain
 
-  if (typeof(very_certain_threshold) != "double" ||
+  if (
+    typeof(very_certain_threshold) != "double" ||
       very_certain_threshold < 0 ||
-      very_certain_threshold > 1) {
+      very_certain_threshold > 1
+  ) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(very_certain_assignments),
       must = cli::format_message(paste(
@@ -316,9 +322,11 @@ assign_validation_profiles <- function(
     )
   }
 
-  if (typeof(fairly_uncertain_threshold) != "double" ||
+  if (
+    typeof(fairly_uncertain_threshold) != "double" ||
       fairly_uncertain_threshold < 0 ||
-      fairly_uncertain_threshold > 1) {
+      fairly_uncertain_threshold > 1
+  ) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(fairly_uncertain_threshold),
       must = cli::format_message(paste(
@@ -353,8 +361,10 @@ assign_validation_profiles <- function(
     )
   }
 
-  if (typeof(included_total_levels_mastered) != "integer" ||
-      !is.vector(included_total_levels_mastered)) {
+  if (
+    typeof(included_total_levels_mastered) != "integer" ||
+      !is.vector(included_total_levels_mastered)
+  ) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(included_total_levels_mastered),
       must = cli::format_message(paste(
@@ -364,17 +374,19 @@ assign_validation_profiles <- function(
   }
 
   observed <- observed |>
-    dplyr::mutate(prop = !!rlang::sym(observed_count_label) /
-                    sum(!!rlang::sym(observed_count_label)))
+    dplyr::mutate(
+      prop = !!rlang::sym(observed_count_label) /
+        sum(!!rlang::sym(observed_count_label))
+    )
 
   group_design <- ifelse(is.null(group_configuration), FALSE, TRUE)
 
   if (group_design) {
     raters <- glue::glue("group{1:num_assignment_groups}")
-    rater_name = "group_id"
+    rater_name <- "group_id"
   } else {
     raters <- glue::glue("rater{1:num_assignment_groups}")
-    rater_name = "rater_id"
+    rater_name <- "rater_id"
   }
 
   possible_profiles <- observed |>
@@ -401,24 +413,35 @@ assign_validation_profiles <- function(
   suppressMessages(
     certainty_classifications <- model_preds |>
       dplyr::left_join(possible_profiles) |>
-      dplyr::select("profile_id", "performance_level" = "pred_pl",
-                    dplyr::starts_with("prob_pl")) |>
-      tidyr::pivot_longer(cols = dplyr::starts_with("prob_pl"),
-                          names_to = "pl",
-                          values_to = "prob") |>
+      dplyr::select(
+        "profile_id",
+        "performance_level" = "pred_pl",
+        dplyr::starts_with("prob_pl")
+      ) |>
+      tidyr::pivot_longer(
+        cols = dplyr::starts_with("prob_pl"),
+        names_to = "pl",
+        values_to = "prob"
+      ) |>
       dplyr::group_by(.data$profile_id) |>
       dplyr::arrange(.data$profile_id, dplyr::desc(.data$prob)) |>
       dplyr::mutate(profile_num = dplyr::row_number()) |>
       dplyr::ungroup() |>
       dplyr::filter(.data$profile_num <= 2) |>
-      dplyr::mutate(profile_num = dplyr::case_when(.data$profile_num == 1 ~
-                                                     "most_likely",
-                                                   .data$profile_num == 2 ~
-                                                     "second_most_likely")) |>
+      dplyr::mutate(
+        profile_num = dplyr::case_when(
+          .data$profile_num == 1 ~
+            "most_likely",
+          .data$profile_num == 2 ~
+            "second_most_likely"
+        )
+      ) |>
       dplyr::select(-"pl") |>
       tidyr::pivot_wider(names_from = "profile_num", values_from = "prob") |>
-      dplyr::mutate(uncertainty = .data$second_most_likely /
-                      .data$most_likely) |>
+      dplyr::mutate(
+        uncertainty = .data$second_most_likely /
+          .data$most_likely
+      ) |>
       dplyr::select(-"most_likely", -"second_most_likely") |>
       dplyr::mutate(
         certainty_cat = dplyr::case_when(
@@ -469,9 +492,12 @@ assign_validation_profiles <- function(
 
   very_certain_profile_assignments <- very_certain_profile_assignments |>
     dplyr::ungroup() |>
-    dplyr::mutate(!!rlang::sym(rater_name) :=
-                    rep(raters,
-                        times = num_pls * very_certain_assignments))
+    dplyr::mutate(
+      !!rlang::sym(rater_name) := rep(
+        raters,
+        times = num_pls * very_certain_assignments
+      )
+    )
 
   # fairly certain assignments
   fairly_certain_profile_assignments <- certainty_classifications |>
@@ -505,9 +531,12 @@ assign_validation_profiles <- function(
 
   fairly_certain_profile_assignments <- fairly_certain_profile_assignments |>
     dplyr::ungroup() |>
-    dplyr::mutate(!!rlang::sym(rater_name) :=
-                    rep(raters,
-                        times = num_pls * fairly_certain_assignments))
+    dplyr::mutate(
+      !!rlang::sym(rater_name) := rep(
+        raters,
+        times = num_pls * fairly_certain_assignments
+      )
+    )
 
   # fairly uncertain assignments
   fairly_uncertain_profile_assignments <- certainty_classifications |>
@@ -525,14 +554,20 @@ assign_validation_profiles <- function(
   if (nrow(short_fairly_uncertain_counts) > 0) {
     replacement_sampling_fairly_uncertain <- certainty_classifications |>
       dplyr::filter(.data$certainty_cat == "fairly uncertain") |>
-      dplyr::semi_join(short_fairly_uncertain_counts,
-                       by = "performance_level") |>
-      dplyr::left_join(short_fairly_uncertain_counts,
-                       by = "performance_level") |>
+      dplyr::semi_join(
+        short_fairly_uncertain_counts,
+        by = "performance_level"
+      ) |>
+      dplyr::left_join(
+        short_fairly_uncertain_counts,
+        by = "performance_level"
+      ) |>
       dplyr::select(-"certainty_cat") |>
       dplyr::group_by(.data$performance_level) |>
-      dplyr::slice_sample(n = num_fairly_uncertain_assignments,
-                          replace = TRUE) |>
+      dplyr::slice_sample(
+        n = num_fairly_uncertain_assignments,
+        replace = TRUE
+      ) |>
       tibble::rowid_to_column("row_num") |>
       dplyr::filter(.data$row_num <= .data$needed) |>
       dplyr::select("profile_id", "performance_level")
@@ -546,9 +581,12 @@ assign_validation_profiles <- function(
   fairly_uncertain_profile_assignments <-
     fairly_uncertain_profile_assignments |>
     dplyr::ungroup() |>
-    dplyr::mutate(!!rlang::sym(rater_name) :=
-                    rep(raters,
-                        times = num_pls * fairly_uncertain_assignments))
+    dplyr::mutate(
+      !!rlang::sym(rater_name) := rep(
+        raters,
+        times = num_pls * fairly_uncertain_assignments
+      )
+    )
 
   # combine assignments
   profile_sampling <- very_certain_profile_assignments |>
@@ -561,9 +599,9 @@ assign_validation_profiles <- function(
         rater_id = glue::glue(
           "rater{1:group_configuration$panelists_per_group}"
         )
-    ) |>
-    dplyr::mutate(assigned = 1L) |>
-    tidyr::pivot_wider(names_from = "rater_id", values_from = "assigned")
+      ) |>
+      dplyr::mutate(assigned = 1L) |>
+      tidyr::pivot_wider(names_from = "rater_id", values_from = "assigned")
   }
 
   # save output
