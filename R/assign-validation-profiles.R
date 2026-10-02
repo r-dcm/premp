@@ -55,18 +55,22 @@
 #' @export
 #'
 assign_validation_profiles <- function(
-    fitted_model,
-    panelist_configuration = NULL,
-    group_configuration = NULL,
-    certainty_assignments = list(very_certain = 1L, fairly_certain = 2L, fairly_uncertain = 3L),
-    certainty_thresholds = list(very_certain = .20, fairly_uncertain = .80),
-    observed,
-    observed_count_label = "n",
-    included_total_levels_mastered,
-    att_levels,
-    num_pls,
-    previously_rated,
-    output_dir
+  fitted_model,
+  panelist_configuration = NULL,
+  group_configuration = NULL,
+  certainty_assignments = list(
+    very_certain = 1L,
+    fairly_certain = 2L,
+    fairly_uncertain = 3L
+  ),
+  certainty_thresholds = list(very_certain = .20, fairly_uncertain = .80),
+  observed,
+  observed_count_label = "n",
+  included_total_levels_mastered,
+  att_levels,
+  num_pls,
+  previously_rated,
+  output_dir
 ) {
   # error checks
   if (!is.null(panelist_configuration)) {
