@@ -83,7 +83,8 @@ assign_profiles <- function(
             "num_assignment_groups",
             "panelists_per_group",
             "shared_within",
-            "shared_across"))
+            "shared_across"
+          ))
       )
     ) {
       rdcmchecks::abort_bad_argument(
