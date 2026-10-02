@@ -1,8 +1,9 @@
 test_that("fitting the machine learning model with hyperparameters works", {
   workflow <-
-    parsnip::rand_forest(mtry = 1,
-                         trees = parsnip::tune(),
-                         min_n = parsnip::tune()) |>
+    parsnip::rand_forest(
+      mtry = 1,
+      trees = parsnip::tune(),
+      min_n = parsnip::tune()) |>
     parsnip::set_mode("classification") |>
     parsnip::set_engine("ranger")
 
@@ -10,24 +11,29 @@ test_that("fitting the machine learning model with hyperparameters works", {
   observed <- readRDS(testthat::test_path("data/observed_ml.rds")) |>
     dplyr::rename(prop = pct)
 
-  possible_profiles <- tibble::tibble(tidyr::crossing(att1 = c(0:4),
-                                                      att2 = c(0:4),
-                                                      att3 = c(0:4),
-                                                      att4 = c(0:4),
-                                                      att5 = c(0:4),
-                                                      att6 = c(0:4),
-                                                      att7 = c(0:4),
-                                                      att8 = c(0:4))) |>
+  possible_profiles <- tibble::tibble(tidyr::crossing(
+    att1 = c(0:4),
+    att2 = c(0:4),
+    att3 = c(0:4),
+    att4 = c(0:4),
+    att5 = c(0:4),
+    att6 = c(0:4),
+    att7 = c(0:4),
+    att8 = c(0:4))) |>
     tibble::rowid_to_column("profile_id")
 
   observed <- observed |>
     dplyr::left_join(possible_profiles)
 
-  mod_output <- fit_ml(workflow, ratings_data, observed,
-                       att_levels = 4, num_pls = 4,
-                       metrics = c("accuracy", "adjacent", "auc", "kappa",
-                                   "gwet", "assignment"),
-                       output_dir = testthat::test_path("data"))
+  mod_output <- fit_ml(
+    workflow,
+    ratings_data,
+    observed,
+    att_levels = 4,
+    num_pls = 4,
+    metrics = c("accuracy", "adjacent", "auc", "kappa", "gwet", "assignment"),
+    output_dir = testthat::test_path("data")
+  )
 
   # check output type
   testthat::expect_contains(class(mod_output@model), "workflow")
@@ -61,9 +67,11 @@ test_that("fitting the machine learning model with hyperparameters works", {
 
 test_that("fitting the machine learning model without hyperparamters works", {
   workflow <-
-    parsnip::rand_forest(mtry = 1,
-                         trees = 100,
-                         min_n = 20) |>
+    parsnip::rand_forest(
+      mtry = 1,
+      trees = 100,
+      min_n = 20
+    ) |>
     parsnip::set_mode("classification") |>
     parsnip::set_engine("ranger")
 

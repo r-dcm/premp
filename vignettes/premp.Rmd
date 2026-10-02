@@ -80,8 +80,8 @@ This function takes user-specified information about the panel design as the inp
 
 For this example, we are using a group-based panel design.
 The `assign_profiles()` function receives a list of parameters specifying details of the group design (i.e., `group_configuration`) or panelist design (i.e., `panelist_configuration`). 
-Specifically, in the context of this group-based design example, this allows you specify that there are five groups (i.e., `num_assignment_groups = 5L`), four panelists per group (i.e., `panelists_per_group = 4L`), two profiles are shared within each group (`shared_profiles_within_groups = 2L`), and one profile is shared across all groups/tables (`shared_profiles_across_groups = 1L`).
-If the user wants to assign the same set of profiles to all panelists in a group, this can be done with `shared_profiles_within_groups = profiles_per_total_levels_mastered`.
+Specifically, in the context of this group-based design example, this allows you specify that there are five groups (i.e., `num_assignment_groups = 5L`), four panelists per group (i.e., `panelists_per_group = 4L`), two profiles are shared within each group (`shared_within = 2L`), and one profile is shared across all groups/tables (`shared_across = 1L`).
+If the user wants to assign the same set of profiles to all panelists in a group, this can be done with `shared_within = profiles_per_total_levels_mastered`.
 The user also specifies the total number of levels mastered to be used for assignment (i.e., `included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L)`) and the number of profiles to assign per level (i.e., `profiles_per_total_levels_mastered = 3L`).
 The total number of levels mastered is based on the total number of skills mastered for each measured attribute.
 For instance, with eight assessed attributes with four levels each (e.g., scores of 0, 1, 2, 3, or 4 are possible for each attribute), the possible levels mastered ranges from 0 (i.e., no mastery of any level for any attribute) to 32 (i.e., mastery of all levels for all attributes).
@@ -96,8 +96,8 @@ final_assignments <- assign_profiles(
   group_configuration = list(
     num_assignment_groups = 5L,
     panelists_per_group = 4L,
-    shared_profiles_within_groups = 3L,
-    shared_profiles_across_groups = 1L
+    shared_within = 3L,
+    shared_across = 1L
   ),
   observed = observed,
   observed_count_label = "n",
@@ -116,7 +116,7 @@ In other words, `rater1` in `group1` is different than `rater1` in `group2`.
 
 Instead of a group-based design, we could assign profiles directly to panelists.
 The following example uses `panelist_configuration` to provide a list of parameters describing the panelist-based design.
-More specifically, it assigns profiles to 10 panelists (i.e., `num_panelists = 10`), where one of profile is common to all panelists (i.e., `shared_profiles_across_panelists = 1L`).
+More specifically, it assigns profiles to 10 panelists (i.e., `num_panelists = 10`), where one of profile is common to all panelists (i.e., `shared_across = 1L`).
 The panelist-based design uses the same settings for `included_total_levels_mastered` and `profiles_per_total_levels_mastered`.
 
 ```{r}
@@ -125,7 +125,7 @@ The panelist-based design uses the same settings for `included_total_levels_mast
 final_panelist_assignments <- assign_profiles(
   panelist_configuration = list(
     num_panelists = 10L,
-    shared_profiles_across_panelists = 1L
+    shared_across = 1L
   ),
   observed = observed,
   observed_count_label = "n",
@@ -192,8 +192,8 @@ final_assignments <- assign_profiles(
   group_configuration = list(
     num_assignment_groups = 5L,
     panelists_per_group = 4L,
-    shared_profiles_within_groups = 2L,
-    shared_profiles_across_groups = 1L
+    shared_within = 2L,
+    shared_across = 1L
   ),
   observed = observed,
   observed_count_label = "n",

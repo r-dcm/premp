@@ -19,8 +19,8 @@ test_that("condensed mastery method works", {
     group_configuration = list(
       num_assignment_groups = 5L,
       panelists_per_group = 4L,
-      shared_profiles_within_groups = 2L,
-      shared_profiles_across_groups = 1L
+      shared_within = 2L,
+      shared_across = 1L
     ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L),
@@ -40,7 +40,7 @@ test_that("condensed mastery method works", {
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("att")))) |>
     dplyr::ungroup() |>
     dplyr::mutate(
-      bump = runif(152, -.75, .75),
+      bump = runif(144, -.75, .75),
       bump = dplyr::case_when(
         .data$bump <= -.5 ~ -1,
         .data$bump >= .5 ~ 1,

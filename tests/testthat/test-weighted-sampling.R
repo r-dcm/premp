@@ -8,8 +8,8 @@ test_that("weighted profile sampling works", {
   group_configuration <- list(
     num_assignment_groups = 5L,
     panelists_per_group = 4L,
-    shared_profiles_within_groups = 2L,
-    shared_profiles_across_groups = 1L
+    shared_within = 2L,
+    shared_across = 1L
   )
   panelist_configuration <- NULL
 

@@ -9,20 +9,21 @@ test_that("assigning profiles (group design) in Round 1 works", {
     att5 = c(0:4),
     att6 = c(0:4),
     att7 = c(0:4)
-  ))
+  )) |>
+    tibble::rowid_to_column("profile_id")
 
   obs <- runif(nrow(possible_profiles), 1, 10000)
 
   observed <- possible_profiles |>
     dplyr::mutate(n = obs, n = dplyr::case_when(n < 1000 ~ NA, TRUE ~ n)) |>
-    dplyr::filter(!is.na(n)) |>
-    dplyr::mutate(pct = n / sum(n))
+    dplyr::filter(!is.na(n))
 
   final_assignments <- assign_profiles(
-    num_assignment_groups = 5L,
     group_configuration = list(
+      num_assignment_groups = 5L,
       panelists_per_group = 4L,
-      shared_profiles_within_groups = 2L
+      shared_within = 3L,
+      shared_across = 1L
     ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -41,26 +42,13 @@ test_that("assigning profiles (group design) in Round 1 works", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 13)
+  testthat::expect_equal(ncol(final_assignments), 6)
   # correct number of rows
-  testthat::expect_equal(nrow(final_assignments), 150)
-  # total attributes are correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::distinct(.data$total) |>
-      dplyr::pull(),
-    c(5, 10, 15, 20, 25)
-  )
-  # number of each attribute total is correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::pull(.data$total),
-    rep(c(5, 10, 15, 20, 25), each = 30)
-  )
+  testthat::expect_equal(nrow(final_assignments), 75)
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c(glue::glue("att{1:7}"), "total", "group", glue::glue("rater{1:4}"))
+    c("profile_id", "group", glue::glue("rater{1:4}"))
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
@@ -76,13 +64,6 @@ test_that("assigning profiles (group design) in Round 1 works", {
       dplyr::pull(.data$n),
     rep(75, 4)
   )
-  # all attribute totals are increment of the range of profiles
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::mutate(increment = .data$total %% 5) |>
-      dplyr::pull(.data$increment),
-    rep(0, nrow(final_assignments))
-  )
   # assignments are in correct format
   testthat::expect_contains(
     c(0, 1),
@@ -96,21 +77,9 @@ test_that("assigning profiles (group design) in Round 1 works", {
       dplyr::distinct(.data$assignment) |>
       dplyr::pull()
   )
-  # attribute scores are in correct format
-  testthat::expect_contains(
-    c(0:4),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("att")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "att",
-        values_to = "att_score"
-      ) |>
-      dplyr::distinct(.data$att_score) |>
-      dplyr::pull()
-  )
 })
 
+# stopped fixing unit tests here
 test_that("assigning profiles (rater design) in Round 1 works", {
   set.seed(123)
 
@@ -122,18 +91,21 @@ test_that("assigning profiles (rater design) in Round 1 works", {
     att5 = c(0:4),
     att6 = c(0:4),
     att7 = c(0:4)
-  ))
+  )) |>
+    tibble::rowid_to_column("profile_id")
 
   obs <- runif(nrow(possible_profiles), 1, 10000)
 
   observed <- possible_profiles |>
     dplyr::mutate(n = obs, n = dplyr::case_when(n < 1000 ~ NA, TRUE ~ n)) |>
-    dplyr::filter(!is.na(n)) |>
-    dplyr::mutate(pct = n / sum(n))
+    dplyr::filter(!is.na(n))
 
   final_assignments <- assign_profiles(
-    num_assignment_groups = 5L,
     group_configuration = NULL,
+    panelist_configuration = list(
+      num_panelists = 5L,
+      shared_across = 1L
+    ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_total_levels_mastered = 3L,
@@ -151,26 +123,13 @@ test_that("assigning profiles (rater design) in Round 1 works", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 13)
+  testthat::expect_equal(ncol(final_assignments), 6)
   # correct number of rows
   testthat::expect_equal(nrow(final_assignments), 55)
-  # total attributes are correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::distinct(.data$total) |>
-      dplyr::pull(),
-    c(5, 10, 15, 20, 25)
-  )
-  # number of each attribute total is correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::pull(.data$total),
-    rep(c(5, 10, 15, 20, 25), each = 11)
-  )
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c(glue::glue("att{1:7}"), "total", glue::glue("rater{1:5}"))
+    c("profile_id", glue::glue("rater{1:5}"))
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
@@ -202,13 +161,6 @@ test_that("assigning profiles (rater design) in Round 1 works", {
       nrow(),
     1
   )
-  # all attribute totals are increment of the range of profiles
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::mutate(increment = .data$total %% 5) |>
-      dplyr::pull(.data$increment),
-    rep(0, nrow(final_assignments))
-  )
   # assignments are in correct format
   testthat::expect_contains(
     c(0, 1),
@@ -220,19 +172,6 @@ test_that("assigning profiles (rater design) in Round 1 works", {
         values_to = "assignment"
       ) |>
       dplyr::distinct(.data$assignment) |>
-      dplyr::pull()
-  )
-  # attribute scores are in correct format
-  testthat::expect_contains(
-    c(0:4),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("att")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "att",
-        values_to = "att_score"
-      ) |>
-      dplyr::distinct(.data$att_score) |>
       dplyr::pull()
   )
 })
@@ -248,18 +187,21 @@ test_that("assigning profiles (rater design) in Round 2 works", {
     att5 = c(0:4),
     att6 = c(0:4),
     att7 = c(0:4)
-  ))
+  )) |>
+    tibble::rowid_to_column("profile_id")
 
   obs <- runif(nrow(possible_profiles), 1, 10000)
 
   observed <- possible_profiles |>
     dplyr::mutate(n = obs, n = dplyr::case_when(n < 1000 ~ NA, TRUE ~ n)) |>
-    dplyr::filter(!is.na(n)) |>
-    dplyr::mutate(pct = n / sum(n))
+    dplyr::filter(!is.na(n))
 
   round_1_assignments <- assign_profiles(
-    num_assignment_groups = 5L,
     group_configuration = NULL,
+    panelist_configuration = list(
+      num_panelists = 5L,
+      shared_across = 1L
+    ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_total_levels_mastered = 3L,
@@ -267,11 +209,14 @@ test_that("assigning profiles (rater design) in Round 2 works", {
   )
 
   final_assignments <- assign_profiles(
-    num_assignment_groups = 5L,
     group_configuration = NULL,
+    panelist_configuration = list(
+      num_panelists = 5L,
+      shared_across = 1L
+    ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 3L,
+    profiles_per_total_levels_mastered = 2L,
     previously_rated = round_1_assignments,
     output_dir = testthat::test_path("data")
   )
@@ -287,26 +232,13 @@ test_that("assigning profiles (rater design) in Round 2 works", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 13)
+  testthat::expect_equal(ncol(final_assignments), 6)
   # correct number of rows
-  testthat::expect_equal(nrow(final_assignments), 55)
-  # total attributes are correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::distinct(.data$total) |>
-      dplyr::pull(),
-    c(5, 10, 15, 20, 25)
-  )
-  # number of each attribute total is correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::pull(.data$total),
-    rep(c(5, 10, 15, 20, 25), each = 11)
-  )
+  testthat::expect_equal(nrow(final_assignments), 30)
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c(glue::glue("att{1:7}"), "total", glue::glue("rater{1:5}"))
+    c("profile_id", glue::glue("rater{1:5}"))
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
@@ -320,7 +252,7 @@ test_that("assigning profiles (rater design) in Round 2 works", {
       dplyr::filter(.data$assignment == 1) |>
       dplyr::count(.data$rater) |>
       dplyr::pull(.data$n),
-    rep(15, 5)
+    rep(10, 5)
   )
   # minimum number of profiles seen by all raters
   testthat::expect_gte(
@@ -338,13 +270,6 @@ test_that("assigning profiles (rater design) in Round 2 works", {
       nrow(),
     1
   )
-  # all attribute totals are increment of the range of profiles
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::mutate(increment = .data$total %% 5) |>
-      dplyr::pull(.data$increment),
-    rep(0, nrow(final_assignments))
-  )
   # assignments are in correct format
   testthat::expect_contains(
     c(0, 1),
@@ -356,19 +281,6 @@ test_that("assigning profiles (rater design) in Round 2 works", {
         values_to = "assignment"
       ) |>
       dplyr::distinct(.data$assignment) |>
-      dplyr::pull()
-  )
-  # attribute scores are in correct format
-  testthat::expect_contains(
-    c(0:4),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("att")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "att",
-        values_to = "att_score"
-      ) |>
-      dplyr::distinct(.data$att_score) |>
       dplyr::pull()
   )
 })
@@ -384,21 +296,22 @@ test_that("assign profiles -- error messages work", {
     att5 = c(0:4),
     att6 = c(0:4),
     att7 = c(0:4)
-  ))
+  )) |>
+    tibble::rowid_to_column("profile_id")
 
   obs <- runif(nrow(possible_profiles), 1, 10000)
 
   observed <- possible_profiles |>
     dplyr::mutate(n = obs, n = dplyr::case_when(n < 1000 ~ NA, TRUE ~ n)) |>
-    dplyr::filter(!is.na(n)) |>
-    dplyr::mutate(pct = n / sum(n))
+    dplyr::filter(!is.na(n))
 
   # test incorrect arguments
   err <- rlang::catch_cnd(assign_profiles(
-    num_assignment_groups = 5,
     group_configuration = list(
+      num_assignment_groups = 5,
       panelists_per_group = 4L,
-      shared_profiles_within_groups = 2L
+      shared_within = 3L,
+      shared_across = 1L
     ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -413,10 +326,11 @@ test_that("assign profiles -- error messages work", {
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = c(
+        num_assignment_groups = 5L,
         panelists_per_group = 4L,
-        shared_profiles_within_groups = 2L
+        shared_within = 2L,
+        shared_across = 1L
       ),
       observed = observed,
       included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -432,10 +346,11 @@ test_that("assign profiles -- error messages work", {
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
+        num_assignment_groups = 5L,
         panelits_per_group = 4L,
-        shared_profiles_within_groups = 2L
+        shared_within = 2L,
+        shared_profiles = 1L
       ),
       observed = observed,
       included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -447,18 +362,18 @@ test_that("assign profiles -- error messages work", {
   testthat::expect_match(
     err$message,
     paste0(
-      "must be a list containing `panelists_per_group` and ",
-      "`shared_profiles_within_groups`."
+      "must be a list containing `num_assignment_groups`, ",
+      "`panelists_per_group`, `shared_within`, and ",
+      "`shared_across`."
     )
   )
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
-        panelists_per_group = 4L,
-        shared_profiles_within_groups = 2L,
-        panelists_per_group = 3L
+        num_assignment_groups = 5L,
+        shared_within = 2L,
+        shared_across = 1L
       ),
       observed = observed,
       included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -469,15 +384,16 @@ test_that("assign profiles -- error messages work", {
   testthat::expect_s3_class(err, "rlang_error")
   testthat::expect_match(
     err$message,
-    "must be a list of length 2."
+    "must be a list of length 4."
   )
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
+        num_assignment_groups = 5L,
         panelists_per_group = 4,
-        shared_profiles_within_groups = 2L
+        shared_within = 2L,
+        shared_across = 1L
       ),
       observed = observed,
       included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -493,10 +409,11 @@ test_that("assign profiles -- error messages work", {
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
+        num_assignment_groups = 5L,
         panelists_per_group = 4L,
-        shared_profiles_within_groups = 1.1
+        shared_within = 1.1,
+        shared_across = 1L
       ),
       observed = observed,
       included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -512,10 +429,31 @@ test_that("assign profiles -- error messages work", {
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
+        num_assignment_groups = 5L,
         panelists_per_group = 4L,
-        shared_profiles_within_groups = 2L
+        shared_within = 2L,
+        shared_across = 1.1
+      ),
+      observed = observed,
+      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_levels_mastered = 3L,
+      output_dir = testthat::test_path("data")
+    )
+  )
+  testthat::expect_s3_class(err, "rlang_error")
+  testthat::expect_match(
+    err$message,
+    "must be an integer."
+  )
+
+  err <- rlang::catch_cnd(
+    assign_profiles(
+      group_configuration = list(
+        num_assignment_groups = 5L,
+        panelists_per_group = 4L,
+        shared_within = 2L,
+        shared_across = 1L
       ),
       observed = observed,
       observed_count_label = 5,
@@ -532,10 +470,11 @@ test_that("assign profiles -- error messages work", {
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
+        num_assignment_groups = 5L,
         panelists_per_group = 4L,
-        shared_profiles_within_groups = 2L
+        shared_within = 2L,
+        shared_across = 1L
       ),
       observed = observed,
       included_total_levels_mastered = c(5, 10L, 15L, 20L, 25L),
@@ -551,10 +490,11 @@ test_that("assign profiles -- error messages work", {
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
+        num_assignment_groups = 5L,
         panelists_per_group = 4L,
-        shared_profiles_within_groups = 2L
+        shared_within = 2L,
+        shared_across = 1L
       ),
       observed = observed,
       included_total_levels_mastered = list(5L),
@@ -570,10 +510,11 @@ test_that("assign profiles -- error messages work", {
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
+        num_assignment_groups = 5L,
         panelists_per_group = 4L,
-        shared_profiles_within_groups = 2L
+        shared_within = 2L,
+        shared_across = 1L
       ),
       observed = observed,
       included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -589,36 +530,16 @@ test_that("assign profiles -- error messages work", {
 
   err <- rlang::catch_cnd(
     assign_profiles(
-      num_assignment_groups = 5L,
       group_configuration = list(
+        num_assignment_groups = 5L,
         panelists_per_group = 4L,
-        shared_profiles_within_groups = 2L
-      ),
-      observed = observed,
-      shared_profiles_across_groups = "a",
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
-      output_dir = testthat::test_path("data")
-    )
-  )
-  testthat::expect_s3_class(err, "rlang_error")
-  testthat::expect_match(
-    err$message,
-    "must be an integer."
-  )
-
-  err <- rlang::catch_cnd(
-    assign_profiles(
-      num_assignment_groups = 5L,
-      group_configuration = list(
-        panelists_per_group = 4L,
-        shared_profiles_within_groups = 2L
+        shared_within = 2L,
+        shared_across = 1L
       ),
       observed = observed |>
-        dplyr::mutate(pct = dplyr::case_when(n < 2500 ~ NA,
-                                             TRUE ~ pct),
-                      n = dplyr::case_when(n < 2500 ~ NA,
-                                           TRUE ~ n)),
+        dplyr::mutate(
+          n = dplyr::case_when(n < 2500 ~ NA, TRUE ~ n)
+        ),
       included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
       profiles_per_total_levels_mastered = 3L,
       output_dir = testthat::test_path("data")
@@ -639,20 +560,21 @@ test_that("assign profiles -- few attributes work (group design)", {
     att2 = c(0:4),
     att3 = c(0:4),
     att4 = c(0:4)
-  ))
+  )) |>
+    tibble::rowid_to_column("profile_id")
 
   obs <- runif(nrow(possible_profiles), 1, 10000)
 
   observed <- possible_profiles |>
     dplyr::mutate(n = obs, n = dplyr::case_when(n < 1000 ~ NA, TRUE ~ n)) |>
-    dplyr::filter(!is.na(n)) |>
-    dplyr::mutate(pct = n / sum(n))
+    dplyr::filter(!is.na(n))
 
   final_assignments <- assign_profiles(
-    num_assignment_groups = 5L,
     group_configuration = list(
+      num_assignment_groups = 5L,
       panelists_per_group = 4L,
-      shared_profiles_within_groups = 2L
+      shared_within = 2L,
+      shared_across = 1L
     ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
@@ -671,26 +593,13 @@ test_that("assign profiles -- few attributes work (group design)", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 10)
+  testthat::expect_equal(ncol(final_assignments), 6)
   # correct number of rows
   testthat::expect_equal(nrow(final_assignments), 68)
-  # total attributes are correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::distinct(.data$total) |>
-      dplyr::pull(),
-    c(5, 10, 15)
-  )
-  # number of each attribute total is correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::pull(.data$total),
-    c(rep(5, 30), rep(10, 30), rep(15, 8))
-  )
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c(glue::glue("att{1:4}"), "total", "group", glue::glue("rater{1:4}"))
+    c("profile_id", "group", glue::glue("rater{1:4}"))
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
@@ -706,13 +615,6 @@ test_that("assign profiles -- few attributes work (group design)", {
       dplyr::pull(.data$n),
     c(38, 38, 38, 38)
   )
-  # all attribute totals are increment of the range of profiles
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::mutate(increment = .data$total %% 5) |>
-      dplyr::pull(.data$increment),
-    rep(0, nrow(final_assignments))
-  )
   # assignments are in correct format
   testthat::expect_contains(
     c(0, 1),
@@ -726,19 +628,6 @@ test_that("assign profiles -- few attributes work (group design)", {
       dplyr::distinct(.data$assignment) |>
       dplyr::pull()
   )
-  # attribute scores are in correct format
-  testthat::expect_contains(
-    c(0:4),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("att")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "att",
-        values_to = "att_score"
-      ) |>
-      dplyr::distinct(.data$att_score) |>
-      dplyr::pull()
-  )
 })
 
 test_that("assign profiles -- few attributes work (rater design)", {
@@ -749,18 +638,21 @@ test_that("assign profiles -- few attributes work (rater design)", {
     att2 = c(0:4),
     att3 = c(0:4),
     att4 = c(0:4)
-  ))
+  )) |>
+    tibble::rowid_to_column("profile_id")
 
   obs <- runif(nrow(possible_profiles), 1, 10000)
 
   observed <- possible_profiles |>
     dplyr::mutate(n = obs, n = dplyr::case_when(n < 1000 ~ NA, TRUE ~ n)) |>
-    dplyr::filter(!is.na(n)) |>
-    dplyr::mutate(pct = n / sum(n))
+    dplyr::filter(!is.na(n))
 
   final_assignments <- assign_profiles(
-    num_assignment_groups = 5L,
     group_configuration = NULL,
+    panelist_configuration = list(
+      num_panelists = 5L,
+      shared_across = 1L
+    ),
     observed = observed,
     included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
     profiles_per_total_levels_mastered = 3L,
@@ -778,26 +670,13 @@ test_that("assign profiles -- few attributes work (rater design)", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 10)
+  testthat::expect_equal(ncol(final_assignments), 6)
   # correct number of rows
   testthat::expect_equal(nrow(final_assignments), 26)
-  # total attributes are correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::distinct(.data$total) |>
-      dplyr::pull(),
-    c(5, 10, 15)
-  )
-  # number of each attribute total is correct
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::pull(.data$total),
-    c(rep(5, 11), rep(10, 11), rep(15, 4))
-  )
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c(glue::glue("att{1:4}"), "total", glue::glue("rater{1:5}"))
+    c("profile_id", glue::glue("rater{1:5}"))
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
@@ -829,13 +708,6 @@ test_that("assign profiles -- few attributes work (rater design)", {
       nrow(),
     1
   )
-  # all attribute totals are increment of the range of profiles
-  testthat::expect_equal(
-    final_assignments |>
-      dplyr::mutate(increment = .data$total %% 5) |>
-      dplyr::pull(.data$increment),
-    rep(0, nrow(final_assignments))
-  )
   # assignments are in correct format
   testthat::expect_contains(
     c(0, 1),
@@ -847,19 +719,6 @@ test_that("assign profiles -- few attributes work (rater design)", {
         values_to = "assignment"
       ) |>
       dplyr::distinct(.data$assignment) |>
-      dplyr::pull()
-  )
-  # attribute scores are in correct format
-  testthat::expect_contains(
-    c(0:4),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("att")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "att",
-        values_to = "att_score"
-      ) |>
-      dplyr::distinct(.data$att_score) |>
       dplyr::pull()
   )
 })
