@@ -48,8 +48,10 @@ fit_ml <- function(
   output_dir
 ) {
   observed <- observed |>
-    dplyr::mutate(prop = !!rlang::sym(observed_count_label) /
-                    sum(!!rlang::sym(observed_count_label)))
+    dplyr::mutate(
+      prop = !!rlang::sym(observed_count_label) /
+        sum(!!rlang::sym(observed_count_label))
+    )
 
   att_vec <- observed |>
     dplyr::select(

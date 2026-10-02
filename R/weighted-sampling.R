@@ -129,8 +129,7 @@ weighted_sampling <- function(
           possible_profiles,
           filter_function = "median",
           raters = raters,
-          profiles_per_total_levels_mastered =
-            profiles_per_total_levels_mastered
+          profiles_per_total_levels_mastered = profiles_per_total_levels_mastered
         )
       }
     }
@@ -193,8 +192,7 @@ weighted_sampling <- function(
           possible_profiles,
           filter_function = "median",
           raters = raters,
-          profiles_per_total_levels_mastered =
-            profiles_per_total_levels_mastered
+          profiles_per_total_levels_mastered = profiles_per_total_levels_mastered
         )
       }
     }

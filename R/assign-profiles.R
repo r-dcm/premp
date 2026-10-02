@@ -147,8 +147,7 @@ assign_profiles <- function(
     if (
       any(
         !(names(panelist_configuration) %in%
-          c("num_panelists",
-            "shared_across"))
+          c("num_panelists", "shared_across"))
       )
     ) {
       rdcmchecks::abort_bad_argument(
@@ -191,8 +190,10 @@ assign_profiles <- function(
     )
   }
 
-  if (typeof(included_total_levels_mastered) != "integer" ||
-      !is.vector(included_total_levels_mastered)) {
+  if (
+    typeof(included_total_levels_mastered) != "integer" ||
+      !is.vector(included_total_levels_mastered)
+  ) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(included_total_levels_mastered),
       must = cli::format_message(paste(
@@ -228,8 +229,10 @@ assign_profiles <- function(
   }
 
   observed <- observed |>
-    dplyr::mutate(prop = !!rlang::sym(observed_count_label) /
-                    sum(!!rlang::sym(observed_count_label)))
+    dplyr::mutate(
+      prop = !!rlang::sym(observed_count_label) /
+        sum(!!rlang::sym(observed_count_label))
+    )
 
   group_design <- ifelse(is.null(group_configuration), FALSE, TRUE)
 
