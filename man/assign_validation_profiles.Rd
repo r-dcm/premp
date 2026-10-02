@@ -5,6 +5,7 @@
 \title{Title}
 \usage{
 assign_validation_profiles(
+  fitted_model,
   panelist_configuration = NULL,
   group_configuration = NULL,
   certainty_assignments = list(very_certain = 1L, fairly_certain = 2L, fairly_uncertain =
@@ -20,6 +21,8 @@ assign_validation_profiles(
 )
 }
 \arguments{
+\item{fitted_model}{An object with the fitted machine learning model.}
+
 \item{panelist_configuration}{A list containing the parameters for
 configuring a panelist design. The allowable parameters are \code{num_panelists}
 indicating the number of panelists and
@@ -78,8 +81,6 @@ profile.}
 assigned to panelists, where there is one row for each assigned profile.}
 
 \item{output_dir}{The output directory for the profile assignments.}
-
-\item{fitted_model}{An object with the fitted machine learning model.}
 }
 \value{
 A \link[tibble:tibble-package]{tibble}.

@@ -31,16 +31,16 @@ profiles to assign to each rater at each total number of levels mastered.}
 
 \item{panelist_configuration}{A list containing the parameters for
 configuring a panelist design. The allowable parameters are \code{num_panelists}
-indicating the number of panelists and \code{shared_profiles_across_panelists}
+indicating the number of panelists and \code{shared_across}
 indicating the number of profiles that are common to all panelists. Only one
 of \code{panelist_configuration} or \code{group_configuration} should be specified.}
 
 \item{group_configuration}{A list containing parameters for configuring a
 group design. The allowable parameters are \code{num_assignment_groups} indicating
 the number of groups of panelists, \code{panelists_per_group} indicating
-the number of panelists in each group, \code{shared_profiles_within_groups}
+the number of panelists in each group, \code{shared_within}
 indicating the number of profiles that are common to all of the panelists
-within each group, and \code{shared_profiles_across_groups} indicating the number
+within each group, and \code{shared_across} indicating the number
 of profiles that are shared by panelists across groups. Only one of
 \code{panelist_configuration} or \code{group_configuration} should be specified.}
 }
