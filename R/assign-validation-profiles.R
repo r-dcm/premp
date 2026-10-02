@@ -557,9 +557,8 @@ assign_validation_profiles <- function(
 
   if (!is.null(group_configuration)) {
     profile_sampling <- profile_sampling |>
-    tidyr::crossing(
-      rater_id =
-        glue::glue(
+      tidyr::crossing(
+        rater_id = glue::glue(
           "rater{1:group_configuration$panelists_per_group}"
         )
     ) |>
