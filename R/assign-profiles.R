@@ -79,7 +79,8 @@ assign_profiles <- function(
     if (
       any(
         !(names(group_configuration) %in%
-          c("num_assignment_groups",
+          c(
+            "num_assignment_groups",
             "panelists_per_group",
             "shared_within",
             "shared_across"))
