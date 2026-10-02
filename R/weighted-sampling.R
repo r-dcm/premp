@@ -14,15 +14,15 @@
 #' @param raters A character vector containing the raters' ids.
 #' @param panelist_configuration A list containing the parameters for
 #' configuring a panelist design. The allowable parameters are `num_panelists`
-#' indicating the number of panelists and `shared_profiles_across_panelists`
+#' indicating the number of panelists and `shared_across`
 #' indicating the number of profiles that are common to all panelists. Only one
 #' of `panelist_configuration` or `group_configuration` should be specified.
 #' @param group_configuration A list containing parameters for configuring a
 #' group design. The allowable parameters are `num_assignment_groups` indicating
 #' the number of groups of panelists, `panelists_per_group` indicating
-#' the number of panelists in each group, `shared_profiles_within_groups`
+#' the number of panelists in each group, `shared_within`
 #' indicating the number of profiles that are common to all of the panelists
-#' within each group, and `shared_profiles_across_groups` indicating the number
+#' within each group, and `shared_across` indicating the number
 #' of profiles that are shared by panelists across groups. Only one of
 #' `panelist_configuration` or `group_configuration` should be specified.
 #'
@@ -43,18 +43,18 @@ weighted_sampling <- function(
     names()
 
   if (!is.null(group_configuration)) {
-    shared_profiles_across_groups <-
-      group_configuration$shared_profiles_across_groups
+    shared_across <-
+      group_configuration$shared_across
   } else {
-    shared_profiles_across_groups <-
-      panelist_configuration$shared_profiles_across_panelists
+    shared_across <-
+      panelist_configuration$shared_across
   }
 
   seen_by_all <- possible_profiles |>
     dplyr::filter(.data$total != 0) |>
     dplyr::left_join(observed, by = c(att_vec, "profile_id")) |>
     dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
-    dplyr::mutate(size = shared_profiles_across_groups) |>
+    dplyr::mutate(size = shared_across) |>
     slice_stratified(
       by = "total",
       size = "size",
@@ -80,14 +80,14 @@ weighted_sampling <- function(
   )
 
   remaining_to_sample <- profiles_per_total_levels_mastered -
-    shared_profiles_across_groups
+    shared_across
 
   if (!is.null(group_configuration)) {
     panelists_per_group <- group_configuration$panelists_per_group
-    shared_profiles_within_groups <-
-      group_configuration$shared_profiles_within_groups
+    shared_within <-
+      group_configuration$shared_within
     group_shared_assignments <-
-      shared_profiles_within_groups - shared_profiles_across_groups
+      shared_within - shared_across
   } else {
     panelists_per_group <- NA_integer_
     group_shared_assignments <- 0L

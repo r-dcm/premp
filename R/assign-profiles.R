@@ -2,15 +2,15 @@
 #'
 #' @param panelist_configuration A list containing the parameters for
 #' configuring a panelist design. The allowable parameters are `num_panelists`
-#' indicating the number of panelists and `shared_profiles_across_panelists`
+#' indicating the number of panelists and `shared_across`
 #' indicating the number of profiles that are common to all panelists. Only one
 #' of `panelist_configuration` or `group_configuration` should be specified.
 #' @param group_configuration A list containing parameters for configuring a
 #' group design. The allowable parameters are `num_assignment_groups` indicating
 #' the number of groups of panelists, `panelists_per_group` indicating
-#' the number of panelists in each group, `shared_profiles_within_groups`
+#' the number of panelists in each group, `shared_within`
 #' indicating the number of profiles that are common to all of the panelists
-#' within each group, and `shared_profiles_across_groups` indicating the number
+#' within each group, and `shared_across` indicating the number
 #' of profiles that are shared by panelists across groups. Only one of
 #' `panelist_configuration` or `group_configuration` should be specified.
 #' @param observed A tibble with one row for each attribute mastery profile that
@@ -40,6 +40,17 @@ assign_profiles <- function(
   output_dir
 ) {
   # error checks
+  if (!is.null(group_configuration)) {
+    if (typeof(group_configuration) != "list") {
+      rdcmchecks::abort_bad_argument(
+        arg = rlang::caller_arg(group_configuration),
+        must = cli::format_message(paste(
+          "must be a list."
+        ))
+      )
+    }
+  }
+
   if (!is.null(panelist_configuration)) {
     num_assignment_groups <- panelist_configuration$num_panelists
   } else {
@@ -56,11 +67,11 @@ assign_profiles <- function(
   }
 
   if (!is.null(group_configuration)) {
-    if (typeof(group_configuration) != "list") {
+    if (length(group_configuration) != 4) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste(
-          "must be a list."
+          "must be a list of length 4."
         ))
       )
     }
@@ -70,8 +81,8 @@ assign_profiles <- function(
         !(names(group_configuration) %in%
           c("num_assignment_groups",
             "panelists_per_group",
-            "shared_profiles_within_groups",
-            "shared_profiles_across_groups"))
+            "shared_within",
+            "shared_across"))
       )
     ) {
       rdcmchecks::abort_bad_argument(
@@ -79,17 +90,8 @@ assign_profiles <- function(
         must = cli::format_message(paste0(
           "must be a list containing `num_assignment_groups`, ",
           "`panelists_per_group`, ",
-          "`shared_profiles_within_groups`, and ",
-          "`shared_profiles_across_groups`."
-        ))
-      )
-    }
-
-    if (length(group_configuration) != 4) {
-      rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(group_configuration),
-        must = cli::format_message(paste(
-          "must be a list of length 4."
+          "`shared_within`, and ",
+          "`shared_across`."
         ))
       )
     }
@@ -105,24 +107,24 @@ assign_profiles <- function(
       )
     }
 
-    shared_profiles_within_groups <-
-      group_configuration$shared_profiles_within_groups
+    shared_within <-
+      group_configuration$shared_within
 
-    if (!is.integer(shared_profiles_within_groups)) {
+    if (!is.integer(shared_within)) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(shared_profiles_within_groups),
+        arg = rlang::caller_arg(shared_within),
         must = cli::format_message(paste(
           "must be an integer."
         ))
       )
     }
 
-    shared_profiles_across_groups <-
-      group_configuration$shared_profiles_across_groups
+    shared_across <-
+      group_configuration$shared_across
 
-    if (!is.integer(shared_profiles_across_groups)) {
+    if (!is.integer(shared_across)) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(shared_profiles_across_groups),
+        arg = rlang::caller_arg(shared_across),
         must = cli::format_message(paste(
           "must be an integer."
         ))
@@ -144,14 +146,14 @@ assign_profiles <- function(
       any(
         !(names(panelist_configuration) %in%
           c("num_panelists",
-            "shared_profiles_across_panelists"))
+            "shared_across"))
       )
     ) {
       rdcmchecks::abort_bad_argument(
         arg = rlang::caller_arg(group_configuration),
         must = cli::format_message(paste0(
           "must be a list containing `num_panelists` and ",
-          "`shared_profiles_across_panelists`."
+          "`shared_across`."
         ))
       )
     }
@@ -165,19 +167,17 @@ assign_profiles <- function(
       )
     }
 
-    shared_profiles_across_panelists <-
-      panelist_configuration$shared_profiles_across_panelists
+    shared_across <-
+      panelist_configuration$shared_across
 
-    if (!is.integer(shared_profiles_across_panelists)) {
+    if (!is.integer(shared_across)) {
       rdcmchecks::abort_bad_argument(
-        arg = rlang::caller_arg(shared_profiles_across_panelists),
+        arg = rlang::caller_arg(shared_across),
         must = cli::format_message(paste(
           "must be an integer."
         ))
       )
     }
-
-    shared_profiles_across_groups <- shared_profiles_across_panelists
   }
 
   if (!is.character(observed_count_label)) {

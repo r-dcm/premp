@@ -80,7 +80,7 @@ fit_ml <- function(
       )
     ) |>
     dplyr::select(-!!rlang::sym(observed_count_label)) |>
-    dplyr::rename(case_wts = .data$prop) |>
+    dplyr::rename(case_wts = "prop") |>
     dplyr::mutate(case_wts = hardhat::importance_weights(.data$case_wts)) |>
     dplyr::select(-"profile_id")
 
@@ -175,8 +175,10 @@ fit_ml <- function(
   )
 
   # Save in-sample agreement
-  saveRDS(in_sample_agreement,
-          glue::glue("{output_dir}/in_sample_agreement.rds"))
+  saveRDS(
+    in_sample_agreement,
+    glue::glue("{output_dir}/in_sample_agreement.rds")
+  )
 
   # out-of-sample agreement
   oos_preds <- assign_pl(
@@ -188,7 +190,10 @@ fit_ml <- function(
     output_dir = output_dir
   )
 
-  saveRDS(oos_preds, glue::glue("{output_dir}/oos_predictions.rds"))
+  saveRDS(
+    oos_preds,
+    glue::glue("{output_dir}/oos_predictions.rds")
+  )
 
   oos_preds <- oos_preds |>
     dplyr::mutate(dplyr::across(
@@ -212,8 +217,10 @@ fit_ml <- function(
     dplyr::filter(!stringr::str_detect(.data$.metric, "_assigned"))
 
   # Save in-sample agreement
-  saveRDS(oos_agreement,
-          glue::glue("{output_dir}/out_of_sample_agreement.rds"))
+  saveRDS(
+    oos_agreement,
+    glue::glue("{output_dir}/out_of_sample_agreement.rds")
+  )
 
   pmp(mod_fit, in_sample_agreement, oos_agreement)
 }
