@@ -8,5 +8,7 @@
 
 library(testthat)
 library(premp)
+library(ranger)
+library(parsnip)
 
 test_check("premp")
