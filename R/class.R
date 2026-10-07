@@ -8,6 +8,8 @@
 #' statistics.
 #' @param out_of_sample_agreement A tibble containing the out-of-sample
 #' agreement statistics.
+#' @param assignment A tibble containing the assignment statistics for all
+#' panelist ratings.
 #'
 #' @return An [S7 object][S7::S7_object()] with the corresponding class.
 #' @rdname pmp-class
@@ -27,6 +29,10 @@ pmp <- S7::new_class(
       default = quote(.no_constructor())
     ),
     out_of_sample_agreement = S7::new_property(
+      class = S7::new_S3_class("tbl_df"),
+      default = quote(.no_constructor())
+    ),
+    assignment = S7::new_property(
       class = S7::new_S3_class("tbl_df"),
       default = quote(.no_constructor())
     )

@@ -26,8 +26,8 @@ test_that("assigning profiles (group design) in Round 1 works", {
       shared_across = 1L
     ),
     observed = observed,
-    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 3L,
+    included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_total_skills_mastered = 3L,
     output_dir = testthat::test_path("data")
   )
 
@@ -107,8 +107,8 @@ test_that("assigning profiles (rater design) in Round 1 works", {
       shared_across = 1L
     ),
     observed = observed,
-    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 3L,
+    included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_total_skills_mastered = 3L,
     output_dir = testthat::test_path("data")
   )
 
@@ -203,8 +203,8 @@ test_that("assigning profiles (rater design) in Round 2 works", {
       shared_across = 1L
     ),
     observed = observed,
-    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 3L,
+    included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_total_skills_mastered = 3L,
     output_dir = testthat::test_path("data")
   )
 
@@ -215,8 +215,8 @@ test_that("assigning profiles (rater design) in Round 2 works", {
       shared_across = 1L
     ),
     observed = observed,
-    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 2L,
+    included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_total_skills_mastered = 2L,
     previously_rated = round_1_assignments,
     output_dir = testthat::test_path("data")
   )
@@ -314,8 +314,8 @@ test_that("assign profiles -- error messages work", {
       shared_across = 1L
     ),
     observed = observed,
-    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 3L,
+    included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_total_skills_mastered = 3L,
     output_dir = testthat::test_path("data")
   ))
   testthat::expect_s3_class(err, "rlang_error")
@@ -333,8 +333,8 @@ test_that("assign profiles -- error messages work", {
         shared_across = 1L
       ),
       observed = observed,
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -353,8 +353,8 @@ test_that("assign profiles -- error messages work", {
         shared_profiles = 1L
       ),
       observed = observed,
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -376,8 +376,8 @@ test_that("assign profiles -- error messages work", {
         shared_across = 1L
       ),
       observed = observed,
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -396,8 +396,8 @@ test_that("assign profiles -- error messages work", {
         shared_across = 1L
       ),
       observed = observed,
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -416,8 +416,8 @@ test_that("assign profiles -- error messages work", {
         shared_across = 1L
       ),
       observed = observed,
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -436,8 +436,8 @@ test_that("assign profiles -- error messages work", {
         shared_across = 1.1
       ),
       observed = observed,
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -457,8 +457,8 @@ test_that("assign profiles -- error messages work", {
       ),
       observed = observed,
       observed_count_label = 5,
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -477,8 +477,8 @@ test_that("assign profiles -- error messages work", {
         shared_across = 1L
       ),
       observed = observed,
-      included_total_levels_mastered = c(5, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -497,8 +497,8 @@ test_that("assign profiles -- error messages work", {
         shared_across = 1L
       ),
       observed = observed,
-      included_total_levels_mastered = list(5L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = list(5L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -517,8 +517,8 @@ test_that("assign profiles -- error messages work", {
         shared_across = 1L
       ),
       observed = observed,
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3,
       output_dir = testthat::test_path("data")
     )
   )
@@ -540,8 +540,8 @@ test_that("assign profiles -- error messages work", {
         dplyr::mutate(
           n = dplyr::case_when(n < 2500 ~ NA, TRUE ~ n)
         ),
-      included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-      profiles_per_total_levels_mastered = 3L,
+      included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+      profiles_per_total_skills_mastered = 3L,
       output_dir = testthat::test_path("data")
     )
   )
@@ -577,8 +577,8 @@ test_that("assign profiles -- few attributes work (group design)", {
       shared_across = 1L
     ),
     observed = observed,
-    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 3L,
+    included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_total_skills_mastered = 3L,
     output_dir = testthat::test_path("data")
   )
 
@@ -654,8 +654,8 @@ test_that("assign profiles -- few attributes work (rater design)", {
       shared_across = 1L
     ),
     observed = observed,
-    included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L),
-    profiles_per_total_levels_mastered = 3L,
+    included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L),
+    profiles_per_total_skills_mastered = 3L,
     output_dir = testthat::test_path("data")
   )
 

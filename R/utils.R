@@ -225,8 +225,8 @@ calculate_hamming <- function(
 #' example, a value of .60 indicates profiles with a Hamming distance below the
 #' 60th percentile will be filtered out of the set of eligible profiles.
 #' @param raters A character vector containing the rater names.
-#' @param profiles_per_total_levels_mastered An integer value indicating the
-#' number of profiles to sample from each level of the number of attributes
+#' @param profiles_per_total_skills_mastered An integer value indicating the
+#' number of profiles to sample from each level of the total number of skills
 #' mastered.
 #'
 #' @return A tibble with the eligible profiles and the Hamming distance.
@@ -235,7 +235,7 @@ refine_possible_profiles <- function(
   filter_function = "median",
   filter_percentile = NULL,
   raters,
-  profiles_per_total_levels_mastered
+  profiles_per_total_skills_mastered
 ) {
   if (!is.null(filter_function) && !is.null(filter_percentile)) {
     rdcmchecks::abort_bad_argument(
@@ -260,7 +260,7 @@ refine_possible_profiles <- function(
 
   # don't refine eligible profiles if the refinement pushes the number eligible
   # below the number that needs to be sampled
-  sx_threshold <- length(raters) * profiles_per_total_levels_mastered * 3 # nolint
+  sx_threshold <- length(raters) * profiles_per_total_skills_mastered * 3 # nolint
 
   if (!is.null(filter_percentile)) {
     profiles <- profiles |>

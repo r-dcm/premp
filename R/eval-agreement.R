@@ -8,15 +8,15 @@
 #' is the output of `predict_ml()` and is one row per panelist rating.
 #' @param metrics A character vector containing the evaluation metrics that
 #' should be included in the output. Can include any of `"accuracy"`,
-#' `"adjacent"`, `"kappa"`, `"auc"`, `"gwet"`, or `"assignment"`. Including
-#' `"accuracy"` calculates classification accuracy. Including `"adjacent"`
-#' calculates adjacent classification accuracy. Including `"kappa"` calculates
-#' Cohen's kappa. Including `"auc"` calculates the area under the receiver
-#' operating characteristic curve. Including `"gwet"` calculates Gwet's $AC_2$.
-#' Including `"assignment"` calculates assignment statistics from the standard
-#' setting procedure -- the number of profiles assigned, the number of students
-#' with the assigned profiles, and the proportion of students with the assigned
-#' profiles.
+#' `"adjacent"`, `"cohens_kappa"`, `"roc_auc"`, `"gwets_ac2"`, or
+#' `"assignment"`. Including `"accuracy"` calculates classification accuracy.
+#' Including `"adjacent"` calculates adjacent classification accuracy. Including
+#' `"cohens_kappa"` calculates Cohen's kappa. Including `"roc_auc"` calculates
+#' the area under the receiver operating characteristic curve. Including
+#' `"gwets_ac2"` calculates Gwet's $AC_2$. Including `"assignment"` calculates
+#' assignment statistics from the standard setting procedure -- the number of
+#' profiles assigned, the number of students with the assigned profiles, and the
+#' proportion of students with the assigned profiles.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
 #' @param num_pls The number of performance levels that can be assigned to any
@@ -52,15 +52,16 @@ eval_agreement <- function(
   if (
     any(
       !(metrics %in%
-        c("accuracy", "adjacent", "kappa", "auc", "gwet", "assignment"))
+        c("accuracy", "adjacent", "cohens_kappa", "roc_auc", "gwets_ac2",
+          "assignment"))
     )
   ) {
     rdcmchecks::abort_bad_argument(
       arg = rlang::caller_arg(metrics),
       must = cli::format_message(paste0(
         paste0(
-          "must be one of: 'accuracy', 'adjacent', 'kappa', 'auc', 'gwet', or",
-          "'assignment'."
+          "must be one of: 'accuracy', 'adjacent', 'cohens_kappa', 'roc_auc',",
+          "'gwets_ac2', or 'assignment'."
         )
       ))
     )
@@ -115,7 +116,7 @@ eval_agreement <- function(
     res <- dplyr::bind_rows(res, adjacent_accuracy)
   }
 
-  if ("auc" %in% metrics) {
+  if ("roc_auc" %in% metrics) {
     roc_auc <- model_ratings |>
       dplyr::select(-dplyr::any_of(att_vec)) |>
       yardstick::roc_auc(
@@ -126,7 +127,7 @@ eval_agreement <- function(
     res <- dplyr::bind_rows(res, roc_auc)
   }
 
-  if ("kappa" %in% metrics) {
+  if ("cohens_kappa" %in% metrics) {
     cohens_kappa <- model_ratings |>
       yardstick::kap(truth = !!rlang::sym(rating_id), "pred_pl") |>
       dplyr::mutate(.metric = "cohens_kappa")
@@ -134,7 +135,7 @@ eval_agreement <- function(
     res <- dplyr::bind_rows(res, cohens_kappa)
   }
 
-  if ("gwet" %in% metrics) {
+  if ("gwets_ac2" %in% metrics) {
     gwets_ac <- model_ratings |>
       dplyr::select("pred_pl", !!rlang::sym(rating_id)) |>
       irrCAC::gwet.ac1.raw(weights = "quadratic") |>

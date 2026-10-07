@@ -10,10 +10,10 @@ utils::globalVariables(c("case_wts"))
 #' the panelists' ratings in long format.
 #' @param observed A tibble with one row for each attribute mastery profile that
 #' was observed along with the number of times it was observed.
-#' @param att_levels A numeric value for the number of levels where mastery can
-#' be demonstrated. For example, `att_level` is 1 for a dichotomous attribute
-#' (i.e., nonmastery or mastery), and `att_level` is 2 for attributes where the
-#' possible scores are 0, 1, and 2.
+#' @param max_score A numeric value for the maximum score for the number of
+#' skills that can be mastered within an attribute. For example, `max_score` is
+#' 1 for a dichotomous attribute (i.e., nonmastery or mastery), and `max_score`
+#' is 2 for attributes where the possible scores are 0, 1, and 2.
 #' @param num_pls The number of performance levels that can be assigned to any
 #' profile.
 #' @param rating_id A character string for the field name of the panelists'
@@ -22,13 +22,14 @@ utils::globalVariables(c("case_wts"))
 #' observed sample sizes in `observed` (default is 'n').
 #' @param metrics A character vector containing the evaluation metrics that
 #' should be included in the output. Can include any of `"accuracy"`,
-#' `"adjacent"`, `"kappa"`, `"auc"`, or `"assignment"`. Including `"accuracy"`
-#' calculates classification accuracy. Including `"adjacent"` calculates
-#' adjacent classification accuracy. Including `"kappa"` calculates Cohen's
-#' kappa. Including `"auc"` calculates the area under the receiver operating
-#' characteristic curve. Including `"assignment"` calculates assignment
-#' statistics from the standard setting procedure -- the number of profiles
-#' assigned, the number of students with the assigned profiles, and the
+#' `"adjacent"`, `"cohens_kappa"`, `"roc_auc"`, `"gwets_ac2"`, or
+#' `"assignment"`. Including `"accuracy"` calculates classification accuracy.
+#' Including `"adjacent"` calculates adjacent classification accuracy. Including
+#' `"cohens_kappa"` calculates Cohen's kappa. Including `"roc_auc"` calculates
+#' the area under the receiver operating characteristic curve. Including
+#' `"gwets_ac2"` calculates Gwet's $AC_2$. Including `"assignment"` calculates
+#' assignment statistics from the standard setting procedure -- the number of
+#' profiles assigned, the number of students with the assigned profiles, and the
 #' proportion of students with the assigned profiles.
 #' @param output_dir The directory path for saving the output.
 #'
@@ -40,7 +41,7 @@ fit_ml <- function(
   user_workflow,
   ratings_data,
   observed,
-  att_levels,
+  max_score,
   num_pls,
   rating_id = "rating",
   observed_count_label = "n",
@@ -72,7 +73,7 @@ fit_ml <- function(
     dplyr::left_join(observed, by = att_vec) |>
     dplyr::mutate(dplyr::across(
       dplyr::any_of(att_vec),
-      ~ factor(., levels = 0:att_levels)
+      ~ factor(., levels = 0:max_score)
     )) |>
     dplyr::mutate(rating = factor(.data$rating, levels = 1:num_pls)) |>
     dplyr::mutate(
@@ -148,8 +149,8 @@ fit_ml <- function(
     mod_fit,
     train_data |>
       dplyr::select(-"case_wts"),
-    att_levels = 4,
-    num_pls = 4,
+    max_score = max_score,
+    num_pls = num_pls,
     rating_id = "rating",
     output_dir = output_dir
   )
@@ -170,7 +171,7 @@ fit_ml <- function(
     model_ratings = in_sample_preds,
     metrics,
     observed,
-    num_pls = 4,
+    num_pls = num_pls,
     rating_id = "rating",
     observed_count_label = observed_count_label,
     output_dir = output_dir
@@ -186,8 +187,8 @@ fit_ml <- function(
   oos_preds <- assign_pl(
     mod_fit,
     test_data,
-    att_levels = 4,
-    num_pls = 4,
+    max_score = max_score,
+    num_pls = num_pls,
     rating_id = "rating",
     output_dir = output_dir
   )
@@ -211,18 +212,64 @@ fit_ml <- function(
     model_ratings = oos_preds,
     metrics = metrics,
     observed,
-    num_pls = 4,
+    num_pls = num_pls,
     rating_id = "rating",
     observed_count_label = observed_count_label,
     output_dir = output_dir
   ) |>
     dplyr::filter(!stringr::str_detect(.data$.metric, "_assigned"))
 
-  # Save in-sample agreement
+  # Save out-of-sample agreement
   saveRDS(
     oos_agreement,
     glue::glue("{output_dir}/out_of_sample_agreement.rds")
   )
 
-  pmp(mod_fit, in_sample_agreement, oos_agreement)
+  all_data <- bind_rows(
+    train_data |>
+      dplyr::select(-"case_wts") |>
+      dplyr::mutate(dplyr::across(
+        dplyr::where(is.factor),
+        ~ as.numeric(as.character(.x))
+      )),
+    test_data
+  )
+
+  all_preds <- assign_pl(
+    mod_fit,
+    all_data,
+    max_score = max_score,
+    num_pls = num_pls,
+    rating_id = "rating",
+    output_dir = output_dir
+  )
+
+  all_preds <- all_preds |>
+    dplyr::mutate(dplyr::across(
+      dplyr::where(is.factor),
+      ~ as.numeric(as.character(.x))
+    )) |>
+    dplyr::mutate(
+      pred_pl = factor(.data$pred_pl, levels = 1:num_pls),
+      rating = factor(.data$rating, levels = 1:num_pls)
+    )
+
+  assignment <- eval_agreement(
+    model_ratings = all_preds,
+    metrics = c("assignment"),
+    observed,
+    num_pls = num_pls,
+    rating_id = "rating",
+    observed_count_label = observed_count_label,
+    output_dir = output_dir
+  ) |>
+    dplyr::filter(stringr::str_detect(.data$.metric, "_assigned"))
+
+  # Save assignment stats
+  saveRDS(
+    assignment,
+    glue::glue("{output_dir}/assignment_statistics.rds")
+  )
+
+  pmp(mod_fit, in_sample_agreement, oos_agreement, assignment)
 }

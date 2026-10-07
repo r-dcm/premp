@@ -81,11 +81,11 @@ This function takes user-specified information about the panel design as the inp
 For this example, we are using a group-based panel design.
 The `assign_profiles()` function receives a list of parameters specifying details of the group design (i.e., `group_configuration`) or panelist design (i.e., `panelist_configuration`). 
 Specifically, in the context of this group-based design example, this allows you specify that there are five groups (i.e., `num_assignment_groups = 5L`), four panelists per group (i.e., `panelists_per_group = 4L`), two profiles are shared within each group (`shared_within = 2L`), and one profile is shared across all groups/tables (`shared_across = 1L`).
-If the user wants to assign the same set of profiles to all panelists in a group, this can be done with `shared_within = profiles_per_total_levels_mastered`.
-The user also specifies the total number of levels mastered to be used for assignment (i.e., `included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L)`) and the number of profiles to assign per level (i.e., `profiles_per_total_levels_mastered = 3L`).
+If the user wants to assign the same set of profiles to all panelists in a group, this can be done with `shared_within = profiles_per_total_skills_mastered`.
+The user also specifies the total number of skills mastered to be used for assignment (i.e., `included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L, 30L)`) and the number of profiles to assign per total skills mastered (i.e., `profiles_per_total_skills_mastered = 3L`).
 The total number of levels mastered is based on the total number of skills mastered for each measured attribute.
-For instance, with eight assessed attributes with four levels each (e.g., scores of 0, 1, 2, 3, or 4 are possible for each attribute), the possible levels mastered ranges from 0 (i.e., no mastery of any level for any attribute) to 32 (i.e., mastery of all levels for all attributes).
-`included_total_levels_mastered` specifies the profiles to retain for assignment based on the sum of levels mastered across all attributes.
+For instance, with eight assessed attributes with four skill levels each (e.g., scores of 0, 1, 2, 3, or 4 are possible for each attribute), the possible levels mastered ranges from 0 (i.e., no mastery of any level for any attribute) to 32 (i.e., mastery of all levels for all attributes).
+`included_total_skills_mastered` specifies the profiles to retain for assignment based on the sum of skills mastered across all attributes.
 In this example, we specified that profiles with 5, 10, 15, 20, 25, and 30 levels mastered should be retained and that each panelist should be assigned three profiles at each of these levels.
 The `observed_count_label` parameter specifies the field name for the observed profiles' sample sizes (e.g., "n").
 The object with the observed profiles is used so that profile assignment prioritizes profiles that are most dissimilar from the profiles that have already been assigned based on Hamming distance, while also weighting the profiles for assignment based on prevalence (i.e., more commonly observed are more likely to be assigned).
@@ -101,8 +101,8 @@ final_assignments <- assign_profiles(
   ),
   observed = observed,
   observed_count_label = "n",
-  included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L),
-  profiles_per_total_levels_mastered = 3L,
+  included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L, 30L),
+  profiles_per_total_skills_mastered = 3L,
   output_dir = here::here("vignettes/rangefinding")
 )
 
@@ -117,7 +117,7 @@ In other words, `rater1` in `group1` is different than `rater1` in `group2`.
 Instead of a group-based design, we could assign profiles directly to panelists.
 The following example uses `panelist_configuration` to provide a list of parameters describing the panelist-based design.
 More specifically, it assigns profiles to 10 panelists (i.e., `num_panelists = 10`), where one of profile is common to all panelists (i.e., `shared_across = 1L`).
-The panelist-based design uses the same settings for `included_total_levels_mastered` and `profiles_per_total_levels_mastered`.
+The panelist-based design uses the same settings for `included_total_skills_mastered` and `profiles_per_total_skills_mastered`.
 
 ```{r}
 #| label: panelist-rangefinding-assignment
@@ -129,8 +129,8 @@ final_panelist_assignments <- assign_profiles(
   ),
   observed = observed,
   observed_count_label = "n",
-  included_total_levels_mastered = c(5L, 10L, 15L, 20L, 25L, 30L),
-  profiles_per_total_levels_mastered = 3L,
+  included_total_skills_mastered = c(5L, 10L, 15L, 20L, 25L, 30L),
+  profiles_per_total_skills_mastered = 3L,
   output_dir = here::here("vignettes/rangefinding")
 )
 ```
@@ -163,7 +163,7 @@ pinpoint_ranges <- fit_lr(
   ratings,
   meta_data,
   pl_labels,
-  att_levels = 4,
+  max_score = 4,
   output_dir = here::here("vignettes/pinpointing")
 )
 
@@ -178,30 +178,46 @@ We retain the possible profiles where the total number of levels mastered is wit
 The profiles eligible for pinpointing assignment (i.e., the output of `profiles_to_retain()`) and the observed profiles are used to assigned to panelists using `assign_profiles()`.
 Of note, the profiles assigned in the rangefinding round (i.e., `previously_rated = ratings`) are input into `assign_profiles()` when assigning profiles for the pinpointing round to ensure these profiles are not assigned again.
 In the example, the design for the pinpointing round is largely similar to the design of the rangefinding round.
-The primary difference is that only two profiles are assigned at each level during pinpointing (i.e., `profiles_per_total_levels_mastered = 2L`) whereas three profiles were assigned at each level during rangefinding.
+The primary difference is that only two profiles are assigned at each total skills mastered during pinpointing (i.e., `profiles_per_total_skills_mastered = 2L`) whereas three profiles were assigned at each level during rangefinding.
 The format of the output remains the same.
 
 ```{r}
 #| label: group-pinpointing-assignment
-retain_totals <- profiles_to_retain(
-  pinpoint_ranges,
-  max_levels_mastered = 32
-)
 
-final_assignments <- assign_profiles(
-  group_configuration = list(
-    num_assignment_groups = 5L,
-    panelists_per_group = 4L,
-    shared_within = 2L,
-    shared_across = 1L
-  ),
-  observed = observed,
-  observed_count_label = "n",
-  included_total_levels_mastered = retain_totals,
-  profiles_per_total_levels_mastered = 2L,
-  previously_rated = ratings,
-  output_dir = here::here("vignettes/pinpointing")
-)
+previously_rated <- ratings |> 
+  dplyr::select(-"rating")
+
+# will clean this up in later revisions (wrapper function to simplify user experience)
+for (ii in seq_len(nrow(pinpoint_ranges))) {
+  retain_totals <- profiles_to_retain(
+    pinpoint_ranges |> 
+      tibble::rowid_to_column("cut_num") |> 
+      dplyr::filter(.data$cut_num == ii) |> 
+      dplyr::select(-"cut_num"),
+    max_levels_mastered = 32
+  )
+  
+  final_assignments <- assign_profiles(
+    group_configuration = list(
+      num_assignment_groups = 5L,
+      panelists_per_group = 4L,
+      shared_within = 2L,
+      shared_across = 1L
+    ),
+    observed = observed,
+    observed_count_label = "n",
+    included_total_skills_mastered = retain_totals,
+    profiles_per_total_skills_mastered = 2L,
+    previously_rated = previously_rated,
+    output_dir = here::here(
+      glue::glue(
+        "vignettes/pinpointing/{stringr::str_replace(pinpoint_ranges$cut_point[ii], '/', '-')}"
+      )
+    )
+  )
+  
+  previously_rated <- bind_rows(previously_rated, final_assignments)
+}
 
 final_assignments
 ```
@@ -235,7 +251,7 @@ We fit the machine learning model to the panelist rating data using `fit_ml()`.
 Users define the machine learning workflow, using models with functionality supported by tidymodels [@tidymodels_package].
 When the model involves hyperparameters, the workflow can specify that the hyperparameters need to be tuned or the hyperparameters can be prespecified.
 The workflow, panelist rating data, observed profiles, and possible profiles are included as input to `fit_ml()`.
-Users also specify the number of levels per attribute (i.e., `att_levels`), the number of performance levels (i.e., `num_pls`), the label for the panelist ratings column in the panelist rating data (i.e., `rating_id = "rating"`), the label for the counts in the observed profiles (i.e., `observed_count_label = "n"`), the desired agreement metrics (i.e., `metrics = c("accuracy")`), and the output directory.
+Users also specify the number of skill levels per attribute (i.e., `max_score`), the number of performance levels (i.e., `num_pls`), the label for the panelist ratings column in the panelist rating data (i.e., `rating_id = "rating"`), the label for the counts in the observed profiles (i.e., `observed_count_label = "n"`), the desired agreement metrics (i.e., `metrics = c("accuracy")`), and the output directory.
 Output from `fit_ml()` is an S7 class that includes the fitted model, the in-sample agreement metrics, and the out-of-sample agreement metrics.
 
 ```{r}
@@ -249,22 +265,20 @@ workflow <-
   parsnip::set_mode("classification") |>
   parsnip::set_engine("ranger")
 
-workflow <-
-  parsnip::rand_forest(mtry = 1, trees = 100, min_n = 1) |>
-  parsnip::set_mode("classification") |>
-  parsnip::set_engine("ranger")
-
 fitted_model <- fit_ml(
   user_workflow = workflow,
   ratings_data,
   observed,
-  att_levels = 4,
+  max_score = 4,
   num_pls = 4,
   rating_id = "rating",
   observed_count_label = "n",
-  metrics = c("accuracy", "auc", "kappa", "gwet", "assignment"),
+  metrics = c("accuracy", "roc_auc", "cohens_kappa", "gwets_ac2", "assignment"),
   output_dir = here::here("vignettes/machine_learning")
 )
+
+# double check that we can evaluate variable importance with model object
+## make sure extra specification isn't needed in the model specs
 ```
 
 ## Model Evaluation
@@ -302,6 +316,14 @@ For example, out-of-sample classification accuracy of 73% compared to in-sample 
 fitted_model@out_of_sample_agreement
 ```
 
+The `assignment` metrics in `@assignment` allow for a comprehensive evaluation of the assignment statistics for all of the profiles seen by panelists.
+This is broader than the parallel version presented previously, as this includes all collected data not just the data used to train the model.
+
+```{r}
+#| label: all-profiles-assignment-stats
+fitted_model@assignment
+```
+
 ## Model Validation
 
 A validation step is necessary to gather evidence that the model is producing reasonable performance level predictions since the model can likely only be trained on panelist rating data reflecting a small subset of the observed profiles.
@@ -332,12 +354,17 @@ previously_rated <- ratings_data |>
   dplyr::select("profile_id") |> 
   dplyr::distinct()
 
+retain_totals <- profiles_to_retain(
+    pinpoint_ranges,
+    max_levels_mastered = 32
+  )
+
 validation_assignments <- assign_validation_profiles(
   fitted_model = fitted_model@model,
   group_configuration = list(
     num_assignment_groups = 5L,
     panelists_per_group = 4L,
-    shared_profiles_within_certainty_across_groups = 1L
+    shared_across = 1L
   ),
   certainty_assignments = list(
     very_certain = 1L,
@@ -350,10 +377,10 @@ validation_assignments <- assign_validation_profiles(
   ),
   observed = observed,
   observed_count_label = "n",
-  included_total_levels_mastered = retain_totals,
-  att_levels = 4,
+  included_total_skills_mastered = retain_totals,
+  max_score = 4,
   num_pls = 4,
-  previously_rated = ratings,
+  previously_rated = previously_rated,
   output_dir = here::here("vignettes/validation")
 )
 

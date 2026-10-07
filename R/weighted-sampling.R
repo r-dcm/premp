@@ -9,8 +9,8 @@
 #' was observed along with the number of times it was observed.
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in the observed parameter.
-#' @param profiles_per_total_levels_mastered An integer specifying the number of
-#' profiles to assign to each rater at each total number of levels mastered.
+#' @param profiles_per_total_skills_mastered An integer specifying the number of
+#' profiles to assign to each rater at each total number of skills mastered.
 #' @param raters A character vector containing the raters' ids.
 #' @param panelist_configuration A list containing the parameters for
 #' configuring a panelist design. The allowable parameters are `num_panelists`
@@ -32,7 +32,7 @@ weighted_sampling <- function(
   possible_profiles,
   observed,
   observed_count_label,
-  profiles_per_total_levels_mastered,
+  profiles_per_total_skills_mastered,
   raters,
   panelist_configuration = NULL,
   group_configuration = NULL
@@ -76,10 +76,10 @@ weighted_sampling <- function(
     possible_profiles,
     filter_function = "median",
     raters = raters,
-    profiles_per_total_levels_mastered = profiles_per_total_levels_mastered
+    profiles_per_total_skills_mastered = profiles_per_total_skills_mastered
   )
 
-  remaining_to_sample <- profiles_per_total_levels_mastered -
+  remaining_to_sample <- profiles_per_total_skills_mastered -
     shared_across
 
   if (!is.null(group_configuration)) {
@@ -129,7 +129,8 @@ weighted_sampling <- function(
           possible_profiles,
           filter_function = "median",
           raters = raters,
-          profiles_per_total_levels_mastered = profiles_per_total_levels_mastered
+          profiles_per_total_skills_mastered =
+            profiles_per_total_skills_mastered
         )
       }
     }
@@ -192,7 +193,8 @@ weighted_sampling <- function(
           possible_profiles,
           filter_function = "median",
           raters = raters,
-          profiles_per_total_levels_mastered = profiles_per_total_levels_mastered
+          profiles_per_total_skills_mastered =
+            profiles_per_total_skills_mastered
         )
       }
     }

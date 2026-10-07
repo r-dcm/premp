@@ -17,11 +17,11 @@
 #' was observed along with the number of times it was observed.
 #' @param observed_count_label A character string for the field name of the
 #' observed sample sizes in `observed` (default is 'n').
-#' @param included_total_levels_mastered The increment of the total levels
+#' @param included_total_skills_mastered The increment of the total levels
 #' mastered, based on the attribute mastery profiles, that should be retained
 #' during profile assignment.
-#' @param profiles_per_total_levels_mastered An integer specifying the number of
-#' profiles to assign to each rater at each total number of levels mastered.
+#' @param profiles_per_total_skills_mastered An integer specifying the number of
+#' profiles to assign to each rater at each total number of skills mastered.
 #' @param previously_rated A tibble with the profiles that have already been
 #' assigned to panelists, where there is one row for each assigned profile.
 #' @param output_dir The output directory for the profile assignments.
@@ -34,8 +34,8 @@ assign_profiles <- function(
   group_configuration = NULL,
   observed,
   observed_count_label = "n",
-  included_total_levels_mastered,
-  profiles_per_total_levels_mastered,
+  included_total_skills_mastered,
+  profiles_per_total_skills_mastered,
   previously_rated = NULL,
   output_dir
 ) {
@@ -191,20 +191,20 @@ assign_profiles <- function(
   }
 
   if (
-    typeof(included_total_levels_mastered) != "integer" ||
-      !is.vector(included_total_levels_mastered)
+    typeof(included_total_skills_mastered) != "integer" ||
+      !is.vector(included_total_skills_mastered)
   ) {
     rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(included_total_levels_mastered),
+      arg = rlang::caller_arg(included_total_skills_mastered),
       must = cli::format_message(paste(
         "must be a vector of integer values."
       ))
     )
   }
 
-  if (!is.integer(profiles_per_total_levels_mastered)) {
+  if (!is.integer(profiles_per_total_skills_mastered)) {
     rdcmchecks::abort_bad_argument(
-      arg = rlang::caller_arg(profiles_per_total_levels_mastered),
+      arg = rlang::caller_arg(profiles_per_total_skills_mastered),
       must = cli::format_message(paste(
         "must be an integer."
       ))
@@ -267,14 +267,14 @@ assign_profiles <- function(
       dplyr::across(dplyr::everything(), dplyr::desc)
     ) |>
     # filter down to the total number in increments of the range of profiles
-    dplyr::filter(.data$total %in% included_total_levels_mastered)
+    dplyr::filter(.data$total %in% included_total_skills_mastered)
 
   # apply weighted sampling design
   profile_sampling <- weighted_sampling(
     possible_profiles,
     observed,
     observed_count_label,
-    profiles_per_total_levels_mastered,
+    profiles_per_total_skills_mastered,
     raters,
     panelist_configuration,
     group_configuration
@@ -287,7 +287,12 @@ assign_profiles <- function(
     names()
 
   profile_sampling <- profile_sampling |>
-    dplyr::select(-dplyr::any_of(att_vec), -"total")
+    dplyr::select(-dplyr::any_of(att_vec), -"total") |>
+    tidyr::pivot_longer(cols = dplyr::starts_with("rater"),
+                        names_to = "rater_id",
+                        values_to = "assigned") |>
+    dplyr::filter(.data$assigned == 1) |>
+    dplyr::select(-"assigned")
 
   # save output
   readr::write_csv(

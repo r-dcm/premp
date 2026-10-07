@@ -31,7 +31,7 @@ test_that("fitting the machine learning model with hyperparameters works", {
     workflow,
     ratings_data,
     observed,
-    att_levels = 4,
+    max_score = 4,
     num_pls = 4,
     metrics = c("accuracy", "adjacent", "auc", "kappa", "gwet", "assignment"),
     output_dir = testthat::test_path("data")
@@ -120,7 +120,7 @@ test_that("fitting the machine learning model without hyperparamters works", {
     workflow,
     ratings_data,
     observed,
-    att_levels = 4,
+    max_score = 4,
     num_pls = 4,
     metrics = c("accuracy", "adjacent", "kappa", "auc", "gwet", "assignment"),
     output_dir = testthat::test_path("data")

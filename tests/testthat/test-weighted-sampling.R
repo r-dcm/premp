@@ -2,8 +2,8 @@ test_that("weighted profile sampling works", {
   set.seed(123)
 
   observed_count_label <- "n"
-  included_total_levels_mastered <- c(5L, 10L, 15L, 20L, 25L)
-  profiles_per_total_levels_mastered <- 2L
+  included_total_skills_mastered <- c(5L, 10L, 15L, 20L, 25L)
+  profiles_per_total_skills_mastered <- 2L
   raters <- glue::glue("group{1:5}")
   group_configuration <- list(
     num_assignment_groups = 5L,
@@ -54,14 +54,14 @@ test_that("weighted profile sampling works", {
       dplyr::across(dplyr::everything(), dplyr::desc)
     ) |>
     # filter down to the total number in increments of the range of profiles
-    dplyr::filter(.data$total %in% included_total_levels_mastered)
+    dplyr::filter(.data$total %in% included_total_skills_mastered)
 
   # apply weighted sampling design
   profile_sampling <- weighted_sampling(
     possible_profiles,
     observed,
     observed_count_label,
-    profiles_per_total_levels_mastered,
+    profiles_per_total_skills_mastered,
     raters,
     group_configuration = group_configuration
   )

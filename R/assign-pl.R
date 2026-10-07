@@ -5,10 +5,10 @@
 #' @param fitted_model An object with the fitted machine learning model.
 #' @param ratings_data A tibble with the profiles rated by the panelists and
 #' the panelists' ratings in long format.
-#' @param att_levels A numeric value for the number of levels where mastery can
-#' be demonstrated. For example, `att_level` is 1 for a dichotomous attribute
-#' (i.e., nonmastery or mastery), and `att_level` is 2 for attributes where the
-#' possible scores are 0, 1, and 2.
+#' @param max_score A numeric value for the maximum score for the number of
+#' skills that can be mastered within an attribute. For example, `max_score` is
+#' 1 for a dichotomous attribute (i.e., nonmastery or mastery), and `max_score`
+#' is 2 for attributes where the possible scores are 0, 1, and 2.
 #' @param num_pls The number of performance levels that can be assigned to any
 #' profile.
 #' @param rating_id A character string for the field name of the panelists'
@@ -22,7 +22,7 @@
 assign_pl <- function(
   fitted_model,
   ratings_data,
-  att_levels,
+  max_score,
   num_pls,
   rating_id = "rating",
   output_dir
@@ -42,7 +42,7 @@ assign_pl <- function(
       dplyr::mutate(
         dplyr::across(
           dplyr::any_of(att_vec),
-          ~ factor(., levels = 0:att_levels)
+          ~ factor(., levels = 0:max_score)
         )
       ),
     type = "class"
@@ -61,7 +61,7 @@ assign_pl <- function(
       dplyr::mutate(
         dplyr::across(
           dplyr::any_of(att_vec),
-          ~ factor(., levels = 0:att_levels)
+          ~ factor(., levels = 0:max_score)
         )
       ),
     type = "prob"

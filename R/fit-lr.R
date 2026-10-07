@@ -11,8 +11,10 @@
 #'   each attribute.
 #' @param pl_labels A character vector containing the ordered performance
 #'   levels.
-#' @param att_levels An integer describing the number of categorical mastery
-#'   classes for each attribute.
+#' @param max_score A numeric value for the maximum score for the number of
+#' skills that can be mastered within an attribute. For example, `max_score` is
+#' 1 for a dichotomous attribute (i.e., nonmastery or mastery), and `max_score`
+#' is 2 for attributes where the possible scores are 0, 1, and 2.
 #' @param cores The number of cores (default = 4).
 #' @param chains The number of chains (default = 4).
 #' @param output_dir The output directory for the pinpointing ranges.
@@ -25,7 +27,7 @@ fit_lr <- function(
   ratings,
   meta_data,
   pl_labels,
-  att_levels,
+  max_score,
   cores = 4,
   chains = 4,
   output_dir
@@ -208,7 +210,7 @@ fit_lr <- function(
       .lower = min(.data$.value - min_pinpoint_range, .data$.lower),
       .lower = max(.data$.lower, 0),
       .upper = max(.data$.value + min_pinpoint_range, .data$.upper),
-      .upper = min(.data$.upper, length(att_vec) * att_levels)
+      .upper = min(.data$.upper, length(att_vec) * max_score)
     ) |>
     dplyr::ungroup() |>
     dplyr::select(

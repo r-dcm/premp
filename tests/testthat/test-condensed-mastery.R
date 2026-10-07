@@ -23,8 +23,8 @@ test_that("condensed mastery method works", {
       shared_across = 1L
     ),
     observed = observed,
-    included_total_levels_mastered = c(5L, 10L, 15L),
-    profiles_per_total_levels_mastered = 3L,
+    included_total_skills_mastered = c(5L, 10L, 15L),
+    profiles_per_total_skills_mastered = 3L,
     output_dir = testthat::test_path("data")
   )
 
@@ -68,7 +68,7 @@ test_that("condensed mastery method works", {
     ratings,
     meta_data = possible_profiles,
     pl_labels,
-    att_levels = 4,
+    max_score = 4,
     cores = 1,
     chains = 1,
     output_dir = testthat::test_path("data")
@@ -107,7 +107,7 @@ test_that("error works", {
     fit_lr(
       ratings = NULL,
       pl_labels = 1,
-      att_levels = 4,
+      max_score = 4,
       output_dir = testthat::test_path("data")
     )
   )
