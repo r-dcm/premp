@@ -13,8 +13,8 @@ assign_validation_profiles(
   certainty_thresholds = list(very_certain = 0.2, fairly_uncertain = 0.8),
   observed,
   observed_count_label = "n",
-  included_total_levels_mastered,
-  att_levels,
+  included_total_skills_mastered,
+  max_score,
   num_pls,
   previously_rated,
   output_dir
@@ -25,18 +25,18 @@ assign_validation_profiles(
 
 \item{panelist_configuration}{A list containing the parameters for
 configuring a panelist design. The allowable parameters are \code{num_panelists}
-indicating the number of panelists and
-\code{shared_profiles_within_certainty_across_panelists} indicating the number of
-profiles that are common to all panelists. Only one of
-\code{panelist_configuration} or \code{group_configuration} should be specified.}
+indicating the number of panelists and \code{shared_across} indicating the number
+of profiles that are common to all panelists within each certainty category.
+Only one of \code{panelist_configuration} or \code{group_configuration} should be
+specified.}
 
 \item{group_configuration}{A list containing parameters for configuring a
 group design. The allowable parameters are \code{num_assignment_groups} indicating
 the number of groups of panelists, \code{panelists_per_group} indicating
-the number of panelists in each group, and
-\code{shared_profiles_within_certainty_across_groups} indicating the number
-of profiles within each certainty classification that are shared by panelists
-across groups. Only one of \code{panelist_configuration} or \code{group_configuration}
+the number of panelists in each group, and \code{shared_across} indicating the
+number of profiles within each certainty classification that are shared
+across groups within each certainty category. All profiles will be shared
+within groups. Only one of \code{panelist_configuration} or \code{group_configuration}
 should be specified.}
 
 \item{certainty_assignments}{A list of integers defining the number of
@@ -65,14 +65,14 @@ was observed along with the number of times it was observed.}
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in \code{observed} (default is 'n').}
 
-\item{included_total_levels_mastered}{The increment of the total levels
+\item{included_total_skills_mastered}{The increment of the total levels
 mastered, based on the attribute mastery profiles, that should be retained
 during profile assignment.}
 
-\item{att_levels}{A numeric value for the number of levels where mastery can
-be demonstrated. For example, \code{att_level} is 1 for a dichotomous attribute
-(i.e., nonmastery or mastery), and \code{att_level} is 2 for attributes where the
-possible scores are 0, 1, and 2.}
+\item{max_score}{A numeric value for the maximum score for the number of
+skills that can be mastered within an attribute. For example, \code{max_score} is
+1 for a dichotomous attribute (i.e., nonmastery or mastery), and \code{max_score}
+is 2 for attributes where the possible scores are 0, 1, and 2.}
 
 \item{num_pls}{The number of performance levels that can be assigned to any
 profile.}

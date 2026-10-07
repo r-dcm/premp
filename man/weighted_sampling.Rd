@@ -8,7 +8,7 @@ weighted_sampling(
   possible_profiles,
   observed,
   observed_count_label,
-  profiles_per_total_levels_mastered,
+  profiles_per_total_skills_mastered,
   raters,
   panelist_configuration = NULL,
   group_configuration = NULL
@@ -24,8 +24,8 @@ was observed along with the number of times it was observed.}
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in the observed parameter.}
 
-\item{profiles_per_total_levels_mastered}{An integer specifying the number of
-profiles to assign to each rater at each total number of levels mastered.}
+\item{profiles_per_total_skills_mastered}{An integer specifying the number of
+profiles to assign to each rater at each total number of skills mastered.}
 
 \item{raters}{A character vector containing the raters' ids.}
 

@@ -8,7 +8,8 @@
 pmp(
   model = .no_constructor(),
   in_sample_agreement = .no_constructor(),
-  out_of_sample_agreement = .no_constructor()
+  out_of_sample_agreement = .no_constructor(),
+  assignment = .no_constructor()
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ statistics.}
 
 \item{out_of_sample_agreement}{A tibble containing the out-of-sample
 agreement statistics.}
+
+\item{assignment}{A tibble containing the assignment statistics for all
+panelist ratings.}
 }
 \value{
 An \link[S7:S7_object]{S7 object} with the corresponding class.

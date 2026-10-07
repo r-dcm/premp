@@ -8,7 +8,7 @@ fit_lr(
   ratings,
   meta_data,
   pl_labels,
-  att_levels,
+  max_score,
   cores = 4,
   chains = 4,
   output_dir
@@ -26,8 +26,10 @@ each attribute.}
 \item{pl_labels}{A character vector containing the ordered performance
 levels.}
 
-\item{att_levels}{An integer describing the number of categorical mastery
-classes for each attribute.}
+\item{max_score}{A numeric value for the maximum score for the number of
+skills that can be mastered within an attribute. For example, \code{max_score} is
+1 for a dichotomous attribute (i.e., nonmastery or mastery), and \code{max_score}
+is 2 for attributes where the possible scores are 0, 1, and 2.}
 
 \item{cores}{The number of cores (default = 4).}
 

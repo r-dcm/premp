@@ -9,7 +9,7 @@ refine_possible_profiles(
   filter_function = "median",
   filter_percentile = NULL,
   raters,
-  profiles_per_total_levels_mastered
+  profiles_per_total_skills_mastered
 )
 }
 \arguments{
@@ -28,8 +28,8 @@ example, a value of .60 indicates profiles with a Hamming distance below the
 
 \item{raters}{A character vector containing the rater names.}
 
-\item{profiles_per_total_levels_mastered}{An integer value indicating the
-number of profiles to sample from each level of the number of attributes
+\item{profiles_per_total_skills_mastered}{An integer value indicating the
+number of profiles to sample from each level of the total number of skills
 mastered.}
 }
 \value{

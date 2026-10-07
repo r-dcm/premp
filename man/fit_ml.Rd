@@ -8,7 +8,7 @@ fit_ml(
   user_workflow,
   ratings_data,
   observed,
-  att_levels,
+  max_score,
   num_pls,
   rating_id = "rating",
   observed_count_label = "n",
@@ -26,10 +26,10 @@ the panelists' ratings in long format.}
 \item{observed}{A tibble with one row for each attribute mastery profile that
 was observed along with the number of times it was observed.}
 
-\item{att_levels}{A numeric value for the number of levels where mastery can
-be demonstrated. For example, \code{att_level} is 1 for a dichotomous attribute
-(i.e., nonmastery or mastery), and \code{att_level} is 2 for attributes where the
-possible scores are 0, 1, and 2.}
+\item{max_score}{A numeric value for the maximum score for the number of
+skills that can be mastered within an attribute. For example, \code{max_score} is
+1 for a dichotomous attribute (i.e., nonmastery or mastery), and \code{max_score}
+is 2 for attributes where the possible scores are 0, 1, and 2.}
 
 \item{num_pls}{The number of performance levels that can be assigned to any
 profile.}
@@ -42,13 +42,14 @@ observed sample sizes in \code{observed} (default is 'n').}
 
 \item{metrics}{A character vector containing the evaluation metrics that
 should be included in the output. Can include any of \code{"accuracy"},
-\code{"adjacent"}, \code{"kappa"}, \code{"auc"}, or \code{"assignment"}. Including \code{"accuracy"}
-calculates classification accuracy. Including \code{"adjacent"} calculates
-adjacent classification accuracy. Including \code{"kappa"} calculates Cohen's
-kappa. Including \code{"auc"} calculates the area under the receiver operating
-characteristic curve. Including \code{"assignment"} calculates assignment
-statistics from the standard setting procedure -- the number of profiles
-assigned, the number of students with the assigned profiles, and the
+\code{"adjacent"}, \code{"cohens_kappa"}, \code{"roc_auc"}, \code{"gwets_ac2"}, or
+\code{"assignment"}. Including \code{"accuracy"} calculates classification accuracy.
+Including \code{"adjacent"} calculates adjacent classification accuracy. Including
+\code{"cohens_kappa"} calculates Cohen's kappa. Including \code{"roc_auc"} calculates
+the area under the receiver operating characteristic curve. Including
+\code{"gwets_ac2"} calculates Gwet's $AC_2$. Including \code{"assignment"} calculates
+assignment statistics from the standard setting procedure -- the number of
+profiles assigned, the number of students with the assigned profiles, and the
 proportion of students with the assigned profiles.}
 
 \item{output_dir}{The directory path for saving the output.}

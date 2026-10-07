@@ -9,8 +9,8 @@ assign_profiles(
   group_configuration = NULL,
   observed,
   observed_count_label = "n",
-  included_total_levels_mastered,
-  profiles_per_total_levels_mastered,
+  included_total_skills_mastered,
+  profiles_per_total_skills_mastered,
   previously_rated = NULL,
   output_dir
 )
@@ -37,12 +37,12 @@ was observed along with the number of times it was observed.}
 \item{observed_count_label}{A character string for the field name of the
 observed sample sizes in \code{observed} (default is 'n').}
 
-\item{included_total_levels_mastered}{The increment of the total levels
+\item{included_total_skills_mastered}{The increment of the total levels
 mastered, based on the attribute mastery profiles, that should be retained
 during profile assignment.}
 
-\item{profiles_per_total_levels_mastered}{An integer specifying the number of
-profiles to assign to each rater at each total number of levels mastered.}
+\item{profiles_per_total_skills_mastered}{An integer specifying the number of
+profiles to assign to each rater at each total number of skills mastered.}
 
 \item{previously_rated}{A tibble with the profiles that have already been
 assigned to panelists, where there is one row for each assigned profile.}

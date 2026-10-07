@@ -7,7 +7,7 @@
 assign_pl(
   fitted_model,
   ratings_data,
-  att_levels,
+  max_score,
   num_pls,
   rating_id = "rating",
   output_dir
@@ -19,10 +19,10 @@ assign_pl(
 \item{ratings_data}{A tibble with the profiles rated by the panelists and
 the panelists' ratings in long format.}
 
-\item{att_levels}{A numeric value for the number of levels where mastery can
-be demonstrated. For example, \code{att_level} is 1 for a dichotomous attribute
-(i.e., nonmastery or mastery), and \code{att_level} is 2 for attributes where the
-possible scores are 0, 1, and 2.}
+\item{max_score}{A numeric value for the maximum score for the number of
+skills that can be mastered within an attribute. For example, \code{max_score} is
+1 for a dichotomous attribute (i.e., nonmastery or mastery), and \code{max_score}
+is 2 for attributes where the possible scores are 0, 1, and 2.}
 
 \item{num_pls}{The number of performance levels that can be assigned to any
 profile.}
