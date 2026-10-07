@@ -125,13 +125,14 @@ weighted_sampling <- function(
             dplyr::select(-"total", -"profile_id"),
           att_vec
         )
-        possible_profiles <- refine_possible_profiles(
-          possible_profiles,
-          filter_function = "median",
-          raters = raters,
-          profiles_per_total_skills_mastered =
-            profiles_per_total_skills_mastered
-        )
+        possible_profiles <-
+          refine_possible_profiles(
+            possible_profiles,
+            filter_function = "median",
+            raters = raters,
+            profiles_per_total_skills_mastered =
+              profiles_per_total_skills_mastered
+          )
       }
     }
 
@@ -189,13 +190,14 @@ weighted_sampling <- function(
             dplyr::select(-"total", -"profile_id"),
           att_vec
         )
-        possible_profiles <- refine_possible_profiles(
-          possible_profiles,
-          filter_function = "median",
-          raters = raters,
-          profiles_per_total_skills_mastered =
-            profiles_per_total_skills_mastered
-        )
+        possible_profiles <-
+          refine_possible_profiles(
+            possible_profiles,
+            filter_function = "median",
+            raters = raters,
+            profiles_per_total_skills_mastered =
+              profiles_per_total_skills_mastered
+          )
       }
     }
   }

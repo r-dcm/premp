@@ -288,9 +288,11 @@ assign_profiles <- function(
 
   profile_sampling <- profile_sampling |>
     dplyr::select(-dplyr::any_of(att_vec), -"total") |>
-    tidyr::pivot_longer(cols = dplyr::starts_with("rater"),
-                        names_to = "rater_id",
-                        values_to = "assigned") |>
+    tidyr::pivot_longer(
+      cols = dplyr::starts_with("rater"),
+      names_to = "rater_id",
+      values_to = "assigned"
+    ) |>
     dplyr::filter(.data$assigned == 1) |>
     dplyr::select(-"assigned")
 

@@ -52,8 +52,14 @@ eval_agreement <- function(
   if (
     any(
       !(metrics %in%
-        c("accuracy", "adjacent", "cohens_kappa", "roc_auc", "gwets_ac2",
-          "assignment"))
+        c(
+          "accuracy",
+          "adjacent",
+          "cohens_kappa",
+          "roc_auc",
+          "gwets_ac2",
+          "assignment"
+        ))
     )
   ) {
     rdcmchecks::abort_bad_argument(
