@@ -519,12 +519,15 @@ assign_validation_profiles <- function(
         dplyr::arrange(.data$total)
     }
 
+    rep_total <- very_certain_profile_assignments |>
+      distinct(.data$total) |>
+      nrow()
+
     very_certain_profile_assignments <- very_certain_profile_assignments |>
       dplyr::mutate(
         !!rlang::sym(rater_name) := rep(
           raters,
-          times = length(included_total_skills_mastered) *
-            (very_certain_assignments - shared_across)
+          times = rep_total * (very_certain_assignments - shared_across)
         )
       )
 
@@ -578,12 +581,15 @@ assign_validation_profiles <- function(
         dplyr::arrange(.data$total)
     }
 
+    rep_total <- fairly_certain_profile_assignments |>
+      distinct(.data$total) |>
+      nrow()
+
     fairly_certain_profile_assignments <- fairly_certain_profile_assignments |>
       dplyr::mutate(
         !!rlang::sym(rater_name) := rep(
           raters,
-          times = length(included_total_skills_mastered) *
-            (fairly_certain_assignments - shared_across)
+          times = rep_total * (fairly_certain_assignments - shared_across)
         )
       )
 
@@ -636,13 +642,16 @@ assign_validation_profiles <- function(
         dplyr::arrange(.data$total)
     }
 
+    rep_total <- fairly_uncertain_profile_assignments |>
+      distinct(.data$total) |>
+      nrow()
+
     fairly_uncertain_profile_assignments <-
       fairly_uncertain_profile_assignments |>
       dplyr::mutate(
         !!rlang::sym(rater_name) := rep(
           raters,
-          times = length(included_total_skills_mastered) *
-            (fairly_uncertain_assignments - shared_across)
+          times = rep_total * (fairly_uncertain_assignments - shared_across)
         )
       )
 
