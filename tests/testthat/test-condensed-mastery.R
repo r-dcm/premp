@@ -1,0 +1,113 @@
+test_that("condensed mastery method works", {
+  set.seed(123)
+
+  possible_profiles <- tibble::tibble(tidyr::crossing(
+    att1 = c(0:4),
+    att2 = c(0:4),
+    att3 = c(0:4),
+    att4 = c(0:4)
+  )) |>
+    tibble::rowid_to_column("profile_id")
+
+  obs <- runif(nrow(possible_profiles), 1, 10000)
+
+  observed <- possible_profiles |>
+    dplyr::mutate(n = obs, n = dplyr::case_when(n < 1000 ~ NA, TRUE ~ n)) |>
+    dplyr::filter(!is.na(n))
+
+  final_assignments <- assign_profiles(
+    group_configuration = list(
+      num_assignment_groups = 5L,
+      panelists_per_group = 4L,
+      shared_within = 2L,
+      shared_across = 1L
+    ),
+    observed = observed,
+    included_total_skills_mastered = c(5L, 10L, 15L),
+    profiles_per_total_skills_mastered = 3L,
+    output_dir = testthat::test_path("data")
+  )
+
+  ratings <- final_assignments |>
+    dplyr::left_join(possible_profiles) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("att")))) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      bump = runif(144, -.75, .75),
+      bump = dplyr::case_when(
+        .data$bump <= -.5 ~ -1,
+        .data$bump >= .5 ~ 1,
+        TRUE ~ 0
+      ),
+      base = dplyr::case_when(
+        .data$total <= 8 ~ 1,
+        .data$total <= 16 ~ 2,
+        .data$total <= 24 ~ 3,
+        TRUE ~ 4
+      ),
+      rating = .data$base + .data$bump
+    ) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(
+      rating = max(1, .data$rating),
+      rating = min(4, .data$rating)
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::select(-"total", -"bump", -"base", -"rater_id")
+
+  pl_labels <- c("Emerging", "Approaching the Target", "At Target", "Advanced")
+
+  fit_lr(
+    ratings,
+    meta_data = possible_profiles,
+    pl_labels,
+    max_score = 4,
+    cores = 1,
+    chains = 1,
+    output_dir = testthat::test_path("data")
+  )
+
+  suppressMessages(
+    cm_output <-
+      readr::read_csv(glue::glue("{testthat::test_path('data')}/pp-range.csv"))
+  )
+
+  # check output type
+  testthat::expect_contains(class(cm_output), "tbl_df")
+
+  # check column names
+  testthat::expect_equal(
+    colnames(cm_output),
+    c("cut_point", "predicted", "pinpoint_min", "pinpoint_max")
+  )
+
+  # check number of cut-points
+  testthat::expect_equal(nrow(cm_output), length(pl_labels) - 1)
+
+  # check variable types
+  testthat::expect_equal(typeof(cm_output$cut_point), "character")
+  testthat::expect_equal(typeof(cm_output$predicted), "double")
+  testthat::expect_equal(typeof(cm_output$pinpoint_min), "double")
+  testthat::expect_equal(typeof(cm_output$pinpoint_max), "double")
+
+  # check for allowable values for pinpoint min and max
+  testthat::expect_gte(min(cm_output$pinpoint_min), 0)
+  testthat::expect_lte(max(cm_output$pinpoint_max), 16)
+})
+
+test_that("error works", {
+  err <- rlang::catch_cnd(
+    fit_lr(
+      ratings = NULL,
+      pl_labels = 1,
+      max_score = 4,
+      output_dir = testthat::test_path("data")
+    )
+  )
+  testthat::expect_s3_class(err, "rlang_error")
+  testthat::expect_match(
+    err$message,
+    "must have a value of at least 2."
+  )
+})
