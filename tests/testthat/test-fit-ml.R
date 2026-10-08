@@ -94,7 +94,7 @@ test_that("fitting the machine learning model with hyperparameters works", {
   ))
 })
 
-test_that("fitting the machine learning model without hyperparamters works", {
+test_that("fitting the machine learning model without hyperparameters works", {
   workflow <-
     parsnip::rand_forest(
       mtry = 1,
