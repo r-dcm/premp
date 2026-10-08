@@ -520,7 +520,7 @@ assign_validation_profiles <- function(
     }
 
     rep_total <- very_certain_profile_assignments |>
-      distinct(.data$total) |>
+      dplyr::distinct(.data$total) |>
       nrow()
 
     very_certain_profile_assignments <- very_certain_profile_assignments |>
@@ -582,7 +582,7 @@ assign_validation_profiles <- function(
     }
 
     rep_total <- fairly_certain_profile_assignments |>
-      distinct(.data$total) |>
+      dplyr::distinct(.data$total) |>
       nrow()
 
     fairly_certain_profile_assignments <- fairly_certain_profile_assignments |>
@@ -643,7 +643,7 @@ assign_validation_profiles <- function(
     }
 
     rep_total <- fairly_uncertain_profile_assignments |>
-      distinct(.data$total) |>
+      dplyr::distinct(.data$total) |>
       nrow()
 
     fairly_uncertain_profile_assignments <-

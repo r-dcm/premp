@@ -30,12 +30,6 @@ test_that("condensed mastery method works", {
 
   ratings <- final_assignments |>
     dplyr::left_join(possible_profiles) |>
-    tidyr::pivot_longer(
-      cols = dplyr::starts_with("rater"),
-      names_to = "rater_id",
-      values_to = "rating"
-    ) |>
-    dplyr::filter(rating == 1) |>
     dplyr::rowwise() |>
     dplyr::mutate(total = sum(dplyr::c_across(dplyr::starts_with("att")))) |>
     dplyr::ungroup() |>

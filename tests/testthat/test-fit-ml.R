@@ -33,7 +33,8 @@ test_that("fitting the machine learning model with hyperparameters works", {
     observed,
     max_score = 4,
     num_pls = 4,
-    metrics = c("accuracy", "adjacent", "auc", "kappa", "gwet", "assignment"),
+    metrics = c("accuracy", "adjacent", "roc_auc", "cohens_kappa", "gwets_ac2",
+                "assignment"),
     output_dir = testthat::test_path("data")
   )
 
@@ -122,7 +123,8 @@ test_that("fitting the machine learning model without hyperparamters works", {
     observed,
     max_score = 4,
     num_pls = 4,
-    metrics = c("accuracy", "adjacent", "kappa", "auc", "gwet", "assignment"),
+    metrics = c("accuracy", "adjacent", "cohens_kappa", "roc_auc", "gwets_ac2",
+                "assignment"),
     output_dir = testthat::test_path("data")
   )
 

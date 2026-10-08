@@ -42,40 +42,20 @@ test_that("assigning profiles (group design) in Round 1 works", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 6)
+  testthat::expect_equal(ncol(final_assignments), 3)
   # correct number of rows
-  testthat::expect_equal(nrow(final_assignments), 75)
+  testthat::expect_equal(nrow(final_assignments), 300)
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c("profile_id", "group", glue::glue("rater{1:4}"))
+    c("profile_id", "group", "rater_id")
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
     final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::filter(.data$assignment == 1) |>
-      dplyr::count(.data$rater) |>
+      dplyr::count(.data$rater_id) |>
       dplyr::pull(.data$n),
     rep(75, 4)
-  )
-  # assignments are in correct format
-  testthat::expect_contains(
-    c(0, 1),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::distinct(.data$assignment) |>
-      dplyr::pull()
   )
 })
 
@@ -123,56 +103,28 @@ test_that("assigning profiles (rater design) in Round 1 works", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 6)
+  testthat::expect_equal(ncol(final_assignments), 2)
   # correct number of rows
-  testthat::expect_equal(nrow(final_assignments), 55)
+  testthat::expect_equal(nrow(final_assignments), 75)
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c("profile_id", glue::glue("rater{1:5}"))
+    c("profile_id", "rater_id")
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
     final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::filter(.data$assignment == 1) |>
-      dplyr::count(.data$rater) |>
+      dplyr::count(.data$rater_id) |>
       dplyr::pull(.data$n),
     rep(15, 5)
   )
   # minimum number of profiles seen by all raters
   testthat::expect_gte(
     final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tibble::rowid_to_column("prof_num") |>
-      tidyr::pivot_longer(
-        cols = -c("prof_num"),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::filter(.data$assignment == 1) |>
-      dplyr::count(.data$prof_num) |>
+      dplyr::count(.data$rater_id) |>
       dplyr::filter(.data$n == 5) |>
       nrow(),
-    1
-  )
-  # assignments are in correct format
-  testthat::expect_contains(
-    c(0, 1),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::distinct(.data$assignment) |>
-      dplyr::pull()
+    0
   )
 })
 
@@ -232,56 +184,28 @@ test_that("assigning profiles (rater design) in Round 2 works", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 6)
+  testthat::expect_equal(ncol(final_assignments), 2)
   # correct number of rows
-  testthat::expect_equal(nrow(final_assignments), 30)
+  testthat::expect_equal(nrow(final_assignments), 50)
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c("profile_id", glue::glue("rater{1:5}"))
+    c("profile_id", "rater_id")
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
     final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::filter(.data$assignment == 1) |>
-      dplyr::count(.data$rater) |>
+      dplyr::count(.data$rater_id) |>
       dplyr::pull(.data$n),
     rep(10, 5)
   )
   # minimum number of profiles seen by all raters
   testthat::expect_gte(
     final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tibble::rowid_to_column("prof_num") |>
-      tidyr::pivot_longer(
-        cols = -c("prof_num"),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::filter(.data$assignment == 1) |>
-      dplyr::count(.data$prof_num) |>
-      dplyr::filter(.data$n == 5) |>
+      dplyr::count(.data$rater_id) |>
+      dplyr::filter(.data$n == 10) |>
       nrow(),
-    1
-  )
-  # assignments are in correct format
-  testthat::expect_contains(
-    c(0, 1),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::distinct(.data$assignment) |>
-      dplyr::pull()
+    5
   )
 })
 
@@ -593,40 +517,20 @@ test_that("assign profiles -- few attributes work (group design)", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 6)
+  testthat::expect_equal(ncol(final_assignments), 3)
   # correct number of rows
-  testthat::expect_equal(nrow(final_assignments), 68)
+  testthat::expect_equal(nrow(final_assignments), 152)
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c("profile_id", "group", glue::glue("rater{1:4}"))
+    c("profile_id", "group", "rater_id")
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
     final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::filter(.data$assignment == 1) |>
-      dplyr::count(.data$rater) |>
+      dplyr::count(.data$rater_id) |>
       dplyr::pull(.data$n),
     c(38, 38, 38, 38)
-  )
-  # assignments are in correct format
-  testthat::expect_contains(
-    c(0, 1),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::distinct(.data$assignment) |>
-      dplyr::pull()
   )
 })
 
@@ -670,55 +574,19 @@ test_that("assign profiles -- few attributes work (rater design)", {
   )
 
   # correct number of columns
-  testthat::expect_equal(ncol(final_assignments), 6)
+  testthat::expect_equal(ncol(final_assignments), 2)
   # correct number of rows
-  testthat::expect_equal(nrow(final_assignments), 26)
+  testthat::expect_equal(nrow(final_assignments), 38)
   # column names are correct
   testthat::expect_equal(
     colnames(final_assignments),
-    c("profile_id", glue::glue("rater{1:5}"))
+    c("profile_id", "rater_id")
   )
   # every rater assigned correct number of profiles
   testthat::expect_equal(
     final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::filter(.data$assignment == 1) |>
-      dplyr::count(.data$rater) |>
+      dplyr::count(.data$rater_id) |>
       dplyr::pull(.data$n),
     c(8, 8, 8, 7, 7)
-  )
-  # minimum number of profiles seen by all raters
-  testthat::expect_gte(
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tibble::rowid_to_column("prof_num") |>
-      tidyr::pivot_longer(
-        cols = -c("prof_num"),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::filter(.data$assignment == 1) |>
-      dplyr::count(.data$prof_num) |>
-      dplyr::filter(.data$n == 5) |>
-      nrow(),
-    1
-  )
-  # assignments are in correct format
-  testthat::expect_contains(
-    c(0, 1),
-    final_assignments |>
-      dplyr::select(dplyr::starts_with("rater")) |>
-      tidyr::pivot_longer(
-        cols = dplyr::everything(),
-        names_to = "rater",
-        values_to = "assignment"
-      ) |>
-      dplyr::distinct(.data$assignment) |>
-      dplyr::pull()
   )
 })

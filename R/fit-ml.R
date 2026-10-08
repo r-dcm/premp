@@ -225,7 +225,7 @@ fit_ml <- function(
     glue::glue("{output_dir}/out_of_sample_agreement.rds")
   )
 
-  all_data <- bind_rows(
+  all_data <- dplyr::bind_rows(
     train_data |>
       dplyr::select(-"case_wts") |>
       dplyr::mutate(dplyr::across(
