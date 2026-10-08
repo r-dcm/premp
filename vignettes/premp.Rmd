@@ -211,7 +211,7 @@ for (ii in seq_len(nrow(pinpoint_ranges))) {
     previously_rated = previously_rated,
     output_dir = here::here(
       glue::glue(
-        "vignettes/pinpointing/{stringr::str_replace(pinpoint_ranges$cut_point[ii], '/', '-')}"
+        "vignettes/pinpointing/{stringr::str_replace(pinpoint_ranges$cut_point[ii], '/', '_')}"
       )
     )
   )
