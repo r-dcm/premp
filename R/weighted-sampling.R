@@ -101,7 +101,7 @@ weighted_sampling <- function(
         tmp_assignments <- possible_profiles |>
           dplyr::left_join(observed, by = att_vec) |>
           dplyr::filter(!is.na(!!rlang::sym(observed_count_label))) |>
-          dplyr::filter(!!rlang::sym(observed_count_label) > 100) |>
+          dplyr::filter(!!rlang::sym(observed_count_label) > 20) |>
           dplyr::mutate(size = 1L) |>
           slice_stratified(
             by = "total",
